@@ -40,7 +40,6 @@ Handle<Value> Shaping(const Arguments& args) {
     hb_buffer_set_language(buffer, hb_language_from_string("ar", 2));
     hb_buffer_add_utf16(buffer, *text, length, 0, length);
 
-
     hb_shape(hb_font, buffer, NULL, 0);
 
     unsigned num_glyphs = hb_buffer_get_length(buffer);
@@ -51,9 +50,15 @@ Handle<Value> Shaping(const Arguments& args) {
     for (unsigned i = 0; i < num_glyphs; i++) {
         hb_glyph_info_t *glyph = glyphs + i;
         hb_glyph_position_t *pos = positions + i;
-        shaped->Set(i, Uint32::New(glyph->codepoint));
-    }
 
+        Local<Object> metrics = Object::New();
+        metrics->Set(String::NewSymbol("code"), Uint32::New(glyph->codepoint));
+        metrics->Set(String::NewSymbol("x_offset"), Uint32::New(pos->x_offset));
+        metrics->Set(String::NewSymbol("y_offset"), Uint32::New(pos->y_offset));
+        metrics->Set(String::NewSymbol("x_advance"), Uint32::New(pos->x_advance));
+        metrics->Set(String::NewSymbol("y_advance"), Uint32::New(pos->y_advance));
+        shaped->Set(i, metrics);
+    }
 
     Local<Object> result = Object::New();
     result->Set(String::NewSymbol("unshaped"), unshaped);

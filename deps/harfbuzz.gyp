@@ -53,20 +53,11 @@
             '<(SHARED_INTERMEDIATE_DIR)/harfbuzz-<@(harfbuzz_version)/src/hb-shape.cc'
           ],
           'action': [ 'tar', '-xjf', './harfbuzz-<@(harfbuzz_version).tar.bz2', '-C', '<(SHARED_INTERMEDIATE_DIR)']
-        },
-        {
-          'action_name': 'copy_harfbuzz_config_header',
-          'inputs': [
-            './harfbuzz-config.h'
-          ],
-          'outputs': [
-            '<(SHARED_INTERMEDIATE_DIR)/harfbuzz-<@(harfbuzz_version)/config.h'
-          ],
-          'action': [ 'cp', './harfbuzz-config.h', '<(SHARED_INTERMEDIATE_DIR)/harfbuzz-<@(harfbuzz_version)/config.h']
         }
       ],
       'direct_dependent_settings': {
         'include_dirs': [
+          '../include/harfbuzz',
           '<(SHARED_INTERMEDIATE_DIR)/harfbuzz-<@(harfbuzz_version)/src/hb-ucdn',
           '<(SHARED_INTERMEDIATE_DIR)/harfbuzz-<@(harfbuzz_version)',
         ]
@@ -120,20 +111,6 @@
         '<(SHARED_INTERMEDIATE_DIR)/harfbuzz-<@(harfbuzz_version)/src/hb-unicode.cc',
         # '<(SHARED_INTERMEDIATE_DIR)/harfbuzz-<@(harfbuzz_version)/src/hb-uniscribe.cc',
         # '<(SHARED_INTERMEDIATE_DIR)/harfbuzz-<@(harfbuzz_version)/src/hb-warning.cc'
-      ],
-      'direct_dependent_settings': {
-        'include_dirs': [
-      #     # '../include',
-          '<(SHARED_INTERMEDIATE_DIR)/harfbuzz-<@(harfbuzz_version)/src/',
-
-      #   # ],
-      #   # 'defines': [
-      #   #   'HAVE_CONFIG_H',
-      #   #   '_THREAD_SAFE'
-        ],
-      },
-      'export_dependent_settings': [
-        'harfbuzz_action_before_build'
       ]
     }
   ]

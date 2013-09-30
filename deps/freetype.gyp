@@ -86,18 +86,11 @@
       ],
       'direct_dependent_settings': {
         'include_dirs': [
-          '../include',
           '<(SHARED_INTERMEDIATE_DIR)/freetype-<@(freetype_version)/include'
-        ],
-        'defines': [
-          'FT2_BUILD_LIBRARY'
-        ],
+        ]
       },
       'defines': [
         'FT2_BUILD_LIBRARY'
-      ],
-      'export_dependent_settings': [
-        'freetype_action_before_build'
       ]
     }
   ]
