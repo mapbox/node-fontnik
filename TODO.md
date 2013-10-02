@@ -45,9 +45,7 @@ unicode-range => font file
     { from: 0x0530, to: 0x058F, file: 'test.ttf', index: 0 }
 ]
 
-
-font file: 
-
+for every 
 
 for every font, create a font object
 on creation, and store all glyphs as individual buffers + metrics into the object
@@ -60,5 +58,18 @@ returns:
 - list of glyphs
 
 
+=> switch to pango for text layouting
+    - multiple lines of text?
+
+
+- implement font backend that reads directly from sdf files
+    - need to extract kerning pairs?
+
+- investigate how to port the node.js module with emscripten to run directly
+  in the browser => easy bindings?
+  - node::ObjectWrap doesn't derive from v8 objects, but it has many methods
+    that take v8 objects as parameters
+
+- store text placement in vector tile?
 
 

@@ -1,17 +1,19 @@
 {
-  'includes': [ 'deps/common-freetype.gypi', 'deps/common-harfbuzz.gypi' ],
   'targets': [
     {
       'target_name': 'fontserver',
-      'dependencies': [
-        'deps/freetype.gyp:freetype',
-        'deps/harfbuzz.gyp:harfbuzz'
-      ],
       'sources': [
         'src/fontserver.cpp',
         'src/font.cpp',
-        'src/shaping.cpp'
+        'src/shaping.cpp',
+        'src/sdf_renderer.cpp'
       ],
+      'include_dirs': [ # tried to pass through cflags but failed
+        '<!@(pkg-config pangoft2 --cflags-only-I | sed s/-I//g)'
+      ],
+      'libraries': [
+        '<!@(pkg-config pangoft2 --libs)'
+      ]
     }
   ]
 }

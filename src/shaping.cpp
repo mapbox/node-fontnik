@@ -1,13 +1,23 @@
 #include "shaping.hpp"
 #include "font.hpp"
 
-#include <harfbuzz/hb.h>
-#include <harfbuzz/hb-ft.h>
+
+#include <pango/pangoft2.h>
+#include "sdf_renderer.hpp"
+
+
+static PangoContext *cached_context() {
+    static PangoContext *context = NULL;
+    if (context == NULL) {
+        PangoFontMap *fontmap = pango_ft2_font_map_new();
+        context = pango_font_map_create_context(fontmap);
+    }
+    return context;
+}
+
 
 using namespace v8;
 
-// Returns the Nth number in the fibonacci sequence where N is the first
-// argument passed.
 Handle<Value> Shaping(const Arguments& args) {
     HandleScope scope;
 
@@ -15,53 +25,42 @@ Handle<Value> Shaping(const Arguments& args) {
         return ThrowException(Exception::TypeError(String::New("First argument must be the string to shape")));
     }
 
-    if (args.Length() < 2 || !Font::HasInstance(args[1])) {
-        return ThrowException(Exception::TypeError(String::New("Second argument must be a font object")));
+    if (args.Length() < 2) {
+        return ThrowException(Exception::TypeError(String::New("Second argument must be a font stack")));
     }
 
-    String::Value text(args[0]->ToString());
-    Font* font = node::ObjectWrap::Unwrap<Font>(args[1]->ToObject());
-    unsigned int length = text.length();
+    String::Utf8Value text(args[0]->ToString());
+    String::Utf8Value font_stack(args[1]->ToString());
 
+    PangoContext *context = cached_context();
+    PangoFontDescription *desc = pango_font_description_from_string(*font_stack);
 
-    Local<Array> unshaped = Array::New();
-    for (unsigned i = 0; i < length; i++) {
-        FT_UInt glyph_index = FT_Get_Char_Index(font->face, (*text)[i]);
-        unshaped->Set(i, Uint32::New(glyph_index));
+    PangoLayout *layout = pango_layout_new(context);
+    pango_layout_set_markup(layout, *text, text.length());
+    pango_layout_set_font_description(layout, desc);
+
+    PangoRenderer *renderer = pango_sdf_get_renderer();
+    pango_renderer_draw_layout (renderer, layout, 0, 0);
+
+    const PangoSDFGlyphs& glyphs = pango_sdf_renderer_get_glyphs(PANGO_SDF_RENDERER(renderer));
+
+    Local<Array> result = Array::New();
+    for (size_t i = 0; i < glyphs.size(); i++) {
+        const PangoSDFGlyph& glyph = glyphs[i];
+        Local<Object> info = Object::New();
+
+        PangoFcFont *fc_font = PANGO_FC_FONT(glyph.font);
+        FT_Face face = pango_fc_font_lock_face(fc_font);
+        info->Set(String::NewSymbol("family"), String::New(face->family_name));
+        info->Set(String::NewSymbol("style"), String::New(face->style_name));
+        pango_fc_font_unlock_face (fc_font);
+
+        info->Set(String::NewSymbol("glyph"), Uint32::New(glyph.glyph));
+        info->Set(String::NewSymbol("x"), Number::New(glyph.x));
+        info->Set(String::NewSymbol("y"), Number::New(glyph.y));
+
+        result->Set(i, info);
     }
-
-
-    hb_font_t *hb_font = hb_ft_font_create(font->face, NULL);
-
-    hb_buffer_t *buffer = hb_buffer_create();
-    hb_buffer_reset(buffer);
-    hb_buffer_set_direction(buffer, HB_DIRECTION_RTL);
-    hb_buffer_set_script(buffer, HB_SCRIPT_ARABIC);
-    hb_buffer_set_language(buffer, hb_language_from_string("ar", 2));
-    hb_buffer_add_utf16(buffer, *text, length, 0, length);
-
-    hb_shape(hb_font, buffer, NULL, 0);
-
-    unsigned num_glyphs = hb_buffer_get_length(buffer);
-    hb_glyph_info_t *glyphs = hb_buffer_get_glyph_infos(buffer, NULL);
-    hb_glyph_position_t *positions = hb_buffer_get_glyph_positions(buffer, NULL);
-
-    Local<Array> shaped = Array::New();
-    for (unsigned i = 0; i < num_glyphs; i++) {
-        hb_glyph_info_t *glyph = glyphs + i;
-        hb_glyph_position_t *pos = positions + i;
-
-        Local<Object> metrics = Object::New();
-        metrics->Set(String::NewSymbol("code"), Uint32::New(glyph->codepoint));
-        metrics->Set(String::NewSymbol("x_offset"), Uint32::New(pos->x_offset));
-        metrics->Set(String::NewSymbol("y_offset"), Uint32::New(pos->y_offset));
-        metrics->Set(String::NewSymbol("x_advance"), Uint32::New(pos->x_advance));
-        metrics->Set(String::NewSymbol("y_advance"), Uint32::New(pos->y_advance));
-        shaped->Set(i, metrics);
-    }
-
-    Local<Object> result = Object::New();
-    result->Set(String::NewSymbol("unshaped"), unshaped);
-    result->Set(String::NewSymbol("shaped"), shaped);
     return scope.Close(result);
 }
+

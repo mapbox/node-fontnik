@@ -1,9 +1,11 @@
-var fs = require('fs');
 var fontserver = require('./');
 
-var blob = fs.readFileSync('fonts/ArialUnicode.ttf');
+console.time('shape');
+// for (var i = 0; i < 10000; i++) {
+var shaped = fontserver.shape("Oderberger Straße", 'Open Sans, Arial Unicode MS');
+// }
+console.timeEnd('shape');
+console.warn(shaped);
 
-var font = new fontserver.Font(blob);
-
-// console.warn(fontserver.shape("لسعودية كسول الزنجبيل القط", font));
-console.warn(fontserver.shape("MapBox", font));
+// console.warn(fontserver.shape("MapBox", font));
+console.warn('ok');
