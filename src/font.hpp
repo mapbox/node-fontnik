@@ -1,10 +1,8 @@
-#ifndef FONT_HPP
-#define FONT_HPP
+#pragma once
 
 #include <node.h>
 
-#include <ft2build.h>
-#include FT_FREETYPE_H
+#include <pango/pangoft2.h>
 
 class Font : public node::ObjectWrap {
 public:
@@ -12,8 +10,9 @@ public:
     static void Init(v8::Handle<v8::Object> target);
     static bool HasInstance(v8::Handle<v8::Value> val);
 
+    static v8::Handle<v8::Value> New(PangoFont *pango_font);
 protected:
-    Font(const char *data, size_t length, int index = 0);
+    Font(PangoFont *pango_font);
     ~Font();
 
     static v8::Handle<v8::Value> New(const v8::Arguments& args);
@@ -23,9 +22,5 @@ protected:
     static const int buffer;
 
 public:
-    FT_Error error;
-    FT_Face face;
-    FT_GlyphSlot slot;
+    PangoFont *font;
 };
-
-#endif

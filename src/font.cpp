@@ -1,24 +1,10 @@
 #include <node.h>
 #include <node_buffer.h>
 
-#include <ft2build.h>
-#include FT_FREETYPE_H
-#include FT_GLYPH_H
-
 #include "font.hpp"
+#include "distmap.h"
 
 using namespace v8;
-
-
-
-FT_Library library() {
-    static FT_Library library = NULL;
-    if (library == NULL) {
-        FT_Error error = FT_Init_FreeType(&library);
-        assert(error == 0 && "failed to initialize freetype");
-    }
-    return library;
-}
 
 
 Persistent<FunctionTemplate> Font::constructor;
@@ -30,6 +16,7 @@ void Font::Init(Handle<Object> target) {
     Local<String> name = String::NewSymbol("Font");
 
     constructor = Persistent<FunctionTemplate>::New(tpl);
+
     // ObjectWrap uses the first internal field to store the wrapped pointer.
     constructor->InstanceTemplate()->SetInternalFieldCount(1);
     constructor->SetClassName(name);
@@ -46,50 +33,42 @@ void Font::Init(Handle<Object> target) {
 const int Font::size = 24;
 const int Font::buffer = 3;
 
-Font::Font(const char *data, size_t length, int index)
+Font::Font(PangoFont *pango_font)
     : ObjectWrap(),
-    face(NULL) {
-    error = FT_New_Memory_Face(library(), (const FT_Byte *)data, length, index, &face);
-    if (error) return;
-
-    error = FT_Set_Char_Size(face, 0, size * 64, 72, 72);
-    if (error) return;
-
-    slot = face->glyph;
+    font(pango_font) {
+    g_object_ref(font);
 }
 
 Font::~Font() {
-    if (face) {
-        FT_Done_Face(face);
+    g_object_unref(font);
+}
+
+Handle<Value> Font::New(const v8::Arguments& args) {
+    if (!args.IsConstructCall() || args.Length() != 1 || !args[0]->IsExternal()) {
+        return ThrowException(Exception::TypeError(String::New("Font objects cannot be created from user land")));
+    } else {
+        PangoFont *pango_font = (PangoFont *)External::Cast(*args[0])->Value();
+        Font* font = new Font(pango_font);
+        font->Wrap(args.This());
+
+        PangoFcFont *fc_font = PANGO_FC_FONT(pango_font);
+        FT_Face face = pango_fc_font_lock_face(fc_font);
+        args.This()->Set(String::NewSymbol("family"), String::New(face->family_name), ReadOnly);
+        args.This()->Set(String::NewSymbol("style"), String::New(face->style_name), ReadOnly);
+        args.This()->Set(String::NewSymbol("length"), Number::New(face->num_glyphs), ReadOnly);
+        pango_fc_font_unlock_face(fc_font);
+
+        return args.This();
     }
 }
 
-Handle<Value> Font::New(const Arguments& args) {
+Handle<Value> Font::New(PangoFont* pango_font) {
     HandleScope scope;
 
-    if (!args.IsConstructCall()) {
-        return ThrowException(Exception::TypeError(
-            String::New("Use the new operator to create instances of this object."))
-        );
-    }
+    Local<Value> value = External::New(pango_font);
+    Local<Object> object = constructor->GetFunction()->NewInstance(1, &value);
 
-    if (args.Length() < 1 || !node::Buffer::HasInstance(args[0])) {
-        return ThrowException(Exception::TypeError(
-            String::New("First argument must be a font blob")));
-    }
-
-    Local<Object> buffer = args[0]->ToObject();
-    Font* font = new Font(node::Buffer::Data(buffer), node::Buffer::Length(buffer));
-    if (font->error != 0) {
-        return ThrowException(Exception::Error(
-            String::New("Loading the font failed")));
-    } else {
-        font->Wrap(args.This());
-        args.This()->Set(String::NewSymbol("family"), String::New(font->face->family_name), ReadOnly);
-        args.This()->Set(String::NewSymbol("style"), String::New(font->face->style_name), ReadOnly);
-        args.This()->Set(String::NewSymbol("length"), Number::New(font->face->num_glyphs), ReadOnly);
-        return args.This();
-    }
+    return scope.Close(object);
 }
 
 bool Font::HasInstance(Handle<Value> val) {
@@ -101,16 +80,45 @@ Handle<Value> Font::GetGlyph(uint32_t glyph_index, const v8::AccessorInfo& info)
 {
     HandleScope scope;
     Font* font = ObjectWrap::Unwrap<Font>(info.This());
-    FT_Error error = FT_Load_Glyph(font->face, glyph_index, FT_LOAD_NO_HINTING | FT_LOAD_RENDER);
+    PangoFcFont *fc_font = PANGO_FC_FONT(font->font);
+    FT_Face face = pango_fc_font_lock_face(fc_font);
+    // fprintf(stderr, "x/y/h: %ld/%ld/%ld\n", face->size->metrics.x_scale, face->size->metrics.y_scale / 2048, face->size->metrics.height);
+    FT_Set_Char_Size(face, 0, size * 64, 72, 72);
+    FT_Error error = FT_Load_Glyph(face, glyph_index, FT_LOAD_NO_HINTING | FT_LOAD_RENDER);
     if (error) {
+        pango_fc_font_unlock_face(fc_font);
         return Undefined();
     } else {
         Local<Object> result = Object::New();
-        result->Set(String::NewSymbol("width"), Number::New(font->slot->bitmap.width), ReadOnly);
-        result->Set(String::NewSymbol("height"), Number::New(font->slot->bitmap.rows), ReadOnly);
-        result->Set(String::NewSymbol("left"), Number::New(font->slot->bitmap_left), ReadOnly);
-        result->Set(String::NewSymbol("top"), Number::New(font->slot->bitmap_top), ReadOnly);
-        result->Set(String::NewSymbol("advance"), Number::New(font->slot->metrics.horiAdvance), ReadOnly);
+        result->Set(String::NewSymbol("id"), Uint32::New(glyph_index), ReadOnly);
+        result->Set(String::NewSymbol("width"), Number::New(face->glyph->bitmap.width), ReadOnly);
+        result->Set(String::NewSymbol("height"), Number::New(face->glyph->bitmap.rows), ReadOnly);
+        result->Set(String::NewSymbol("left"), Number::New(face->glyph->bitmap_left), ReadOnly);
+        result->Set(String::NewSymbol("top"), Number::New(face->glyph->bitmap_top), ReadOnly);
+        result->Set(String::NewSymbol("advance"), Number::New(face->glyph->metrics.horiAdvance), ReadOnly);
+
+        FT_GlyphSlot slot = face->glyph;
+        int width = slot->bitmap.width;
+        int height = slot->bitmap.rows;
+
+        // Create a signed distance field for the glyph bitmap.
+        if (width > 0) {
+            unsigned int buffered_width = width + 2 * buffer;
+            unsigned int buffered_height = height + 2 * buffer;
+
+            unsigned char *distance = make_distance_map((unsigned char *)slot->bitmap.buffer, width, height, buffer);
+
+            unsigned char *map = (unsigned char *)malloc(buffered_width * buffered_height);
+            for (unsigned int y = 0; y < buffered_height; y++) {
+                memcpy(map + buffered_width * y, distance + y * distmap_size, buffered_width);
+            }
+            free(distance);
+
+            result->Set(String::NewSymbol("bitmap"), node::Buffer::New((const char *)map, buffered_width * buffered_height)->handle_);
+            free(map);
+        }
+
+        pango_fc_font_unlock_face(fc_font);
         return scope.Close(result);
     }
 }

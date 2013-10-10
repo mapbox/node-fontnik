@@ -1,18 +1,6 @@
 
 - server loads the vector tile and extracts all labels
-
-- send a list of all labels to the server
-
-- determine script/language for every label
-
-- mapping language/script => font
-  - we can't use unicode ranges because, e.g. for japanese we want to use a different
-    font than for chinese, but they have the same unicode range (CJK unification)
-
-- shape every label
-
-- read sdf protocol buffer that contains all the prerendered glyphs
-
+- read sdf protocol buffer that contains all the prerendered glyphs for a face
 - use regular glyph metrics from all languages that don't need to be shaped
 
 - when requesting a tile for a particular map
@@ -36,26 +24,6 @@
 
 - what if we want to show other text that is not encoded in the vector tiles?
 
-- load the sdf file
-
-for now:
-unicode-range => font file
-
-[
-    { from: 0x0530, to: 0x058F, file: 'test.ttf', index: 0 }
-]
-
-for every 
-
-for every font, create a font object
-on creation, and store all glyphs as individual buffers + metrics into the object
-
-
-.shape('test text', fontobject)
-
-returns:
-- 
-- list of glyphs
 
 
 => switch to pango for text layouting
@@ -71,5 +39,40 @@ returns:
     that take v8 objects as parameters
 
 - store text placement in vector tile?
+
+
+
+
+- curved labels for joined text like arabic?
+
+
+
+- create glyph cache on javascript-side
+- create sdf glyphs (port from ft project)
+- create tile that has data + sdf glyphs
+
+
+- in main sdf file:
+  - ((store character code => glyph mapping)) ==> implement later
+  - ((implement later: store common glyphs)
+    - how to determine default glyphs in a font?
+      => Jōyō kanji list?
+      => Frequency analysis?
+  - store all glyph metrics
+    - DON'T store all glyph bitmaps
+
+- in theme-specific tile:
+  - store glyph mapping + positioning per label/fontstack
+    - ((ONLY IF it deviates from the plain charcode=>glyph mapping)) => implement later
+  - store glyph bitmap
+
+
+
+
+- analyze vector tiles for shaped glyph frequency
+  => compile list
+
+
+
 
 

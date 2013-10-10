@@ -2,21 +2,39 @@
 #include "font.hpp"
 
 
+#include <map>
+
 #include <pango/pangoft2.h>
 #include "sdf_renderer.hpp"
 
 
-static PangoContext *cached_context() {
-    static PangoContext *context = NULL;
-    if (context == NULL) {
-        PangoFontMap *fontmap = pango_ft2_font_map_new();
-        context = pango_font_map_create_context(fontmap);
-    }
-    return context;
+using namespace v8;
+
+static Persistent<String> sym_x;
+static Persistent<String> sym_y;
+static Persistent<String> sym_glyph;
+static Persistent<String> sym_face;
+
+static PangoContext *context;
+
+static PangoRenderer *renderer;
+
+void InitShaping(Handle<Object> target) {
+    PangoFontMap *fontmap = pango_ft2_font_map_new();
+    context = pango_font_map_create_context(fontmap);
+    renderer = pango_sdf_get_renderer();
+
+    sym_x = Persistent<String>::New(String::NewSymbol("x"));
+    sym_y = Persistent<String>::New(String::NewSymbol("y"));
+    sym_glyph = Persistent<String>::New(String::NewSymbol("glyph"));
+    sym_face = Persistent<String>::New(String::NewSymbol("face"));
+
+    target->Set(String::NewSymbol("shape"), FunctionTemplate::New(Shaping)->GetFunction());
 }
 
 
-using namespace v8;
+
+
 
 Handle<Value> Shaping(const Arguments& args) {
     HandleScope scope;
@@ -32,35 +50,39 @@ Handle<Value> Shaping(const Arguments& args) {
     String::Utf8Value text(args[0]->ToString());
     String::Utf8Value font_stack(args[1]->ToString());
 
-    PangoContext *context = cached_context();
     PangoFontDescription *desc = pango_font_description_from_string(*font_stack);
+    pango_font_description_set_absolute_size(desc, 24 * 1024);
 
     PangoLayout *layout = pango_layout_new(context);
     pango_layout_set_markup(layout, *text, text.length());
     pango_layout_set_font_description(layout, desc);
 
-    PangoRenderer *renderer = pango_sdf_get_renderer();
+    pango_sdf_renderer_reset(PANGO_SDF_RENDERER(renderer));
     pango_renderer_draw_layout (renderer, layout, 0, 0);
-
     const PangoSDFGlyphs& glyphs = pango_sdf_renderer_get_glyphs(PANGO_SDF_RENDERER(renderer));
+
+    std::map<PangoFont *, Handle<Value> > fonts;
 
     Local<Array> result = Array::New();
     for (size_t i = 0; i < glyphs.size(); i++) {
         const PangoSDFGlyph& glyph = glyphs[i];
         Local<Object> info = Object::New();
 
-        PangoFcFont *fc_font = PANGO_FC_FONT(glyph.font);
-        FT_Face face = pango_fc_font_lock_face(fc_font);
-        info->Set(String::NewSymbol("family"), String::New(face->family_name));
-        info->Set(String::NewSymbol("style"), String::New(face->style_name));
-        pango_fc_font_unlock_face (fc_font);
+        auto pos = fonts.find(glyph.font);
+        if (pos != fonts.end()) {
+            info->Set(sym_face, pos->second);
+        } else {
+            fonts[glyph.font] = Font::New(glyph.font);
+            info->Set(sym_face, fonts[glyph.font]);
+        }
 
-        info->Set(String::NewSymbol("glyph"), Uint32::New(glyph.glyph));
-        info->Set(String::NewSymbol("x"), Number::New(glyph.x));
-        info->Set(String::NewSymbol("y"), Number::New(glyph.y));
+        info->Set(sym_glyph, Uint32::New(glyph.glyph));
+        info->Set(sym_x, Number::New(glyph.x));
+        info->Set(sym_y, Number::New(glyph.y));
 
         result->Set(i, info);
     }
+
     return scope.Close(result);
 }
 

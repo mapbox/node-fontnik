@@ -29,8 +29,13 @@ const PangoSDFGlyphs& pango_sdf_renderer_get_glyphs(PangoSDFRenderer *renderer)
 
 static void pango_sdf_renderer_draw_glyph(PangoRenderer *renderer, PangoFont *font, PangoGlyph glyph, double x, double y)
 {
-    PangoSDFGlyphs& glyphs = PANGO_SDF_RENDERER(renderer)->glyphs;
+    // TODO: store size
+    // PangoFcFont *fc_font = PANGO_FC_FONT(font);
+    // FT_Face face = pango_fc_font_lock_face(fc_font);
+    // fprintf(stderr, "%ld\n", face->size->metrics.x_scale / 2048);
+    // pango_fc_font_unlock_face(fc_font);
 
+    PangoSDFGlyphs& glyphs = PANGO_SDF_RENDERER(renderer)->glyphs;
     PangoSDFGlyph g;
     g.font = font;
     g.glyph = glyph;
@@ -42,8 +47,8 @@ static void pango_sdf_renderer_draw_glyph(PangoRenderer *renderer, PangoFont *fo
 
 static void pango_sdf_renderer_draw_trapezoid(PangoRenderer *renderer, PangoRenderPart part G_GNUC_UNUSED, double y1, double x11, double x21, double y2, double x12, double x22)
 {
+    // TODO: store underlines
     // fprintf(stderr, "trapezoid: y1:%f\tx11:%f\tx21:%f\ty2:%f\tx12:%f\tx22:%f\n", y1, x11, x21, y2, x12, x22);
-
 }
 
 static void pango_sdf_renderer_class_init(PangoSDFRendererClass *klass)
