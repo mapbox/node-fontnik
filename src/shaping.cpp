@@ -1,6 +1,6 @@
 #include "shaping.hpp"
 #include "font.hpp"
-
+#include "globals.hpp"
 
 #include <map>
 
@@ -15,13 +15,10 @@ static Persistent<String> sym_y;
 static Persistent<String> sym_glyph;
 static Persistent<String> sym_face;
 
-static PangoContext *context;
 
 static PangoRenderer *renderer;
 
 void InitShaping(Handle<Object> target) {
-    PangoFontMap *fontmap = pango_ft2_font_map_new();
-    context = pango_font_map_create_context(fontmap);
     renderer = pango_sdf_get_renderer();
 
     sym_x = Persistent<String>::New(String::NewSymbol("x"));
@@ -53,7 +50,7 @@ Handle<Value> Shaping(const Arguments& args) {
     PangoFontDescription *desc = pango_font_description_from_string(*font_stack);
     pango_font_description_set_absolute_size(desc, 24 * 1024);
 
-    PangoLayout *layout = pango_layout_new(context);
+    PangoLayout *layout = pango_layout_new(pango_context());
     pango_layout_set_markup(layout, *text, text.length());
     pango_layout_set_font_description(layout, desc);
 

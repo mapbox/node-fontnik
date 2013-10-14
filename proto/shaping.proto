@@ -1,0 +1,15 @@
+
+message label {
+    required string text = 1;
+    required uint32 stack = 2;
+    repeated uint32 faces = 3  [packed = true];
+    repeated uint32 glyphs = 4 [packed = true];
+    repeated uint32 x = 5  [packed = true];
+    repeated uint32 y = 6  [packed = true];
+}
+
+message shaping {
+    repeated string stacks = 1;
+    repeated face faces = 2;
+    repeated label labels = 3;
+}

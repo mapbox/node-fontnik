@@ -17,6 +17,7 @@ protected:
 
     static v8::Handle<v8::Value> New(const v8::Arguments& args);
     static v8::Handle<v8::Value> GetGlyph(uint32_t, const v8::AccessorInfo& info);
+    static v8::Handle<v8::Value> Metrics(v8::Local<v8::String> property, const v8::AccessorInfo &info);
 
     static const int size;
     static const int buffer;

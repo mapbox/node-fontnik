@@ -59,20 +59,6 @@ message feature {
     // also encoded as deltas to the previous position. The original
     // position is (0,0)
     repeated uint32 geometry = 4 [ packed = true ];
-
-    // A list of indices to the geometry array that specify a triangulation of
-    // this geometry. This must only exist if this feature is a polygon.
-    // These are the valid indices for the example above:
-    //     0 ==>  (3/6)
-    //     1 ==>  (8/12)
-    //     2 ==> (20/34)
-    // Indices beyond 2 are invalid, as the total number of vertices is 3.
-    // repeated sint32 triangulation = 5 [ packed = true ];
-
-    // The total number of vertices encoded in the geometry field. This is can
-    // be deduced by manually iterating through the geometry field, but we can
-    // just as well store the number to avoid the overhead on parsing.
-    // optional uint32 vertex_count = 6;
 }
 
 // Stores a glyph with metrics and optional SDF bitmap information.
@@ -99,8 +85,8 @@ message face {
 
 // Stores the shaping information for the label with a given text
 message label {
-    // The original text.
-    required string text = 1;
+    // The original value ID this shaping information is for.
+    required uint32 text = 1;
 
     // References the index of the font stack in the layer's fontstack array.
     required uint32 stack = 2;
@@ -133,19 +119,18 @@ message layer {
     // The bounding box in this tile spans from 0..4095 units
     optional uint32 extent = 5 [ default = 4096 ];
 
-    // Total vertex count in this layer.
-    optional uint32 vertex_count = 6;
-
     // Shaping information for labels contained in this tile.
-    repeated string stacks = 7;
-    repeated face faces = 8;
-    repeated label labels = 9;
+    repeated string stacks = 6;
+    repeated string faces = 7;
+    repeated label labels = 8;
 
     extensions 16 to max;
 }
 
 message tile {
     repeated layer layers = 3;
+
+    repeated face faces = 4;
 
     extensions 16 to 8191;
 }

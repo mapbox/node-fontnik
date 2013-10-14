@@ -1,9 +1,8 @@
 
 
-fontserver.glyphMetrics('Open Sans Regular', function(err, metrics) {
-    zlib.deflate(metrics);
-    send(metrics);
-});
+var metrics = new Font('Open Sans Regular').metrics;
+zlib.deflate(metrics);
+send(metrics);
 
 style = {
     layername: ['fontstack', 'fontstack']
@@ -11,6 +10,9 @@ style = {
 
 zlib.inflate(tile);
 fontserver.shapeTile(tile, style, function(err, tile) {
+});
+
+tile.shape(style, function(err, buffer) {
     zlib.deflate(tile);
     send(tile);
 });

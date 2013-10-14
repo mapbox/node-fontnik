@@ -3,6 +3,9 @@
 
 #include "font.hpp"
 #include "distmap.h"
+#include "globals.hpp"
+
+#include "metrics.pb.h"
 
 using namespace v8;
 
@@ -22,8 +25,8 @@ void Font::Init(Handle<Object> target) {
     constructor->SetClassName(name);
 
     // Add all prototype methods, getters and setters here.
-    // NODE_SET_PROTOTYPE_METHOD(constructor, "value", Value);
-    constructor->InstanceTemplate()->SetIndexedPropertyHandler(GetGlyph);
+    constructor->PrototypeTemplate()->SetAccessor(v8::String::NewSymbol("metrics"), Metrics);
+    constructor->PrototypeTemplate()->SetIndexedPropertyHandler(GetGlyph);
 
     // This has to be last, otherwise the properties won't show up on the
     // object in JavaScript.
@@ -44,14 +47,26 @@ Font::~Font() {
 }
 
 Handle<Value> Font::New(const v8::Arguments& args) {
-    if (!args.IsConstructCall() || args.Length() != 1 || !args[0]->IsExternal()) {
-        return ThrowException(Exception::TypeError(String::New("Font objects cannot be created from user land")));
+    if (!args.IsConstructCall()) {
+        return ThrowException(Exception::TypeError(String::New("Constructor must be called with new keyword")));
+    }
+    if (args.Length() != 1) {
+        return ThrowException(Exception::TypeError(String::New("Constructor must be called with new keyword")));
+    }
+
+    PangoFont *pango_font = NULL;
+    if (args[0]->IsExternal()) {
+        pango_font = (PangoFont *)External::Cast(*args[0])->Value();
     } else {
-        PangoFont *pango_font = (PangoFont *)External::Cast(*args[0])->Value();
+        String::Utf8Value font_name(args[0]->ToString());
+        PangoFontDescription *desc = pango_font_description_from_string(*font_name);
+        pango_font = pango_font_map_load_font(pango_fontmap(), pango_context(), desc);
+    }
+
+    if (pango_font) {
+        PangoFcFont *fc_font = PANGO_FC_FONT(pango_font);
         Font* font = new Font(pango_font);
         font->Wrap(args.This());
-
-        PangoFcFont *fc_font = PANGO_FC_FONT(pango_font);
         FT_Face face = pango_fc_font_lock_face(fc_font);
         args.This()->Set(String::NewSymbol("family"), String::New(face->family_name), ReadOnly);
         args.This()->Set(String::NewSymbol("style"), String::New(face->style_name), ReadOnly);
@@ -59,6 +74,8 @@ Handle<Value> Font::New(const v8::Arguments& args) {
         pango_fc_font_unlock_face(fc_font);
 
         return args.This();
+    } else {
+        return ThrowException(Exception::Error(String::New("No matching font found")));
     }
 }
 
@@ -121,4 +138,44 @@ Handle<Value> Font::GetGlyph(uint32_t glyph_index, const v8::AccessorInfo& info)
         pango_fc_font_unlock_face(fc_font);
         return scope.Close(result);
     }
+}
+
+Handle<Value> Font::Metrics(Local<String> property, const AccessorInfo &info)
+{
+    HandleScope scope;
+
+    Font* font = ObjectWrap::Unwrap<Font>(info.This());
+    PangoFcFont *fc_font = PANGO_FC_FONT(font->font);
+    FT_Face face = pango_fc_font_lock_face(fc_font);
+
+    int size = 24;
+    FT_Error error = FT_Set_Char_Size(face, 0, size * 64, 72, 72);
+    if (error) {
+        return ThrowException(Exception::Error(String::New("Could not set char size")));
+    }
+
+    // Generate a list of all glyphs
+    llmr::face metrics;
+    metrics.set_family(face->family_name);
+    metrics.set_style(face->style_name);
+
+    for (int glyph_index = 0; glyph_index < face->num_glyphs; glyph_index++) {
+        FT_Error error = FT_Load_Glyph(face, glyph_index, FT_LOAD_NO_HINTING | FT_LOAD_RENDER);
+        if (error) {
+            return ThrowException(Exception::Error(String::New("Could not load glyph")));
+        }
+
+        llmr::glyph *glyph = metrics.add_glyphs();
+        glyph->set_id(glyph_index);
+        glyph->set_width((unsigned int)face->glyph->bitmap.width);
+        glyph->set_height((unsigned int)face->glyph->bitmap.rows);
+        glyph->set_left((unsigned int)face->glyph->bitmap_left);
+        glyph->set_top((unsigned int)face->glyph->bitmap_top);
+        glyph->set_advance(face->glyph->metrics.horiAdvance / 64);
+    }
+
+    pango_fc_font_unlock_face(fc_font);
+
+    std::string serialized = metrics.SerializeAsString();
+    return scope.Close(node::Buffer::New(serialized.data(), serialized.length())->handle_);
 }

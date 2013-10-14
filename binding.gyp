@@ -5,16 +5,23 @@
       'sources': [
         'src/fontserver.cpp',
         'src/font.cpp',
+        'src/tile.cpp',
         'src/shaping.cpp',
+        'src/clipper.cpp',
         'src/sdf_renderer.cpp',
         'src/distmap.c',
-        'src/edtaa4func.c'
+        'src/edtaa4func.c',
+        'src/globals.cpp',
+        'src/metrics.pb.cc',
+        'src/vector_tile.pb.cc'
       ],
-      'include_dirs': [ # tried to pass through cflags but failed
-        '<!@(pkg-config pangoft2 --cflags-only-I | sed s/-I//g)'
+      'include_dirs': [
+        '<!@(pkg-config pangoft2 --cflags-only-I | sed s/-I//g)',
+        '<!@(pkg-config protobuf --cflags-only-I | sed s/-I//g)',
       ],
       'libraries': [
-        '<!@(pkg-config pangoft2 --libs)'
+        '<!@(pkg-config pangoft2 --libs)',
+        '<!@(pkg-config protobuf --libs)'
       ]
     }
   ]
