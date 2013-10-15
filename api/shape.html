@@ -1,0 +1,32 @@
+<meta charset="utf-8">
+<body>
+<script type="text/javascript">
+
+var canvas = document.createElement('canvas');
+canvas.width = 512;
+canvas.height = 512;
+var ctx = canvas.getContext('2d');
+
+if (window.devicePixelRatio) {
+    canvas.style.width = canvas.width + 'px';
+    canvas.style.height = canvas.height + 'px';
+    canvas.width *= devicePixelRatio;
+    canvas.height *= devicePixelRatio;
+    ctx.scale(devicePixelRatio, devicePixelRatio);
+}
+
+var text = "Foo Bar! این یک آزمایش است";
+
+ctx.fillStyle = '#ccc';
+ctx.font = "14px Open Sans, Arial Unicode MS";
+var metrics = ctx.measureText(text);
+ctx.fillRect(200, 188, metrics.width, 16);
+ctx.fillStyle = 'black';
+ctx.fillText(text, 200, 200);
+
+
+
+
+document.body.appendChild(canvas);
+
+</script>

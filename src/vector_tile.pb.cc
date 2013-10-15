@@ -483,6 +483,8 @@ const int feature::kIdFieldNumber;
 const int feature::kTagsFieldNumber;
 const int feature::kTypeFieldNumber;
 const int feature::kGeometryFieldNumber;
+const int feature::kTriangulationFieldNumber;
+const int feature::kVertexCountFieldNumber;
 #endif  // !_MSC_VER
 
 feature::feature()
@@ -503,6 +505,7 @@ void feature::SharedCtor() {
   _cached_size_ = 0;
   id_ = GOOGLE_ULONGLONG(0);
   type_ = 0;
+  vertex_count_ = 0u;
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
 }
 
@@ -543,9 +546,11 @@ void feature::Clear() {
   if (_has_bits_[0 / 32] & (0xffu << (0 % 32))) {
     id_ = GOOGLE_ULONGLONG(0);
     type_ = 0;
+    vertex_count_ = 0u;
   }
   tags_.Clear();
   geometry_.Clear();
+  triangulation_.Clear();
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
 }
 
@@ -627,6 +632,43 @@ bool feature::MergePartialFromCodedStream(
         } else {
           goto handle_uninterpreted;
         }
+        if (input->ExpectTag(42)) goto parse_triangulation;
+        break;
+      }
+
+      // repeated sint32 triangulation = 5 [packed = true];
+      case 5: {
+        if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
+            ::google::protobuf::internal::WireFormatLite::WIRETYPE_LENGTH_DELIMITED) {
+         parse_triangulation:
+          DO_((::google::protobuf::internal::WireFormatLite::ReadPackedPrimitive<
+                   ::google::protobuf::int32, ::google::protobuf::internal::WireFormatLite::TYPE_SINT32>(
+                 input, this->mutable_triangulation())));
+        } else if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag)
+                   == ::google::protobuf::internal::WireFormatLite::
+                      WIRETYPE_VARINT) {
+          DO_((::google::protobuf::internal::WireFormatLite::ReadRepeatedPrimitiveNoInline<
+                   ::google::protobuf::int32, ::google::protobuf::internal::WireFormatLite::TYPE_SINT32>(
+                 1, 42, input, this->mutable_triangulation())));
+        } else {
+          goto handle_uninterpreted;
+        }
+        if (input->ExpectTag(48)) goto parse_vertex_count;
+        break;
+      }
+
+      // optional uint32 vertex_count = 6;
+      case 6: {
+        if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
+            ::google::protobuf::internal::WireFormatLite::WIRETYPE_VARINT) {
+         parse_vertex_count:
+          DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
+                   ::google::protobuf::uint32, ::google::protobuf::internal::WireFormatLite::TYPE_UINT32>(
+                 input, &vertex_count_)));
+          set_has_vertex_count();
+        } else {
+          goto handle_uninterpreted;
+        }
         if (input->ExpectAtEnd()) return true;
         break;
       }
@@ -679,6 +721,21 @@ void feature::SerializeWithCachedSizes(
       this->geometry(i), output);
   }
 
+  // repeated sint32 triangulation = 5 [packed = true];
+  if (this->triangulation_size() > 0) {
+    ::google::protobuf::internal::WireFormatLite::WriteTag(5, ::google::protobuf::internal::WireFormatLite::WIRETYPE_LENGTH_DELIMITED, output);
+    output->WriteVarint32(_triangulation_cached_byte_size_);
+  }
+  for (int i = 0; i < this->triangulation_size(); i++) {
+    ::google::protobuf::internal::WireFormatLite::WriteSInt32NoTag(
+      this->triangulation(i), output);
+  }
+
+  // optional uint32 vertex_count = 6;
+  if (has_vertex_count()) {
+    ::google::protobuf::internal::WireFormatLite::WriteUInt32(6, this->vertex_count(), output);
+  }
+
 }
 
 int feature::ByteSize() const {
@@ -696,6 +753,13 @@ int feature::ByteSize() const {
     if (has_type()) {
       total_size += 1 +
         ::google::protobuf::internal::WireFormatLite::EnumSize(this->type());
+    }
+
+    // optional uint32 vertex_count = 6;
+    if (has_vertex_count()) {
+      total_size += 1 +
+        ::google::protobuf::internal::WireFormatLite::UInt32Size(
+          this->vertex_count());
     }
 
   }
@@ -733,6 +797,23 @@ int feature::ByteSize() const {
     total_size += data_size;
   }
 
+  // repeated sint32 triangulation = 5 [packed = true];
+  {
+    int data_size = 0;
+    for (int i = 0; i < this->triangulation_size(); i++) {
+      data_size += ::google::protobuf::internal::WireFormatLite::
+        SInt32Size(this->triangulation(i));
+    }
+    if (data_size > 0) {
+      total_size += 1 +
+        ::google::protobuf::internal::WireFormatLite::Int32Size(data_size);
+    }
+    GOOGLE_SAFE_CONCURRENT_WRITES_BEGIN();
+    _triangulation_cached_byte_size_ = data_size;
+    GOOGLE_SAFE_CONCURRENT_WRITES_END();
+    total_size += data_size;
+  }
+
   GOOGLE_SAFE_CONCURRENT_WRITES_BEGIN();
   _cached_size_ = total_size;
   GOOGLE_SAFE_CONCURRENT_WRITES_END();
@@ -748,12 +829,16 @@ void feature::MergeFrom(const feature& from) {
   GOOGLE_CHECK_NE(&from, this);
   tags_.MergeFrom(from.tags_);
   geometry_.MergeFrom(from.geometry_);
+  triangulation_.MergeFrom(from.triangulation_);
   if (from._has_bits_[0 / 32] & (0xffu << (0 % 32))) {
     if (from.has_id()) {
       set_id(from.id());
     }
     if (from.has_type()) {
       set_type(from.type());
+    }
+    if (from.has_vertex_count()) {
+      set_vertex_count(from.vertex_count());
     }
   }
 }
@@ -775,6 +860,8 @@ void feature::Swap(feature* other) {
     tags_.Swap(&other->tags_);
     std::swap(type_, other->type_);
     geometry_.Swap(&other->geometry_);
+    triangulation_.Swap(&other->triangulation_);
+    std::swap(vertex_count_, other->vertex_count_);
     std::swap(_has_bits_[0], other->_has_bits_[0]);
     std::swap(_cached_size_, other->_cached_size_);
   }
@@ -1840,9 +1927,10 @@ const int layer::kFeaturesFieldNumber;
 const int layer::kKeysFieldNumber;
 const int layer::kValuesFieldNumber;
 const int layer::kExtentFieldNumber;
-const int layer::kStacksFieldNumber;
+const int layer::kVertexCountFieldNumber;
 const int layer::kFacesFieldNumber;
 const int layer::kLabelsFieldNumber;
+const int layer::kStacksFieldNumber;
 #endif  // !_MSC_VER
 
 layer::layer()
@@ -1864,6 +1952,7 @@ void layer::SharedCtor() {
   version_ = 1u;
   name_ = const_cast< ::std::string*>(&::google::protobuf::internal::kEmptyString);
   extent_ = 4096u;
+  vertex_count_ = 0u;
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
 }
 
@@ -1913,13 +2002,14 @@ void layer::Clear() {
       }
     }
     extent_ = 4096u;
+    vertex_count_ = 0u;
   }
   features_.Clear();
   keys_.Clear();
   values_.Clear();
-  stacks_.Clear();
   faces_.Clear();
   labels_.Clear();
+  stacks_.Clear();
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
 }
 
@@ -1999,21 +2089,22 @@ bool layer::MergePartialFromCodedStream(
         } else {
           goto handle_uninterpreted;
         }
-        if (input->ExpectTag(50)) goto parse_stacks;
+        if (input->ExpectTag(48)) goto parse_vertex_count;
         break;
       }
 
-      // repeated string stacks = 6;
+      // optional uint32 vertex_count = 6;
       case 6: {
         if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
-            ::google::protobuf::internal::WireFormatLite::WIRETYPE_LENGTH_DELIMITED) {
-         parse_stacks:
-          DO_(::google::protobuf::internal::WireFormatLite::ReadString(
-                input, this->add_stacks()));
+            ::google::protobuf::internal::WireFormatLite::WIRETYPE_VARINT) {
+         parse_vertex_count:
+          DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
+                   ::google::protobuf::uint32, ::google::protobuf::internal::WireFormatLite::TYPE_UINT32>(
+                 input, &vertex_count_)));
+          set_has_vertex_count();
         } else {
           goto handle_uninterpreted;
         }
-        if (input->ExpectTag(50)) goto parse_stacks;
         if (input->ExpectTag(58)) goto parse_faces;
         break;
       }
@@ -2044,6 +2135,21 @@ bool layer::MergePartialFromCodedStream(
           goto handle_uninterpreted;
         }
         if (input->ExpectTag(66)) goto parse_labels;
+        if (input->ExpectTag(74)) goto parse_stacks;
+        break;
+      }
+
+      // repeated string stacks = 9;
+      case 9: {
+        if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
+            ::google::protobuf::internal::WireFormatLite::WIRETYPE_LENGTH_DELIMITED) {
+         parse_stacks:
+          DO_(::google::protobuf::internal::WireFormatLite::ReadString(
+                input, this->add_stacks()));
+        } else {
+          goto handle_uninterpreted;
+        }
+        if (input->ExpectTag(74)) goto parse_stacks;
         if (input->ExpectTag(120)) goto parse_version;
         break;
       }
@@ -2118,10 +2224,9 @@ void layer::SerializeWithCachedSizes(
     ::google::protobuf::internal::WireFormatLite::WriteUInt32(5, this->extent(), output);
   }
 
-  // repeated string stacks = 6;
-  for (int i = 0; i < this->stacks_size(); i++) {
-    ::google::protobuf::internal::WireFormatLite::WriteString(
-      6, this->stacks(i), output);
+  // optional uint32 vertex_count = 6;
+  if (has_vertex_count()) {
+    ::google::protobuf::internal::WireFormatLite::WriteUInt32(6, this->vertex_count(), output);
   }
 
   // repeated string faces = 7;
@@ -2134,6 +2239,12 @@ void layer::SerializeWithCachedSizes(
   for (int i = 0; i < this->labels_size(); i++) {
     ::google::protobuf::internal::WireFormatLite::WriteMessage(
       8, this->labels(i), output);
+  }
+
+  // repeated string stacks = 9;
+  for (int i = 0; i < this->stacks_size(); i++) {
+    ::google::protobuf::internal::WireFormatLite::WriteString(
+      9, this->stacks(i), output);
   }
 
   // required uint32 version = 15 [default = 1];
@@ -2172,6 +2283,13 @@ int layer::ByteSize() const {
           this->extent());
     }
 
+    // optional uint32 vertex_count = 6;
+    if (has_vertex_count()) {
+      total_size += 1 +
+        ::google::protobuf::internal::WireFormatLite::UInt32Size(
+          this->vertex_count());
+    }
+
   }
   // repeated .llmr.vector.feature features = 2;
   total_size += 1 * this->features_size();
@@ -2196,13 +2314,6 @@ int layer::ByteSize() const {
         this->values(i));
   }
 
-  // repeated string stacks = 6;
-  total_size += 1 * this->stacks_size();
-  for (int i = 0; i < this->stacks_size(); i++) {
-    total_size += ::google::protobuf::internal::WireFormatLite::StringSize(
-      this->stacks(i));
-  }
-
   // repeated string faces = 7;
   total_size += 1 * this->faces_size();
   for (int i = 0; i < this->faces_size(); i++) {
@@ -2216,6 +2327,13 @@ int layer::ByteSize() const {
     total_size +=
       ::google::protobuf::internal::WireFormatLite::MessageSizeNoVirtual(
         this->labels(i));
+  }
+
+  // repeated string stacks = 9;
+  total_size += 1 * this->stacks_size();
+  for (int i = 0; i < this->stacks_size(); i++) {
+    total_size += ::google::protobuf::internal::WireFormatLite::StringSize(
+      this->stacks(i));
   }
 
   total_size += _extensions_.ByteSize();
@@ -2236,9 +2354,9 @@ void layer::MergeFrom(const layer& from) {
   features_.MergeFrom(from.features_);
   keys_.MergeFrom(from.keys_);
   values_.MergeFrom(from.values_);
-  stacks_.MergeFrom(from.stacks_);
   faces_.MergeFrom(from.faces_);
   labels_.MergeFrom(from.labels_);
+  stacks_.MergeFrom(from.stacks_);
   if (from._has_bits_[0 / 32] & (0xffu << (0 % 32))) {
     if (from.has_version()) {
       set_version(from.version());
@@ -2248,6 +2366,9 @@ void layer::MergeFrom(const layer& from) {
     }
     if (from.has_extent()) {
       set_extent(from.extent());
+    }
+    if (from.has_vertex_count()) {
+      set_vertex_count(from.vertex_count());
     }
   }
   _extensions_.MergeFrom(from._extensions_);
@@ -2280,9 +2401,10 @@ void layer::Swap(layer* other) {
     keys_.Swap(&other->keys_);
     values_.Swap(&other->values_);
     std::swap(extent_, other->extent_);
-    stacks_.Swap(&other->stacks_);
+    std::swap(vertex_count_, other->vertex_count_);
     faces_.Swap(&other->faces_);
     labels_.Swap(&other->labels_);
+    stacks_.Swap(&other->stacks_);
     std::swap(_has_bits_[0], other->_has_bits_[0]);
     std::swap(_cached_size_, other->_cached_size_);
     _extensions_.Swap(&other->_extensions_);

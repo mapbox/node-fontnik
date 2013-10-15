@@ -46,8 +46,6 @@ function workflow(finalize) {
     });
 }
 
-// seriali
-
 
 
 var count = 0;

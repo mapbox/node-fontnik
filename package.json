@@ -1,5 +1,12 @@
 {
     "name": "fontserver",
     "version": "0.0.1",
-    "main": "./build/Release/fontserver.node"
+    "main": "./build/Release/fontserver.node",
+
+    "dependencies": {
+        "async": "~0.2.9",
+        "express": "~3.4.0",
+        "mkdirp": "~0.3.5",
+        "request": "~2.27.0"
+    }
 }

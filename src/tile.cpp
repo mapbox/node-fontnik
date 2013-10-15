@@ -227,21 +227,32 @@ void Tile::AsyncSimplify(uv_work_t* req) {
     pthread_mutex_lock(&baton->tile->mutex);
 
     llmr::vector::tile& tile = baton->tile->tile;
+    llmr::vector::tile new_tile;
 
     for (int i = 0; i < tile.layers_size(); i++) {
-        if (!tile.layers(i).features_size()) {
+        const llmr::vector::layer& layer = tile.layers(i);
+        if (!layer.features_size()) {
             continue;
         }
 
-        llmr::vector::layer *layer = tile.mutable_layers(i);
+        llmr::vector::layer *new_layer = new_tile.add_layers();
+        new_layer->set_version(2);
+
+        // Copy over information
+        new_layer->set_name(layer.name());
+        *new_layer->mutable_keys() = layer.keys();
+        *new_layer->mutable_values() = layer.values();
+        if (layer.has_extent()) {
+            new_layer->set_extent(layer.extent());
+        }
 
         // Our water polygons contain lots of duplicates
-        if (layer->name() == "water") {
+        if (layer.name() == "water") {
             Clipper outerClipper;
             outerClipper.ForceSimple(true);
 
-            for (int j = 0; j < layer->features_size(); j++) {
-                const llmr::vector::feature& feature = layer->features(j);
+            for (int j = 0; j < layer.features_size(); j++) {
+                const llmr::vector::feature& feature = layer.features(j);
                 Polygons polygons = load_geometry(feature.geometry());
                 Clipper clipper;
                 clipper.AddPolygons(polygons, ptSubject);
@@ -253,38 +264,53 @@ void Tile::AsyncSimplify(uv_work_t* req) {
             Polygons polygons;
             outerClipper.Execute(ctUnion, polygons, pftNonZero, pftNonZero);
 
-            layer->clear_features();
             if (polygons.size()) {
-                llmr::vector::feature *new_feature = layer->add_features();
-                encode_geometry(*new_feature, polygons, true);
+                llmr::vector::feature *new_feature = new_layer->add_features();
+                // encode polygons into feature
+                uint32_t count = encode_geometry(*new_feature, polygons, true);
+                new_feature->set_vertex_count(count);
             }
         } else {
-            // Regular layer
-            for (int j = 0; j < layer->features_size(); j++) {
-                // Do not alter point features.
-                if (layer->features(j).type() == 1) {
+            for (int j = 0; j < layer.features_size(); j++) {
+                const llmr::vector::feature& feature = layer.features(j);
+
+                // Copy point features verbatim.
+                if (feature.type() == 1) {
+                    llmr::vector::feature *new_feature = new_layer->add_features();
+                    *new_feature = feature;
                     continue;
                 }
 
-                llmr::vector::feature *feature = layer->mutable_features(j);
-
-                Polygons polygons = load_geometry(feature->geometry());
-                feature->clear_geometry();
-                bool is_polygon = feature->type() == llmr::vector::Polygon;
+                Polygons polygons = load_geometry(feature.geometry());
+                bool is_polygon = feature.type() == llmr::vector::Polygon;
 
                 if (is_polygon) {
+                    // CleanPolygons(polygons, polygons, 0.001);
+
                     Clipper clipper;
                     clipper.ForceSimple(true);
                     clipper.AddPolygons(polygons, ptSubject);
                     clipper.Execute(ctUnion, polygons);
+
+                    // SimplifyPolygons(polygons);
                 }
 
                 if (polygons.size()) {
-                    encode_geometry(*feature, polygons, is_polygon);
+                    llmr::vector::feature *new_feature = new_layer->add_features();
+
+                    // Copy over information
+                    if (feature.has_id()) new_feature->set_id(feature.id());
+                    if (feature.has_type()) new_feature->set_type(feature.type());
+                    *new_feature->mutable_tags() = feature.tags();
+
+                    // encode polygons into feature
+                    encode_geometry(*new_feature, polygons, is_polygon);
                 }
             }
         }
     }
+
+    tile = new_tile;
 
     pthread_mutex_unlock(&baton->tile->mutex);
 }
@@ -476,9 +502,6 @@ public:
 };
 
 void Tile::AsyncShape(uv_work_t* req) {
-    fprintf(stderr, "thread ID: %ld\n", pthread_self());
-
-
     ShapeBaton* baton = static_cast<ShapeBaton*>(req->data);
 
     pthread_mutex_lock(&baton->tile->mutex);
@@ -548,7 +571,6 @@ void Tile::AsyncShape(uv_work_t* req) {
                 for (size_t j = 0; j < glyphs.size(); j++) {
                     const PangoSDFGlyph& glyph = glyphs[j];
 
-
                     // Try to find whether this font has already been used
                     // in this tile.
 
@@ -590,6 +612,9 @@ void Tile::AsyncShape(uv_work_t* req) {
             // note: we don't delete the TileFace objects here because they
             // are 'owned' by the global faces map and deleted later on.
         }
+
+        // Insert FAKE stacks
+        mutable_layer->add_stacks(baton->fontstack);
     }
 
     // Insert SDF glyphs + bitmaps
@@ -624,6 +649,7 @@ void Tile::AsyncShape(uv_work_t* req) {
 
         delete face;
     }
+
 
     pthread_mutex_unlock(&baton->tile->mutex);
 }

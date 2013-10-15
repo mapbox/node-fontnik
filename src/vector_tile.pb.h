@@ -296,12 +296,33 @@ class feature : public ::google::protobuf::MessageLite {
   inline ::google::protobuf::RepeatedField< ::google::protobuf::uint32 >*
       mutable_geometry();
 
+  // repeated sint32 triangulation = 5 [packed = true];
+  inline int triangulation_size() const;
+  inline void clear_triangulation();
+  static const int kTriangulationFieldNumber = 5;
+  inline ::google::protobuf::int32 triangulation(int index) const;
+  inline void set_triangulation(int index, ::google::protobuf::int32 value);
+  inline void add_triangulation(::google::protobuf::int32 value);
+  inline const ::google::protobuf::RepeatedField< ::google::protobuf::int32 >&
+      triangulation() const;
+  inline ::google::protobuf::RepeatedField< ::google::protobuf::int32 >*
+      mutable_triangulation();
+
+  // optional uint32 vertex_count = 6;
+  inline bool has_vertex_count() const;
+  inline void clear_vertex_count();
+  static const int kVertexCountFieldNumber = 6;
+  inline ::google::protobuf::uint32 vertex_count() const;
+  inline void set_vertex_count(::google::protobuf::uint32 value);
+
   // @@protoc_insertion_point(class_scope:llmr.vector.feature)
  private:
   inline void set_has_id();
   inline void clear_has_id();
   inline void set_has_type();
   inline void clear_has_type();
+  inline void set_has_vertex_count();
+  inline void clear_has_vertex_count();
 
   ::google::protobuf::uint64 id_;
   ::google::protobuf::RepeatedField< ::google::protobuf::uint32 > tags_;
@@ -309,9 +330,12 @@ class feature : public ::google::protobuf::MessageLite {
   ::google::protobuf::RepeatedField< ::google::protobuf::uint32 > geometry_;
   mutable int _geometry_cached_byte_size_;
   int type_;
+  ::google::protobuf::uint32 vertex_count_;
+  ::google::protobuf::RepeatedField< ::google::protobuf::int32 > triangulation_;
+  mutable int _triangulation_cached_byte_size_;
 
   mutable int _cached_size_;
-  ::google::protobuf::uint32 _has_bits_[(4 + 31) / 32];
+  ::google::protobuf::uint32 _has_bits_[(6 + 31) / 32];
 
   #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
   friend void  protobuf_AddDesc_vector_5ftile_2eproto_impl();
@@ -858,21 +882,12 @@ class layer : public ::google::protobuf::MessageLite {
   inline ::google::protobuf::uint32 extent() const;
   inline void set_extent(::google::protobuf::uint32 value);
 
-  // repeated string stacks = 6;
-  inline int stacks_size() const;
-  inline void clear_stacks();
-  static const int kStacksFieldNumber = 6;
-  inline const ::std::string& stacks(int index) const;
-  inline ::std::string* mutable_stacks(int index);
-  inline void set_stacks(int index, const ::std::string& value);
-  inline void set_stacks(int index, const char* value);
-  inline void set_stacks(int index, const char* value, size_t size);
-  inline ::std::string* add_stacks();
-  inline void add_stacks(const ::std::string& value);
-  inline void add_stacks(const char* value);
-  inline void add_stacks(const char* value, size_t size);
-  inline const ::google::protobuf::RepeatedPtrField< ::std::string>& stacks() const;
-  inline ::google::protobuf::RepeatedPtrField< ::std::string>* mutable_stacks();
+  // optional uint32 vertex_count = 6;
+  inline bool has_vertex_count() const;
+  inline void clear_vertex_count();
+  static const int kVertexCountFieldNumber = 6;
+  inline ::google::protobuf::uint32 vertex_count() const;
+  inline void set_vertex_count(::google::protobuf::uint32 value);
 
   // repeated string faces = 7;
   inline int faces_size() const;
@@ -902,6 +917,22 @@ class layer : public ::google::protobuf::MessageLite {
   inline ::google::protobuf::RepeatedPtrField< ::llmr::vector::label >*
       mutable_labels();
 
+  // repeated string stacks = 9;
+  inline int stacks_size() const;
+  inline void clear_stacks();
+  static const int kStacksFieldNumber = 9;
+  inline const ::std::string& stacks(int index) const;
+  inline ::std::string* mutable_stacks(int index);
+  inline void set_stacks(int index, const ::std::string& value);
+  inline void set_stacks(int index, const char* value);
+  inline void set_stacks(int index, const char* value, size_t size);
+  inline ::std::string* add_stacks();
+  inline void add_stacks(const ::std::string& value);
+  inline void add_stacks(const char* value);
+  inline void add_stacks(const char* value, size_t size);
+  inline const ::google::protobuf::RepeatedPtrField< ::std::string>& stacks() const;
+  inline ::google::protobuf::RepeatedPtrField< ::std::string>* mutable_stacks();
+
   GOOGLE_PROTOBUF_EXTENSION_ACCESSORS(layer)
   // @@protoc_insertion_point(class_scope:llmr.vector.layer)
  private:
@@ -911,6 +942,8 @@ class layer : public ::google::protobuf::MessageLite {
   inline void clear_has_name();
   inline void set_has_extent();
   inline void clear_has_extent();
+  inline void set_has_vertex_count();
+  inline void clear_has_vertex_count();
 
   ::google::protobuf::internal::ExtensionSet _extensions_;
 
@@ -920,12 +953,13 @@ class layer : public ::google::protobuf::MessageLite {
   ::google::protobuf::uint32 extent_;
   ::google::protobuf::RepeatedPtrField< ::std::string> keys_;
   ::google::protobuf::RepeatedPtrField< ::llmr::vector::value > values_;
-  ::google::protobuf::RepeatedPtrField< ::std::string> stacks_;
   ::google::protobuf::RepeatedPtrField< ::std::string> faces_;
   ::google::protobuf::RepeatedPtrField< ::llmr::vector::label > labels_;
+  ::google::protobuf::RepeatedPtrField< ::std::string> stacks_;
+  ::google::protobuf::uint32 vertex_count_;
 
   mutable int _cached_size_;
-  ::google::protobuf::uint32 _has_bits_[(9 + 31) / 32];
+  ::google::protobuf::uint32 _has_bits_[(10 + 31) / 32];
 
   #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
   friend void  protobuf_AddDesc_vector_5ftile_2eproto_impl();
@@ -1346,6 +1380,53 @@ feature::geometry() const {
 inline ::google::protobuf::RepeatedField< ::google::protobuf::uint32 >*
 feature::mutable_geometry() {
   return &geometry_;
+}
+
+// repeated sint32 triangulation = 5 [packed = true];
+inline int feature::triangulation_size() const {
+  return triangulation_.size();
+}
+inline void feature::clear_triangulation() {
+  triangulation_.Clear();
+}
+inline ::google::protobuf::int32 feature::triangulation(int index) const {
+  return triangulation_.Get(index);
+}
+inline void feature::set_triangulation(int index, ::google::protobuf::int32 value) {
+  triangulation_.Set(index, value);
+}
+inline void feature::add_triangulation(::google::protobuf::int32 value) {
+  triangulation_.Add(value);
+}
+inline const ::google::protobuf::RepeatedField< ::google::protobuf::int32 >&
+feature::triangulation() const {
+  return triangulation_;
+}
+inline ::google::protobuf::RepeatedField< ::google::protobuf::int32 >*
+feature::mutable_triangulation() {
+  return &triangulation_;
+}
+
+// optional uint32 vertex_count = 6;
+inline bool feature::has_vertex_count() const {
+  return (_has_bits_[0] & 0x00000020u) != 0;
+}
+inline void feature::set_has_vertex_count() {
+  _has_bits_[0] |= 0x00000020u;
+}
+inline void feature::clear_has_vertex_count() {
+  _has_bits_[0] &= ~0x00000020u;
+}
+inline void feature::clear_vertex_count() {
+  vertex_count_ = 0u;
+  clear_has_vertex_count();
+}
+inline ::google::protobuf::uint32 feature::vertex_count() const {
+  return vertex_count_;
+}
+inline void feature::set_vertex_count(::google::protobuf::uint32 value) {
+  set_has_vertex_count();
+  vertex_count_ = value;
 }
 
 // -------------------------------------------------------------------
@@ -2083,48 +2164,26 @@ inline void layer::set_extent(::google::protobuf::uint32 value) {
   extent_ = value;
 }
 
-// repeated string stacks = 6;
-inline int layer::stacks_size() const {
-  return stacks_.size();
+// optional uint32 vertex_count = 6;
+inline bool layer::has_vertex_count() const {
+  return (_has_bits_[0] & 0x00000040u) != 0;
 }
-inline void layer::clear_stacks() {
-  stacks_.Clear();
+inline void layer::set_has_vertex_count() {
+  _has_bits_[0] |= 0x00000040u;
 }
-inline const ::std::string& layer::stacks(int index) const {
-  return stacks_.Get(index);
+inline void layer::clear_has_vertex_count() {
+  _has_bits_[0] &= ~0x00000040u;
 }
-inline ::std::string* layer::mutable_stacks(int index) {
-  return stacks_.Mutable(index);
+inline void layer::clear_vertex_count() {
+  vertex_count_ = 0u;
+  clear_has_vertex_count();
 }
-inline void layer::set_stacks(int index, const ::std::string& value) {
-  stacks_.Mutable(index)->assign(value);
+inline ::google::protobuf::uint32 layer::vertex_count() const {
+  return vertex_count_;
 }
-inline void layer::set_stacks(int index, const char* value) {
-  stacks_.Mutable(index)->assign(value);
-}
-inline void layer::set_stacks(int index, const char* value, size_t size) {
-  stacks_.Mutable(index)->assign(
-    reinterpret_cast<const char*>(value), size);
-}
-inline ::std::string* layer::add_stacks() {
-  return stacks_.Add();
-}
-inline void layer::add_stacks(const ::std::string& value) {
-  stacks_.Add()->assign(value);
-}
-inline void layer::add_stacks(const char* value) {
-  stacks_.Add()->assign(value);
-}
-inline void layer::add_stacks(const char* value, size_t size) {
-  stacks_.Add()->assign(reinterpret_cast<const char*>(value), size);
-}
-inline const ::google::protobuf::RepeatedPtrField< ::std::string>&
-layer::stacks() const {
-  return stacks_;
-}
-inline ::google::protobuf::RepeatedPtrField< ::std::string>*
-layer::mutable_stacks() {
-  return &stacks_;
+inline void layer::set_vertex_count(::google::protobuf::uint32 value) {
+  set_has_vertex_count();
+  vertex_count_ = value;
 }
 
 // repeated string faces = 7;
@@ -2194,6 +2253,50 @@ layer::labels() const {
 inline ::google::protobuf::RepeatedPtrField< ::llmr::vector::label >*
 layer::mutable_labels() {
   return &labels_;
+}
+
+// repeated string stacks = 9;
+inline int layer::stacks_size() const {
+  return stacks_.size();
+}
+inline void layer::clear_stacks() {
+  stacks_.Clear();
+}
+inline const ::std::string& layer::stacks(int index) const {
+  return stacks_.Get(index);
+}
+inline ::std::string* layer::mutable_stacks(int index) {
+  return stacks_.Mutable(index);
+}
+inline void layer::set_stacks(int index, const ::std::string& value) {
+  stacks_.Mutable(index)->assign(value);
+}
+inline void layer::set_stacks(int index, const char* value) {
+  stacks_.Mutable(index)->assign(value);
+}
+inline void layer::set_stacks(int index, const char* value, size_t size) {
+  stacks_.Mutable(index)->assign(
+    reinterpret_cast<const char*>(value), size);
+}
+inline ::std::string* layer::add_stacks() {
+  return stacks_.Add();
+}
+inline void layer::add_stacks(const ::std::string& value) {
+  stacks_.Add()->assign(value);
+}
+inline void layer::add_stacks(const char* value) {
+  stacks_.Add()->assign(value);
+}
+inline void layer::add_stacks(const char* value, size_t size) {
+  stacks_.Add()->assign(reinterpret_cast<const char*>(value), size);
+}
+inline const ::google::protobuf::RepeatedPtrField< ::std::string>&
+layer::stacks() const {
+  return stacks_;
+}
+inline ::google::protobuf::RepeatedPtrField< ::std::string>*
+layer::mutable_stacks() {
+  return &stacks_;
 }
 
 // -------------------------------------------------------------------
