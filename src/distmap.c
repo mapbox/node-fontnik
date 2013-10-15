@@ -22,8 +22,8 @@ make_distance_map(unsigned char *img,
 
     // Convert img into double (data)
     double img_min = 255, img_max = -255;
-    for (int y = 0; y < src_height; y++) {
-        for (int x = 0; x < src_width; x++) {
+    for (unsigned y = 0; y < src_height; y++) {
+        for (unsigned x = 0; x < src_width; x++) {
             double v = img[y * src_width + x];
             data[width * (y + buffer) + buffer + x] = v;
             if (v > img_max) {
@@ -35,8 +35,8 @@ make_distance_map(unsigned char *img,
         }
     }
     // Rescale image levels between 0 and 1
-    for (int y = 0; y < src_height; y++) {
-        for (int x = 0; x < src_width; x++) {
+    for (unsigned y = 0; y < src_height; y++) {
+        for (unsigned x = 0; x < src_width; x++) {
             data[width * (y + buffer) + buffer + x] = (img[y * src_width + x] - img_min) / img_max;
         }
     }

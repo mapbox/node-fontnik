@@ -46,7 +46,6 @@
 #include <cstring>
 #include <cstdlib>
 #include <ostream>
-#include <assert.h>
 
 namespace ClipperLib {
 
@@ -248,7 +247,7 @@ class Int128
     Int128 operator/ (const Int128 &rhs) const
     {
       if (rhs.lo == 0 && rhs.hi == 0)
-        assert(!"Int128 operator/: divide by zero");
+        throw "Int128 operator/: divide by zero";
 
       bool negate = (rhs.hi < 0) != (hi < 0);
       Int128 dividend = *this;
@@ -355,7 +354,7 @@ bool FullRangeNeeded(const Polygon &pts)
   for (Polygon::size_type i = 0; i <  pts.size(); ++i)
   {
     if (Abs(pts[i].X) > hiRange || Abs(pts[i].Y) > hiRange)
-        assert(!"Coordinate exceeds range bounds.");
+        throw "Coordinate exceeds range bounds.";
       else if (Abs(pts[i].X) > loRange || Abs(pts[i].Y) > loRange)
         result = true;
   }
@@ -824,7 +823,7 @@ bool Pt3IsBetweenPt1AndPt2(const IntPoint pt1,
 
 OutPt* InsertPolyPtBetween(OutPt* p1, OutPt* p2, const IntPoint pt)
 {
-  if (p1 == p2) assert(!"JoinError");
+  if (p1 == p2) throw "JoinError";
   OutPt* result = new OutPt;
   result->pt = pt;
   if (p2 == p1->next)
@@ -878,7 +877,7 @@ bool ClipperBase::AddPolygon( const Polygon &pg, PolyType polyType)
     if (Abs(pg[i].X) > maxVal || Abs(pg[i].Y) > maxVal)
     {
       if (Abs(pg[i].X) > hiRange || Abs(pg[i].Y) > hiRange)
-        assert(!"Coordinate exceeds range bounds");
+        throw "Coordinate exceeds range bounds";
       maxVal = hiRange;
       m_UseFullRange = true;
     }
@@ -1684,7 +1683,7 @@ void Clipper::InsertLocalMinimaIntoAEL(const long64 botY)
       IntPoint pt = IntPoint(lb->xcurr, lb->ycurr);
       while( e != rb )
       {
-        if(!e) assert(!"InsertLocalMinimaIntoAEL: missing rightbound!");
+        if(!e) throw clipperException("InsertLocalMinimaIntoAEL: missing rightbound!");
         //nb: For calculating winding counts etc, IntersectEdges() assumes
         //that param1 will be to the right of param2 ABOVE the intersection ...
         IntersectEdges( rb , e , pt , ipNone); //order important here
@@ -2281,7 +2280,7 @@ void Clipper::ProcessHorizontal(TEdge *horzEdge)
           IntersectEdges(horzEdge, e, IntPoint(e->xcurr, horzEdge->ycurr), ipNone);
         else
           IntersectEdges(e, horzEdge, IntPoint(e->xcurr, horzEdge->ycurr), ipNone);
-        if (eMaxPair->outIdx >= 0) assert(!"ProcessHorizontal error");
+        if (eMaxPair->outIdx >= 0) throw clipperException("ProcessHorizontal error");
         return;
       }
       else if( NEAR_EQUAL(e->dx, HORIZONTAL) &&  !IsMinima(e) && !(e->xcurr > e->xtop) )
@@ -2325,7 +2324,7 @@ void Clipper::ProcessHorizontal(TEdge *horzEdge)
     if ( horzEdge->outIdx >= 0 )
       IntersectEdges( horzEdge, eMaxPair,
       IntPoint(horzEdge->xtop, horzEdge->ycurr), ipBoth);
-    if (eMaxPair->outIdx >= 0) assert(!"ProcessHorizontal error");
+    if (eMaxPair->outIdx >= 0) throw clipperException("ProcessHorizontal error");
     DeleteFromAEL(eMaxPair);
     DeleteFromAEL(horzEdge);
   }
@@ -2334,7 +2333,8 @@ void Clipper::ProcessHorizontal(TEdge *horzEdge)
 
 void Clipper::UpdateEdgeIntoAEL(TEdge *&e)
 {
-  if( !e->nextInLML ) assert(!"UpdateEdgeIntoAEL: invalid call");
+  if( !e->nextInLML ) throw
+    clipperException("UpdateEdgeIntoAEL: invalid call");
   TEdge* AelPrev = e->prevInAEL;
   TEdge* AelNext = e->nextInAEL;
   e->nextInLML->outIdx = e->outIdx;
@@ -2364,7 +2364,7 @@ bool Clipper::ProcessIntersections(const long64 botY, const long64 topY)
   catch(...) {
     m_SortedEdges = 0;
     DisposeIntersectNodes();
-    assert(!"ProcessIntersections error");
+    throw clipperException("ProcessIntersections error");
   }
   m_SortedEdges = 0;
   return true;
@@ -2410,7 +2410,7 @@ void Clipper::BuildIntersectList(const long64 botY, const long64 topY)
       if(e->xcurr > eNext->xcurr)
       {
         if (!IntersectPoint(*e, *eNext, pt, m_UseFullRange) && e->xcurr > eNext->xcurr +1)
-          assert(!"Intersection error");
+          throw clipperException("Intersection error");
         if (pt.Y > botY)
         {
             pt.Y = botY;
@@ -2477,7 +2477,7 @@ void Clipper::DoMaxima(TEdge *e, long64 topY)
   TEdge* eNext = e->nextInAEL;
   while( eNext != eMaxPair )
   {
-    if (!eNext) assert(!"DoMaxima error");
+    if (!eNext) throw clipperException("DoMaxima error");
     IntersectEdges( e, eNext, IntPoint(X, topY), ipBoth );
     SwapPositionsInAEL(e, eNext);
     eNext = e->nextInAEL;
@@ -2491,7 +2491,7 @@ void Clipper::DoMaxima(TEdge *e, long64 topY)
   {
     IntersectEdges( e, eMaxPair, IntPoint(X, topY), ipNone );
   }
-  else assert(!"DoMaxima error");
+  else throw clipperException("DoMaxima error");
 }
 //------------------------------------------------------------------------------
 

@@ -22,7 +22,12 @@
       'libraries': [
         '<!@(pkg-config pangoft2 --libs)',
         '<!@(pkg-config protobuf --libs)'
-      ]
+      ],
+      'xcode_settings': {
+          'OTHER_CPLUSPLUSFLAGS': ['-std=c++11', '-Wno-unused-variable'],
+          'GCC_ENABLE_CPP_RTTI': 'YES',
+          'GCC_ENABLE_CPP_EXCEPTIONS': 'YES'
+      },
     }
   ]
 }

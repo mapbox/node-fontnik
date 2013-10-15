@@ -254,6 +254,7 @@ void Tile::AsyncSimplify(uv_work_t* req) {
             for (int j = 0; j < layer.features_size(); j++) {
                 const llmr::vector::feature& feature = layer.features(j);
                 Polygons polygons = load_geometry(feature.geometry());
+
                 Clipper clipper;
                 clipper.AddPolygons(polygons, ptSubject);
                 clipper.Execute(ctUnion, polygons);
