@@ -1,3 +1,7 @@
+var path = require('path');
+var fonts = path.join(path.dirname(module.filename), 'fonts');
+process.env['FONTCONFIG_PATH'] = fonts;
+
 var express = require('express');
 var zlib = require('zlib');
 var request = require('request');
@@ -7,7 +11,6 @@ var async = require('async');
 var fontserver = require('./');
 
 var app = express();
-
 
 function loadTile(z, x, y, callback) {
     var filename = './tiles/' + z + '-' + x + '-' + y + '.vector.pbf';
@@ -60,13 +63,13 @@ function convertTile(z, x, y, callback) {
 app.get('/gl/tiles/:z(\\d+)-:x(\\d+)-:y(\\d+).vector.pbf', function(req, res) {
     var x = req.params.x, y = req.params.y, z = req.params.z;
 
-    fs.readFile('./tiles-processed/' + z + '-' + x + '-' + y + '.vector.pbf', function(err, data) {
-        if (err) {
+    // fs.readFile('./tiles-processed/' + z + '-' + x + '-' + y + '.vector.pbf', function(err, data) {
+    //     if (err) {
             convertTile(z, x, y, send);
-        } else {
-            send(null, data);
-        }
-    });
+    //     } else {
+    //         send(null, data);
+    //     }
+    // });
 
     function send(err, compressed) {
         if (err) {
