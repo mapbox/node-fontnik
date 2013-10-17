@@ -14,6 +14,7 @@ them.
 To compile this module, type:
 
 ```
+bin/updateproto.sh
 npm install
 ```
 
