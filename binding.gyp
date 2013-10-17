@@ -29,7 +29,7 @@
           'GCC_ENABLE_CPP_EXCEPTIONS': 'YES'
       },
       'cflags_cc!': ['-fno-rtti', '-fno-exceptions'],
-      'cflags_cc' : ['-std=c++11', '-Wno-unused-variable'],
+      'cflags_cc' : ['-std=c++0x', '-Wno-unused-variable'],
       'cflags_c' : ['-std=c99'],
     }
   ]
