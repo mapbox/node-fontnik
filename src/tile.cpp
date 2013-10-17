@@ -268,6 +268,7 @@ void Tile::AsyncSimplify(uv_work_t* req) {
 
             if (polygons.size()) {
                 llmr::vector::feature *new_feature = new_layer->add_features();
+                new_feature->set_type(llmr::vector::Polygon);
                 // encode polygons into feature
                 uint32_t count = encode_geometry(*new_feature, polygons, true);
                 new_feature->set_vertex_count(count);
