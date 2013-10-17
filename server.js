@@ -87,6 +87,10 @@ app.get('/gl/tiles/:z(\\d+)-:x(\\d+)-:y(\\d+).vector.pbf', function(req, res) {
 
 app.use('/gl', express.static(__dirname + '/html'));
 
+app.get('/', function(req, res) {
+    res.redirect('/gl/');
+});
+
 async.each(['tiles', 'tiles-processed'], mkdirp, function(err) {
     if (err) throw err;
     app.listen(3000);
