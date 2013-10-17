@@ -9,6 +9,7 @@
 
 #include "distmap.h"
 #include <set>
+#include <algorithm>
 
 using namespace v8;
 using namespace ClipperLib;

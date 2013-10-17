@@ -28,6 +28,8 @@
           'GCC_ENABLE_CPP_RTTI': 'YES',
           'GCC_ENABLE_CPP_EXCEPTIONS': 'YES'
       },
+      'cflags_cc!': ['-fno-rtti', '-fno-exceptions'],
+      'cflags_cc' : ['-std=c++11', '-Wno-unused-variable'],
     }
   ]
 }
