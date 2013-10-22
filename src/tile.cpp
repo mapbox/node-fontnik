@@ -629,12 +629,27 @@ void Tile::AsyncShape(uv_work_t* req) {
         FT_Face ft_face = pango_fc_font_lock_face(fc_font);
         mutable_face->set_family(ft_face->family_name);
         mutable_face->set_style(ft_face->style_name);
+
+        // Determine ASCII glyphs
+        // std::set<uint32_t> omit;
+        // FT_UInt glyph_index;
+        // FT_ULong char_code = FT_Get_First_Char(ft_face, &glyph_index);
+        // while (glyph_index != 0 && char_code < 256) {
+        //     omit.insert(glyph_index);
+        //     char_code = FT_Get_Next_Char(ft_face, char_code, &glyph_index);
+        // }
+
         pango_fc_font_unlock_face(fc_font);
 
         Face *_face = Face::face(face->font);
 
         for (std::set<uint32_t>::const_iterator it = face->glyphs.begin(); it != face->glyphs.end(); it++) {
             uint32_t id = *it;
+
+            // Omit ASCII glyphs we determined earlier
+            // if (omit.find(id) != omit.end()) {
+            //     continue;
+            // }
 
             const Glyph& gl = _face->glyph(id);
 
