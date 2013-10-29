@@ -76,7 +76,8 @@ app.get('/gl/tiles/:z(\\d+)-:x(\\d+)-:y(\\d+).vector.pbf', function(req, res) {
             console.error(err.stack);
             res.send(500, err.message);
         } else {
-            res.setHeader('Cache-Control', 'max-age-86400');
+            res.setHeader('Expires', new Date(Date.now() + 86400000).toUTCString());
+            res.setHeader('Cache-Control', 'public; max-age=86400');
             res.setHeader('Content-Type', 'application/x-vectortile');
             res.setHeader('Content-Encoding', 'deflate');
             res.setHeader('Content-Length', compressed.length);
