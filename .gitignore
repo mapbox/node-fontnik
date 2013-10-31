@@ -4,3 +4,4 @@
 /tiles
 /tiles-processed
 /cache/*.cache-4
+.elasticbeanstalk/
