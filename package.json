@@ -3,6 +3,8 @@
     "version": "0.0.1",
     "main": "./build/Release/fontserver.node",
 
+    "private": true,
+
     "dependencies": {
         "async": "~0.2.9",
         "express": "~3.4.0",
