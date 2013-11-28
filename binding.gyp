@@ -24,12 +24,13 @@
         '<!@(pkg-config protobuf --libs)'
       ],
       'xcode_settings': {
-          'OTHER_CPLUSPLUSFLAGS': ['-std=c++11', '-Wno-unused-variable'],
+          'MACOSX_DEPLOYMENT_TARGET': '10.8',
+          'OTHER_CPLUSPLUSFLAGS': ['-std=c++11', '-stdlib=libc++', '-Wno-unused-variable'],
           'GCC_ENABLE_CPP_RTTI': 'YES',
           'GCC_ENABLE_CPP_EXCEPTIONS': 'YES'
       },
       'cflags_cc!': ['-fno-rtti', '-fno-exceptions'],
-      'cflags_cc' : ['-std=c++0x', '-Wno-unused-variable'],
+      'cflags_cc' : ['-std=c++0x', '-stdlib=libc++', '-Wno-unused-variable'],
       'cflags_c' : ['-std=c99'],
     }
   ]
