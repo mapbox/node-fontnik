@@ -29,3 +29,16 @@ To start the server, type:
 ```
 node server.js
 ```
+
+## Debugging
+
+```
+ld: library not found for -lintl
+```
+
+Respond with
+
+```
+brew install gettext
+brew link --force gettext
+```

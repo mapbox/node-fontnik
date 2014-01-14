@@ -1,6 +1,6 @@
 var path = require('path');
 var fonts = path.join(path.dirname(module.filename), 'fonts');
-process.env['FONTCONFIG_PATH'] = fonts;
+process.env.FONTCONFIG_PATH = fonts;
 
 var express = require('express');
 var zlib = require('zlib');
