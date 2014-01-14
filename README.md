@@ -18,14 +18,7 @@ bin/updateproto.sh
 npm install
 ```
 
-## Running
+## Usage
 
-This server uses a font directory contained in this installation. Add any fonts
-you want to use there (or comment out the `FONTCONFIG_PATH` override at the top
-of `server.js`).
-
-To start the server, type:
-
-```
-node server.js
-```
+This is included in the `llmr` project as a dependency: consult its `README.md`
+for setup instructions.
