@@ -13,6 +13,9 @@ G_DEFINE_TYPE(PangoSDFRenderer, pango_sdf_renderer, PANGO_TYPE_RENDERER);
 
 PangoRenderer *pango_sdf_get_renderer()
 {
+    # if (GLIB_MAJOR_VERSION <= 2 && GLIB_MINOR_VERSION < 36)
+    g_type_init();
+    # endif
     return (PangoRenderer *)g_object_new(PANGO_TYPE_SDF_RENDERER, NULL);
 }
 
