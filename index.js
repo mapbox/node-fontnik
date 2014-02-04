@@ -9,7 +9,7 @@ var env_options = {};
 if (process.env['FONTSERVER_FONTS']) env_options.fonts = process.env['FONTSERVER_FONTS'].split(';');
 
 // Fontserver conf setup. Synchronous at require time.
-fs.writeFileSync('/tmp/fontserver-fc.conf', conf());
+fs.writeFileSync('/tmp/fontserver-fc.conf', conf(env_options));
 process.env['FONTCONFIG_FILE'] = '/tmp/fontserver-fc.conf';
 
 var fontserver = require('./build/Release/fontserver.node');
@@ -19,8 +19,11 @@ module.exports.conf = conf;
 module.exports.convert = convert;
 
 // Convert a zlib deflated mapnik vector pbf to a gl pbf.
-function convert(zdata, callback) {
+function convert(zdata, options, callback) {
     'use strict';
+    options = options || {};
+    options.fontstack = options.fontstack || 'Open Sans';
+
     var tile;
 
     zlib.inflate(zdata, inflated);
@@ -33,7 +36,7 @@ function convert(zdata, callback) {
 
     function simplified(err) {
         if (err) return callback(err);
-        tile.shape('Open Sans, Jomolhari, Siyam Rupali, Alef, Arial Unicode MS', shaped);
+        tile.shape(options.fontstack, shaped);
     }
 
     function shaped(err) {
