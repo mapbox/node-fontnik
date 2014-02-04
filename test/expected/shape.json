@@ -1,0 +1,1137 @@
+{
+  "layers": {
+    "landuse": {
+      "version": 1,
+      "name": "landuse",
+      "extent": 4096,
+      "length": 3,
+      "shaping": {},
+      "faces": [],
+      "_keys": [
+        "class",
+        "osm_id"
+      ],
+      "_values": [
+        "park",
+        0,
+        0,
+        "sand",
+        0
+      ],
+      "_features": [
+        13,
+        225,
+        325
+      ]
+    },
+    "waterway": {
+      "version": 1,
+      "name": "waterway",
+      "extent": 4096,
+      "length": 11,
+      "shaping": {},
+      "faces": [],
+      "_keys": [
+        "osm_id",
+        "type"
+      ],
+      "_values": [
+        102639147,
+        "stream",
+        28483936,
+        28544165,
+        28544279,
+        28544488,
+        28544489,
+        28544658,
+        28544491,
+        28544660,
+        28544661,
+        28544659
+      ],
+      "_features": [
+        567,
+        640,
+        936,
+        984,
+        1060,
+        1157,
+        1204,
+        1245,
+        1283,
+        1309,
+        1368
+      ]
+    },
+    "water": {
+      "version": 1,
+      "name": "water",
+      "extent": 4096,
+      "length": 5,
+      "shaping": {},
+      "faces": [],
+      "_keys": [
+        "osm_id"
+      ],
+      "_values": [
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "_features": [
+        1577,
+        2048,
+        2129,
+        2175,
+        2223
+      ]
+    },
+    "road": {
+      "version": 1,
+      "name": "road",
+      "extent": 4096,
+      "length": 37,
+      "shaping": {},
+      "faces": [],
+      "_keys": [
+        "class",
+        "oneway",
+        "osm_id",
+        "type"
+      ],
+      "_values": [
+        "street_limited",
+        0,
+        12176014,
+        "residential",
+        "street",
+        102638413,
+        12190176,
+        125871922,
+        "unclassified",
+        12172969,
+        12171395,
+        12172974,
+        12171388,
+        12176906,
+        12184872,
+        12188141,
+        82660225,
+        12185663,
+        232292986,
+        236784059,
+        12187833,
+        12180093,
+        12181692,
+        12179250,
+        12182785,
+        207142176,
+        232292987,
+        12181251,
+        112429240,
+        12172937,
+        12178793,
+        12184634,
+        12175654,
+        12187257,
+        12183699,
+        "main",
+        112926169,
+        "primary",
+        239213058,
+        174215004,
+        157338248,
+        174215024,
+        88159974,
+        "tertiary",
+        12177297,
+        12177319
+      ],
+      "_features": [
+        2490,
+        2612,
+        2707,
+        2741,
+        2855,
+        2924,
+        2958,
+        2991,
+        3069,
+        3097,
+        3130,
+        3158,
+        3195,
+        3232,
+        3302,
+        3333,
+        3455,
+        3515,
+        3558,
+        3589,
+        3634,
+        3703,
+        3748,
+        3777,
+        3807,
+        3860,
+        3910,
+        3945,
+        3977,
+        4011,
+        4189,
+        4247,
+        4369,
+        4658,
+        4699,
+        5007,
+        5046
+      ]
+    },
+    "bridge": {
+      "version": 1,
+      "name": "bridge",
+      "extent": 4096,
+      "length": 2,
+      "shaping": {},
+      "faces": [],
+      "_keys": [
+        "class",
+        "oneway",
+        "osm_id",
+        "type"
+      ],
+      "_values": [
+        "service",
+        0,
+        207142221,
+        "track",
+        "street",
+        207142175,
+        "residential"
+      ],
+      "_features": [
+        5822,
+        5851
+      ]
+    },
+    "place_label": {
+      "version": 1,
+      "name": "place_label",
+      "extent": 4096,
+      "length": 3,
+      "shaping": {
+        "Open Sans": {
+          "Mill Valley": [
+            {
+              "face": 0,
+              "glyph": 48,
+              "x": 0,
+              "y": 26
+            },
+            {
+              "face": 0,
+              "glyph": 76,
+              "x": 22,
+              "y": 26
+            },
+            {
+              "face": 0,
+              "glyph": 79,
+              "x": 28,
+              "y": 26
+            },
+            {
+              "face": 0,
+              "glyph": 79,
+              "x": 34,
+              "y": 26
+            },
+            {
+              "face": 0,
+              "glyph": 3,
+              "x": 40,
+              "y": 26
+            },
+            {
+              "face": 0,
+              "glyph": 57,
+              "x": 46,
+              "y": 26
+            },
+            {
+              "face": 0,
+              "glyph": 68,
+              "x": 60,
+              "y": 26
+            },
+            {
+              "face": 0,
+              "glyph": 79,
+              "x": 73,
+              "y": 26
+            },
+            {
+              "face": 0,
+              "glyph": 79,
+              "x": 79,
+              "y": 26
+            },
+            {
+              "face": 0,
+              "glyph": 72,
+              "x": 85,
+              "y": 26
+            },
+            {
+              "face": 0,
+              "glyph": 92,
+              "x": 98,
+              "y": 26
+            }
+          ],
+          "Tamalpais Valley": [
+            {
+              "face": 0,
+              "glyph": 55,
+              "x": 0,
+              "y": 26
+            },
+            {
+              "face": 0,
+              "glyph": 68,
+              "x": 11,
+              "y": 26
+            },
+            {
+              "face": 0,
+              "glyph": 80,
+              "x": 24,
+              "y": 26
+            },
+            {
+              "face": 0,
+              "glyph": 68,
+              "x": 46,
+              "y": 26
+            },
+            {
+              "face": 0,
+              "glyph": 79,
+              "x": 59,
+              "y": 26
+            },
+            {
+              "face": 0,
+              "glyph": 83,
+              "x": 65,
+              "y": 26
+            },
+            {
+              "face": 0,
+              "glyph": 68,
+              "x": 80,
+              "y": 26
+            },
+            {
+              "face": 0,
+              "glyph": 76,
+              "x": 93,
+              "y": 26
+            },
+            {
+              "face": 0,
+              "glyph": 86,
+              "x": 99,
+              "y": 26
+            },
+            {
+              "face": 0,
+              "glyph": 3,
+              "x": 110,
+              "y": 26
+            },
+            {
+              "face": 0,
+              "glyph": 57,
+              "x": 116,
+              "y": 26
+            },
+            {
+              "face": 0,
+              "glyph": 68,
+              "x": 130,
+              "y": 26
+            },
+            {
+              "face": 0,
+              "glyph": 79,
+              "x": 143,
+              "y": 26
+            },
+            {
+              "face": 0,
+              "glyph": 79,
+              "x": 149,
+              "y": 26
+            },
+            {
+              "face": 0,
+              "glyph": 72,
+              "x": 155,
+              "y": 26
+            },
+            {
+              "face": 0,
+              "glyph": 92,
+              "x": 168,
+              "y": 26
+            }
+          ],
+          "Muir Beach": [
+            {
+              "face": 0,
+              "glyph": 48,
+              "x": 0,
+              "y": 26
+            },
+            {
+              "face": 0,
+              "glyph": 88,
+              "x": 22,
+              "y": 26
+            },
+            {
+              "face": 0,
+              "glyph": 76,
+              "x": 37,
+              "y": 26
+            },
+            {
+              "face": 0,
+              "glyph": 85,
+              "x": 43,
+              "y": 26
+            },
+            {
+              "face": 0,
+              "glyph": 3,
+              "x": 53,
+              "y": 26
+            },
+            {
+              "face": 0,
+              "glyph": 37,
+              "x": 59,
+              "y": 26
+            },
+            {
+              "face": 0,
+              "glyph": 72,
+              "x": 75,
+              "y": 26
+            },
+            {
+              "face": 0,
+              "glyph": 68,
+              "x": 88,
+              "y": 26
+            },
+            {
+              "face": 0,
+              "glyph": 70,
+              "x": 101,
+              "y": 26
+            },
+            {
+              "face": 0,
+              "glyph": 75,
+              "x": 112,
+              "y": 26
+            }
+          ]
+        }
+      },
+      "faces": [
+        "Open Sans Regular"
+      ],
+      "_keys": [
+        "name",
+        "name_de",
+        "name_en",
+        "name_es",
+        "name_fr",
+        "osm_id",
+        "type",
+        "ldir",
+        "scalerank"
+      ],
+      "_values": [
+        "Mill Valley",
+        0,
+        "town",
+        "",
+        "Tamalpais Valley",
+        0,
+        0,
+        "hamlet",
+        "Muir Beach",
+        0
+      ],
+      "_features": [
+        6223,
+        6261,
+        6303
+      ]
+    },
+    "poi_label": {
+      "version": 1,
+      "name": "poi_label",
+      "extent": 4096,
+      "length": 1,
+      "shaping": {
+        "Open Sans": {
+          "Muir Woods National Monument": [
+            {
+              "face": 0,
+              "glyph": 48,
+              "x": 0,
+              "y": 26
+            },
+            {
+              "face": 0,
+              "glyph": 88,
+              "x": 22,
+              "y": 26
+            },
+            {
+              "face": 0,
+              "glyph": 76,
+              "x": 37,
+              "y": 26
+            },
+            {
+              "face": 0,
+              "glyph": 85,
+              "x": 43,
+              "y": 26
+            },
+            {
+              "face": 0,
+              "glyph": 3,
+              "x": 53,
+              "y": 26
+            },
+            {
+              "face": 0,
+              "glyph": 58,
+              "x": 59,
+              "y": 26
+            },
+            {
+              "face": 0,
+              "glyph": 82,
+              "x": 81,
+              "y": 26
+            },
+            {
+              "face": 0,
+              "glyph": 82,
+              "x": 96,
+              "y": 26
+            },
+            {
+              "face": 0,
+              "glyph": 71,
+              "x": 111,
+              "y": 26
+            },
+            {
+              "face": 0,
+              "glyph": 86,
+              "x": 126,
+              "y": 26
+            },
+            {
+              "face": 0,
+              "glyph": 3,
+              "x": 137,
+              "y": 26
+            },
+            {
+              "face": 0,
+              "glyph": 49,
+              "x": 143,
+              "y": 26
+            },
+            {
+              "face": 0,
+              "glyph": 68,
+              "x": 161,
+              "y": 26
+            },
+            {
+              "face": 0,
+              "glyph": 87,
+              "x": 174,
+              "y": 26
+            },
+            {
+              "face": 0,
+              "glyph": 76,
+              "x": 182,
+              "y": 26
+            },
+            {
+              "face": 0,
+              "glyph": 82,
+              "x": 188,
+              "y": 26
+            },
+            {
+              "face": 0,
+              "glyph": 81,
+              "x": 203,
+              "y": 26
+            },
+            {
+              "face": 0,
+              "glyph": 68,
+              "x": 218,
+              "y": 26
+            },
+            {
+              "face": 0,
+              "glyph": 79,
+              "x": 231,
+              "y": 26
+            },
+            {
+              "face": 0,
+              "glyph": 3,
+              "x": 237,
+              "y": 26
+            },
+            {
+              "face": 0,
+              "glyph": 48,
+              "x": 243,
+              "y": 26
+            },
+            {
+              "face": 0,
+              "glyph": 82,
+              "x": 265,
+              "y": 26
+            },
+            {
+              "face": 0,
+              "glyph": 81,
+              "x": 280,
+              "y": 26
+            },
+            {
+              "face": 0,
+              "glyph": 88,
+              "x": 295,
+              "y": 26
+            },
+            {
+              "face": 0,
+              "glyph": 80,
+              "x": 310,
+              "y": 26
+            },
+            {
+              "face": 0,
+              "glyph": 72,
+              "x": 332,
+              "y": 26
+            },
+            {
+              "face": 0,
+              "glyph": 81,
+              "x": 345,
+              "y": 26
+            },
+            {
+              "face": 0,
+              "glyph": 87,
+              "x": 360,
+              "y": 26
+            }
+          ]
+        }
+      },
+      "faces": [
+        "Open Sans Regular"
+      ],
+      "_keys": [
+        "localrank",
+        "maki",
+        "name",
+        "name_de",
+        "name_en",
+        "name_es",
+        "name_fr",
+        "osm_id",
+        "ref",
+        "scalerank",
+        "type"
+      ],
+      "_values": [
+        1,
+        "park",
+        "Muir Woods National Monument",
+        0,
+        "",
+        "Park"
+      ],
+      "_features": [
+        6807
+      ]
+    },
+    "road_label": {
+      "version": 1,
+      "name": "road_label",
+      "extent": 4096,
+      "length": 7,
+      "shaping": {
+        "Open Sans": {
+          "Panoramic Hwy": [
+            {
+              "face": 0,
+              "glyph": 51,
+              "x": 0,
+              "y": 26
+            },
+            {
+              "face": 0,
+              "glyph": 68,
+              "x": 14,
+              "y": 26
+            },
+            {
+              "face": 0,
+              "glyph": 81,
+              "x": 27,
+              "y": 26
+            },
+            {
+              "face": 0,
+              "glyph": 82,
+              "x": 42,
+              "y": 26
+            },
+            {
+              "face": 0,
+              "glyph": 85,
+              "x": 57,
+              "y": 26
+            },
+            {
+              "face": 0,
+              "glyph": 68,
+              "x": 67,
+              "y": 26
+            },
+            {
+              "face": 0,
+              "glyph": 80,
+              "x": 80,
+              "y": 26
+            },
+            {
+              "face": 0,
+              "glyph": 76,
+              "x": 102,
+              "y": 26
+            },
+            {
+              "face": 0,
+              "glyph": 70,
+              "x": 108,
+              "y": 26
+            },
+            {
+              "face": 0,
+              "glyph": 3,
+              "x": 119,
+              "y": 26
+            },
+            {
+              "face": 0,
+              "glyph": 43,
+              "x": 125,
+              "y": 26
+            },
+            {
+              "face": 0,
+              "glyph": 90,
+              "x": 143,
+              "y": 26
+            },
+            {
+              "face": 0,
+              "glyph": 92,
+              "x": 162,
+              "y": 26
+            }
+          ],
+          "Shoreline Hwy": [
+            {
+              "face": 0,
+              "glyph": 54,
+              "x": 0,
+              "y": 26
+            },
+            {
+              "face": 0,
+              "glyph": 75,
+              "x": 13,
+              "y": 26
+            },
+            {
+              "face": 0,
+              "glyph": 82,
+              "x": 28,
+              "y": 26
+            },
+            {
+              "face": 0,
+              "glyph": 85,
+              "x": 43,
+              "y": 26
+            },
+            {
+              "face": 0,
+              "glyph": 72,
+              "x": 53,
+              "y": 26
+            },
+            {
+              "face": 0,
+              "glyph": 79,
+              "x": 66,
+              "y": 26
+            },
+            {
+              "face": 0,
+              "glyph": 76,
+              "x": 72,
+              "y": 26
+            },
+            {
+              "face": 0,
+              "glyph": 81,
+              "x": 78,
+              "y": 26
+            },
+            {
+              "face": 0,
+              "glyph": 72,
+              "x": 93,
+              "y": 26
+            },
+            {
+              "face": 0,
+              "glyph": 3,
+              "x": 106,
+              "y": 26
+            },
+            {
+              "face": 0,
+              "glyph": 43,
+              "x": 112,
+              "y": 26
+            },
+            {
+              "face": 0,
+              "glyph": 90,
+              "x": 130,
+              "y": 26
+            },
+            {
+              "face": 0,
+              "glyph": 92,
+              "x": 149,
+              "y": 26
+            }
+          ]
+        }
+      },
+      "faces": [
+        "Open Sans Regular"
+      ],
+      "_keys": [
+        "class",
+        "len",
+        "name",
+        "name_de",
+        "name_en",
+        "name_es",
+        "name_fr",
+        "osm_id",
+        "ref",
+        "reflen"
+      ],
+      "_values": [
+        "main",
+        7396.168723572097,
+        "Panoramic Hwy",
+        "Panoramic Highway",
+        88159974,
+        "",
+        0,
+        4357.193150547803,
+        "Shoreline Hwy",
+        "Shoreline Highway",
+        157338250,
+        3528.44005555027,
+        174215024,
+        2928.2679350617123,
+        125871918,
+        7600.032638046431,
+        12177319,
+        2513.4221036393283,
+        174215004,
+        1716.9016582189813,
+        12188378
+      ],
+      "_features": [
+        7198,
+        7359,
+        7455,
+        7904,
+        8088,
+        8845,
+        9146
+      ]
+    }
+  },
+  "faces": {
+    "Open Sans Regular": {
+      "glyphs": {
+        "3": {
+          "id": 3,
+          "width": 0,
+          "height": 0,
+          "left": 0,
+          "top": 0,
+          "advance": 6
+        },
+        "37": {
+          "id": 37,
+          "width": 13,
+          "height": 18,
+          "left": 2,
+          "top": 18,
+          "advance": 15
+        },
+        "43": {
+          "id": 43,
+          "width": 14,
+          "height": 18,
+          "left": 2,
+          "top": 18,
+          "advance": 17
+        },
+        "48": {
+          "id": 48,
+          "width": 18,
+          "height": 18,
+          "left": 2,
+          "top": 18,
+          "advance": 21
+        },
+        "49": {
+          "id": 49,
+          "width": 14,
+          "height": 18,
+          "left": 2,
+          "top": 18,
+          "advance": 18
+        },
+        "51": {
+          "id": 51,
+          "width": 12,
+          "height": 18,
+          "left": 2,
+          "top": 18,
+          "advance": 14
+        },
+        "54": {
+          "id": 54,
+          "width": 12,
+          "height": 19,
+          "left": 1,
+          "top": 18,
+          "advance": 13
+        },
+        "55": {
+          "id": 55,
+          "width": 14,
+          "height": 18,
+          "left": 0,
+          "top": 18,
+          "advance": 13
+        },
+        "57": {
+          "id": 57,
+          "width": 15,
+          "height": 18,
+          "left": 0,
+          "top": 18,
+          "advance": 14
+        },
+        "58": {
+          "id": 58,
+          "width": 22,
+          "height": 18,
+          "left": 0,
+          "top": 18,
+          "advance": 22
+        },
+        "68": {
+          "id": 68,
+          "width": 11,
+          "height": 15,
+          "left": 1,
+          "top": 14,
+          "advance": 13
+        },
+        "70": {
+          "id": 70,
+          "width": 10,
+          "height": 15,
+          "left": 1,
+          "top": 14,
+          "advance": 11
+        },
+        "71": {
+          "id": 71,
+          "width": 12,
+          "height": 20,
+          "left": 1,
+          "top": 19,
+          "advance": 14
+        },
+        "72": {
+          "id": 72,
+          "width": 12,
+          "height": 15,
+          "left": 1,
+          "top": 14,
+          "advance": 13
+        },
+        "75": {
+          "id": 75,
+          "width": 11,
+          "height": 19,
+          "left": 2,
+          "top": 19,
+          "advance": 14
+        },
+        "76": {
+          "id": 76,
+          "width": 4,
+          "height": 18,
+          "left": 1,
+          "top": 18,
+          "advance": 6
+        },
+        "79": {
+          "id": 79,
+          "width": 3,
+          "height": 19,
+          "left": 2,
+          "top": 19,
+          "advance": 6
+        },
+        "80": {
+          "id": 80,
+          "width": 19,
+          "height": 14,
+          "left": 2,
+          "top": 14,
+          "advance": 22
+        },
+        "81": {
+          "id": 81,
+          "width": 11,
+          "height": 14,
+          "left": 2,
+          "top": 14,
+          "advance": 14
+        },
+        "82": {
+          "id": 82,
+          "width": 13,
+          "height": 15,
+          "left": 1,
+          "top": 14,
+          "advance": 14
+        },
+        "83": {
+          "id": 83,
+          "width": 12,
+          "height": 20,
+          "left": 2,
+          "top": 14,
+          "advance": 14
+        },
+        "85": {
+          "id": 85,
+          "width": 8,
+          "height": 14,
+          "left": 2,
+          "top": 14,
+          "advance": 9
+        },
+        "86": {
+          "id": 86,
+          "width": 10,
+          "height": 15,
+          "left": 1,
+          "top": 14,
+          "advance": 11
+        },
+        "87": {
+          "id": 87,
+          "width": 8,
+          "height": 17,
+          "left": 0,
+          "top": 16,
+          "advance": 8
+        },
+        "88": {
+          "id": 88,
+          "width": 12,
+          "height": 14,
+          "left": 1,
+          "top": 13,
+          "advance": 14
+        },
+        "90": {
+          "id": 90,
+          "width": 19,
+          "height": 13,
+          "left": 0,
+          "top": 13,
+          "advance": 18
+        },
+        "92": {
+          "id": 92,
+          "width": 13,
+          "height": 19,
+          "left": 0,
+          "top": 13,
+          "advance": 12
+        }
+      },
+      "family": "Open Sans",
+      "style": "Regular"
+    }
+  }
+}

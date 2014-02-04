@@ -1,19 +1,21 @@
 var fontserver = require('../index.js');
 var assert = require('assert');
 var zlib = require('zlib');
-var zdata = require('fs').readFileSync(__dirname + '/fixtures/mapbox-streets-v4.13.2412.3078.vector.pbf');
-var data;
+var fs = require('fs');
+var zdata = fs.readFileSync(__dirname + '/fixtures/mapbox-streets-v4.13.1306.3163.vector.pbf');
+var Protobuf = require('./format/protobuf');
+var VectorTile = require('./format/vectortile');
 
-describe('convert inflate', function() {
-    it('inflate', function(done) {
-        zlib.inflate(zdata, function(err, d) {
-            assert.ifError(err);
-            done();
-        });
-    });
-});
+function nobuffer(key, val) {
+    return key !== '_buffer' && key !== 'bitmap' ? val : undefined;
+}
 
-describe('convert simplify', function() {
+function jsonEqual(key, json) {
+    fs.writeFileSync(__dirname + '/expected/'+key+'.json', JSON.stringify(json, null, 2));
+    assert.deepEqual(json, require('./expected/'+key+'.json'));
+}
+
+describe('convert', function() {
     var data;
     before(function(done) {
         zlib.inflate(zdata, function(err, d) {
@@ -22,50 +24,36 @@ describe('convert simplify', function() {
             done();
         });
     });
+
+    it('serialize', function(done) {
+        var tile = new fontserver.Tile(data);
+        var vt = new VectorTile(new Protobuf(new Uint8Array(tile.serialize())));
+        var json = JSON.parse(JSON.stringify(vt, nobuffer));
+        jsonEqual('serialize', json);
+        done();
+    });
+
     it('simplify', function(done) {
         var tile = new fontserver.Tile(data);
         tile.simplify(function(err) {
             assert.ifError(err);
+            var vt = new VectorTile(new Protobuf(new Uint8Array(tile.serialize())));
+            var json = JSON.parse(JSON.stringify(vt, nobuffer));
+            jsonEqual('simplify', json);
             done();
         });
     });
-});
 
-describe('convert shape', function() {
-    var tile;
-    before(function(done) {
-        zlib.inflate(zdata, function(err, d) {
-            assert.ifError(err);
-            tile = new fontserver.Tile(d);
-            tile.simplify(function(err) {
-                assert.ifError(err);
-                done();
-            });
-        });
-    });
+
     it('shape', function(done) {
-        tile.shape('Open Sans, Jomolhari, Siyam Rupali, Alef, Arial Unicode MS', function(err) {
+        var tile = new fontserver.Tile(data);
+        tile.shape('Open Sans', function(err) {
             assert.ifError(err);
+            var vt = new VectorTile(new Protobuf(new Uint8Array(tile.serialize())));
+            var json = JSON.parse(JSON.stringify(vt, nobuffer));
+            jsonEqual('shape', json);
             done();
         });
-    });
-});
-
-describe('convert serialize', function() {
-    var tile;
-    before(function(done) {
-        zlib.inflate(zdata, function(err, d) {
-            assert.ifError(err);
-            tile = new fontserver.Tile(d);
-            tile.simplify(function(err) {
-                assert.ifError(err);
-                done();
-            });
-        });
-    });
-    it('serialize', function(done) {
-        assert.equal(tile.serialize().length, 84926);
-        done();
     });
 });
 
