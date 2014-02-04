@@ -1,8 +1,9 @@
-var fontserver = require('./build/Release/fontserver.node');
 var zlib = require('zlib');
 var path = require('path');
 var fonts = path.join(path.dirname(module.filename), 'fonts');
 process.env['FONTCONFIG_PATH'] = fonts;
+
+var fontserver = require('./build/Release/fontserver.node');
 
 module.exports = fontserver;
 

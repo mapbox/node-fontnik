@@ -8,5 +8,12 @@
     "dependencies": {
         "async": "~0.2.9",
         "request": "~2.27.0"
+    },
+
+    "devDependencies": {
+        "mocha": "1.17.x"
+    },
+    "scripts": {
+        "test": "node_modules/.bin/mocha -R spec"
     }
 }
