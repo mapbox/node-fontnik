@@ -1,14 +1,14 @@
 {
     "name": "fontserver",
     "version": "0.0.1",
-    "main": "./build/Release/fontserver.node",
+    "main": "index.js",
 
     "private": true,
 
-    "dependencies": {
-        "async": "~0.2.9",
-        "express": "~3.4.0",
-        "mkdirp": "~0.3.5",
-        "request": "~2.27.0"
+    "devDependencies": {
+        "mocha": "1.17.x"
+    },
+    "scripts": {
+        "test": "node_modules/.bin/mocha -R spec"
     }
 }
