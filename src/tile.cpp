@@ -2,7 +2,6 @@
 #include <node_buffer.h>
 
 #include "tile.hpp"
-#include "clipper.hpp"
 #include "globals.hpp"
 #include <pango/pangoft2.h>
 #include "sdf_renderer.hpp"
@@ -12,12 +11,6 @@
 #include <algorithm>
 
 using namespace v8;
-using namespace ClipperLib;
-
-struct SimplifyBaton {
-    Persistent<Function> callback;
-    Tile *tile;
-};
 
 struct ShapeBaton {
     Persistent<Function> callback;
@@ -42,7 +35,6 @@ void Tile::Init(Handle<Object> target) {
     // Add all prototype methods, getters and setters here.
     constructor->PrototypeTemplate()->SetAccessor(v8::String::NewSymbol("length"), Length);
     NODE_SET_PROTOTYPE_METHOD(constructor, "serialize", Serialize);
-    NODE_SET_PROTOTYPE_METHOD(constructor, "simplify", Simplify);
     NODE_SET_PROTOTYPE_METHOD(constructor, "shape", Shape);
     // constructor->PrototypeTemplate()->SetIndexedPropertyHandler(GetGlyph);
 
@@ -95,249 +87,6 @@ Handle<Value> Tile::Serialize(const v8::Arguments& args) {
     std::string serialized = tile.SerializeAsString();
     return scope.Close(node::Buffer::New(serialized.data(), serialized.length())->handle_);
 }
-
-
-template <typename T>
-Polygons load_geometry(const T& vertices)
-{
-    Polygons polygons;
-    Polygon polygon;
-
-    int cmd = -1;
-    const int cmd_bits = 3;
-    unsigned length = 0;
-
-    int x = 0, y = 0;
-    for (int k = 0; k < vertices.size();) {
-        if (!length) {
-            unsigned cmd_length = vertices.Get(k++);
-            cmd = cmd_length & ((1 << cmd_bits) - 1);
-            length = cmd_length >> cmd_bits;
-        }
-
-        if (length > 0) {
-            length--;
-
-            if (cmd == 1 || cmd == 7) { // moveto or closepolygon
-                if (polygon.size()) {
-                    polygons.push_back(polygon);
-                    polygon.clear();
-                }
-            }
-
-            if (cmd == 1 || cmd == 2) {
-                int32_t dx = vertices.Get(k++);
-                int32_t dy = vertices.Get(k++);
-                dx = ((dx >> 1) ^ (-(dx & 1)));
-                dy = ((dy >> 1) ^ (-(dy & 1)));
-                polygon.push_back(IntPoint(x += dx, y += dy));
-            } else if (cmd == 7) {
-
-            } else {
-                fprintf(stderr, "Unknown command type: %d\n", cmd);
-            }
-        }
-    }
-
-    if (polygon.size()) {
-        polygons.push_back(polygon);
-    }
-
-    return polygons;
-}
-
-
-void encode_point(llmr::vector::feature& feature, const IntPoint& pt, const IntPoint& pos) {
-    // Compute delta to the previous coordinate.
-    int32_t dx = pt.X - pos.X;
-    int32_t dy = pt.Y - pos.Y;
-
-    // Manual zigzag encoding.
-    feature.add_geometry((dx << 1) ^ (dx >> 31));
-    feature.add_geometry((dy << 1) ^ (dy >> 31));
-}
-
-void encode_command(llmr::vector::feature& feature, int cmd, unsigned length) {
-    const int cmd_bits = 3;
-    const int cmd_mask = (1 << cmd_bits) - 1;
-    feature.add_geometry((length << cmd_bits) | (cmd & cmd_mask));
-}
-
-uint32_t encode_geometry(llmr::vector::feature& feature, const Polygons& polygons, bool is_polygon = false)
-{
-    IntPoint pos(0, 0);
-    uint32_t count = 0;
-    for (Polygons::const_iterator it = polygons.begin(); it != polygons.end(); it++) {
-        const Polygon& polygon = *it;
-        if (!polygon.size()) {
-            continue;
-        }
-
-        // Encode moveTo first point in the polygon.
-        encode_command(feature, 1, 1);
-        encode_point(feature, polygon[0], pos);
-        count++;
-        pos = polygon[0];
-
-        // Encode lineTo for the rest of the points.
-        encode_command(feature, 2, polygon.size() - 1);
-
-        for (size_t i = 1; i < polygon.size(); i++) {
-            encode_point(feature, polygon[i], pos);
-            count++;
-            pos = polygon[i];
-        }
-
-        if (is_polygon) {
-            // Encode closepolygon
-            encode_command(feature, 7, 1);
-        }
-    }
-
-    return count;
-}
-
-
-Handle<Value> Tile::Simplify(const v8::Arguments& args) {
-    HandleScope scope;
-
-    if (args.Length() < 1 || !args[0]->IsFunction()) {
-        return ThrowException(Exception::TypeError(
-            String::New("First argument must be a callback function")));
-    }
-    Local<Function> callback = Local<Function>::Cast(args[0]);
-
-    Tile *tile = ObjectWrap::Unwrap<Tile>(args.This());
-
-    SimplifyBaton* baton = new SimplifyBaton();
-    baton->callback = Persistent<Function>::New(callback);
-    baton->tile = tile;
-
-    uv_work_t *req = new uv_work_t();
-    req->data = baton;
-
-    int status = uv_queue_work(uv_default_loop(), req, AsyncSimplify, (uv_after_work_cb)SimplifyAfter);
-    assert(status == 0);
-
-    return Undefined();
-}
-
-void Tile::AsyncSimplify(uv_work_t* req) {
-    SimplifyBaton* baton = static_cast<SimplifyBaton*>(req->data);
-
-    pthread_mutex_lock(&baton->tile->mutex);
-
-    llmr::vector::tile& tile = baton->tile->tile;
-    llmr::vector::tile new_tile;
-
-    for (int i = 0; i < tile.layers_size(); i++) {
-        const llmr::vector::layer& layer = tile.layers(i);
-        if (!layer.features_size()) {
-            continue;
-        }
-
-        llmr::vector::layer *new_layer = new_tile.add_layers();
-        new_layer->set_version(2);
-
-        // Copy over information
-        new_layer->set_name(layer.name());
-        *new_layer->mutable_keys() = layer.keys();
-        *new_layer->mutable_values() = layer.values();
-        if (layer.has_extent()) {
-            new_layer->set_extent(layer.extent());
-        }
-
-        // Our water polygons contain lots of duplicates
-        if (layer.name() == "water") {
-            Clipper outerClipper;
-            outerClipper.ForceSimple(true);
-
-            for (int j = 0; j < layer.features_size(); j++) {
-                const llmr::vector::feature& feature = layer.features(j);
-                Polygons polygons = load_geometry(feature.geometry());
-
-                Clipper clipper;
-                clipper.AddPolygons(polygons, ptSubject);
-                clipper.Execute(ctUnion, polygons);
-                outerClipper.AddPolygons(polygons, ptSubject);
-            }
-
-
-            Polygons polygons;
-            outerClipper.Execute(ctUnion, polygons, pftNonZero, pftNonZero);
-
-            if (polygons.size()) {
-                llmr::vector::feature *new_feature = new_layer->add_features();
-                new_feature->set_type(llmr::vector::Polygon);
-                // encode polygons into feature
-                uint32_t count = encode_geometry(*new_feature, polygons, true);
-                new_feature->set_vertex_count(count);
-            }
-        } else {
-            for (int j = 0; j < layer.features_size(); j++) {
-                const llmr::vector::feature& feature = layer.features(j);
-
-                // Copy point features verbatim.
-                if (feature.type() == 1) {
-                    llmr::vector::feature *new_feature = new_layer->add_features();
-                    *new_feature = feature;
-                    continue;
-                }
-
-                Polygons polygons = load_geometry(feature.geometry());
-                bool is_polygon = feature.type() == llmr::vector::Polygon;
-
-                if (is_polygon) {
-                    // CleanPolygons(polygons, polygons, 0.001);
-
-                    Clipper clipper;
-                    clipper.ForceSimple(true);
-                    clipper.AddPolygons(polygons, ptSubject);
-                    clipper.Execute(ctUnion, polygons);
-
-                    // SimplifyPolygons(polygons);
-                }
-
-                if (polygons.size()) {
-                    llmr::vector::feature *new_feature = new_layer->add_features();
-
-                    // Copy over information
-                    if (feature.has_id()) new_feature->set_id(feature.id());
-                    if (feature.has_type()) new_feature->set_type(feature.type());
-                    *new_feature->mutable_tags() = feature.tags();
-
-                    // encode polygons into feature
-                    encode_geometry(*new_feature, polygons, is_polygon);
-                }
-            }
-        }
-    }
-
-    tile = new_tile;
-
-    pthread_mutex_unlock(&baton->tile->mutex);
-}
-
-void Tile::SimplifyAfter(uv_work_t* req) {
-    HandleScope scope;
-    SimplifyBaton* baton = static_cast<SimplifyBaton*>(req->data);
-
-    const unsigned argc = 1;
-    Local<Value> argv[argc] = { Local<Value>::New(Null()) };
-
-    TryCatch try_catch;
-    baton->callback->Call(Context::GetCurrent()->Global(), argc, argv);
-    if (try_catch.HasCaught()) {
-        node::FatalException(try_catch);
-    }
-
-    baton->callback.Dispose();
-
-    delete baton;
-    delete req;
-}
-
-
 
 Handle<Value> Tile::Shape(const v8::Arguments& args) {
     HandleScope scope;
