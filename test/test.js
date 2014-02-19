@@ -33,32 +33,6 @@ describe('convert', function() {
         done();
     });
 
-    it('simplify', function(done) {
-        var tile = new fontserver.Tile(data);
-        tile.simplify(function(err) {
-            assert.ifError(err);
-            var vt = new VectorTile(new Protobuf(new Uint8Array(tile.serialize())));
-            var json = JSON.parse(JSON.stringify(vt, nobuffer));
-            jsonEqual('simplify', json);
-            done();
-        });
-    });
-
-    it('simplify (x10)', function(done) {
-        this.timeout(10000);
-        var remaining = 10;
-        for (var i = 0; i < 10; i++) (function() {
-            var tile = new fontserver.Tile(data);
-            tile.simplify(function(err) {
-                assert.ifError(err);
-                var vt = new VectorTile(new Protobuf(new Uint8Array(tile.serialize())));
-                var json = JSON.parse(JSON.stringify(vt, nobuffer));
-                jsonEqual('simplify', json);
-                if (!--remaining) return done();
-            });
-        })();
-    });
-
     it('shape', function(done) {
         var tile = new fontserver.Tile(data);
         tile.shape('Open Sans', function(err) {

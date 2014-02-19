@@ -34,7 +34,6 @@
         'src/font.cpp',
         'src/tile.cpp',
         'src/shaping.cpp',
-        'src/clipper.cpp',
         'src/sdf_renderer.cpp',
         'src/distmap.c',
         'src/edtaa4func.c',
