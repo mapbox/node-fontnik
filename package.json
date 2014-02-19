@@ -1,14 +1,14 @@
 {
-    "name": "fontserver",
-    "version": "0.0.2",
-    "main": "index.js",
-
-    "private": true,
-
-    "devDependencies": {
-        "mocha": "1.17.x"
-    },
-    "scripts": {
-        "test": "node_modules/.bin/mocha -R spec"
-    }
+  "name": "fontserver",
+  "version": "0.0.2",
+  "main": "index.js",
+  "private": true,
+  "devDependencies": {
+    "mocha": "1.17.x",
+    "llmr": "http://mapbox-npm.s3.amazonaws.com/tiles/llmr@v0.0.4.tar.gz",
+    "pbf": "0.0.1"
+  },
+  "scripts": {
+    "test": "node_modules/.bin/mocha -R spec"
+  }
 }

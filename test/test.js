@@ -3,8 +3,8 @@ var assert = require('assert');
 var zlib = require('zlib');
 var fs = require('fs');
 var zdata = fs.readFileSync(__dirname + '/fixtures/mapbox-streets-v4.13.1306.3163.vector.pbf');
-var Protobuf = require('./format/protobuf');
-var VectorTile = require('./format/vectortile');
+var Protobuf = require('pbf');
+var VectorTile = require('../node_modules/llmr-gl/js/format/vectortile');
 
 function nobuffer(key, val) {
     return key !== '_buffer' && key !== 'bitmap' ? val : undefined;
