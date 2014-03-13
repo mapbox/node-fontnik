@@ -44,10 +44,12 @@
       ],
       'include_dirs': [
         '<!@(pkg-config pangoft2 --cflags-only-I | sed s/-I//g)',
+        '<!@(pkg-config harfbuzz --cflags-only-I | sed s/-I//g)',
         '<!@(pkg-config protobuf --cflags-only-I | sed s/-I//g)',
       ],
       'libraries': [
         '<!@(pkg-config pangoft2 --libs)',
+        '<!@(pkg-config harfbuzz --libs)',
         '<!@(pkg-config protobuf --libs)'
       ],
       'xcode_settings': {
