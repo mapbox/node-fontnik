@@ -31,6 +31,7 @@
       'target_name': 'fontserver',
       'sources': [
         'src/fontserver.cpp',
+        'src/freetype_engine.cpp',
         'src/pango_engine.cpp',
         'src/pango_shaper.cpp',
         'src/tile.cpp',
