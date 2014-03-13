@@ -32,8 +32,8 @@
       'sources': [
         'src/fontserver.cpp',
         'src/pango_engine.cpp',
+        'src/pango_shaper.cpp',
         'src/tile.cpp',
-        'src/shaping.cpp',
         'src/clipper.cpp',
         'src/sdf_renderer.cpp',
         'src/distmap.c',

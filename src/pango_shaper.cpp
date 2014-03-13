@@ -1,4 +1,4 @@
-#include "shaping.hpp"
+#include "pango_shaper.hpp"
 #include "pango_engine.hpp"
 #include "globals.hpp"
 

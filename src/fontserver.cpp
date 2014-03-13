@@ -1,7 +1,7 @@
 #include <node.h>
 #include "pango_engine.hpp"
+#include "pango_shaper.hpp"
 #include "tile.hpp"
-#include "shaping.hpp"
 
 using namespace v8;
 
