@@ -1,9 +1,15 @@
 #pragma once
 
 #include <node.h>
+
+// stl
 #include <string>
+#include <map>
 
 struct FT_LibraryRec_;
+
+class font_face;
+typedef std::shared_ptr<font_face> face_ptr;
 
 class FreetypeEngine : public node::ObjectWrap {
 public:
@@ -11,7 +17,7 @@ public:
     static void Init(v8::Handle<v8::Object> target);
     static bool HasInstance(v8::Handle<v8::Value> val);
 
-    static v8::Handle<v8::Value> New(std::string const& family_name);
+    v8::Handle<v8::Value> New(std::string const& family_name);
 protected:
     FreetypeEngine();
     ~FreetypeEngine();
@@ -23,5 +29,7 @@ protected:
     static const int size;
     static const int buffer;
 private:
-    FT_LibraryRec_ *library;
+    FT_LibraryRec_ *library_;
+    static std::map<std::string, std::pair<int,std::string> > name2file_;
+    static std::map<std::string, std::string> memory_fonts_;
 };
