@@ -82,6 +82,52 @@ v8::Handle<v8::Value> FT_Font::GetFamilyName(const v8::Arguments& args) {
     return scope.Close(v8::String::New(font->face->family_name)); 
 }
 
+v8::Handle<v8::Value> FT_Font::GetGlyph(uint32_t glyph_index, const v8::AccessorInfo& info)
+{
+    v8::HandleScope scope;
+    FT_Font* font = node::ObjectWrap::Unwrap<FT_Font>(info.This());
+    FT_Face* face = font->face;
+    // fprintf(stderr, "x/y/h: %ld/%ld/%ld\n", face->size->metrics.x_scale, face->size->metrics.y_scale / 2048, face->size->metrics.height);
+    FT_Set_Char_Size(face, 0, size * 64, 72, 72);
+    FT_Error error = FT_Load_Glyph(face, glyph_index, FT_LOAD_NO_HINTING | FT_LOAD_RENDER);
+    if (error) {
+        FT_Done_Face(face);
+        return Undefined();
+    } else {
+        v8::Local<v8::Object> result = v8::Object::New();
+        result->Set(v8::String::NewSymbol("id"), v8::Uint32::New(glyph_index), v8::ReadOnly);
+        result->Set(v8::String::NewSymbol("width"), v8::Number::New(face->glyph->bitmap.width), v8::ReadOnly);
+        result->Set(v8::String::NewSymbol("height"), v8::Number::New(face->glyph->bitmap.rows), v8::ReadOnly);
+        result->Set(v8::String::NewSymbol("left"), v8::Number::New(face->glyph->bitmap_left), v8::ReadOnly);
+        result->Set(v8::String::NewSymbol("top"), v8::Number::New(face->glyph->bitmap_top), v8::ReadOnly);
+        result->Set(v8::String::NewSymbol("advance"), v8::Number::New(face->glyph->metrics.horiAdvance), v8::ReadOnly);
+
+        FT_GlyphSlot slot = face->glyph;
+        int width = slot->bitmap.width;
+        int height = slot->bitmap.rows;
+
+        // Create a signed distance field for the glyph bitmap.
+        if (width > 0) {
+            unsigned int buffered_width = width + 2 * buffer;
+            unsigned int buffered_height = height + 2 * buffer;
+
+            unsigned char *distance = make_distance_map((unsigned char *)slot->bitmap.buffer, width, height, buffer);
+
+            unsigned char *map = (unsigned char *)malloc(buffered_width * buffered_height);
+            for (unsigned int y = 0; y < buffered_height; y++) {
+                memcpy(map + buffered_width * y, distance + y * distmap_size, buffered_width);
+            }
+            free(distance);
+
+            result->Set(v8::String::NewSymbol("bitmap"), node::Buffer::New((const char *)map, buffered_width * buffered_height)->handle_);
+            free(map);
+        }
+
+        FT_Done_Face(face);
+        return scope.Close(result);
+    }
+}
+
 v8::Handle<v8::Value> FT_Font::Metrics(v8::Local<v8::String> property, const v8::AccessorInfo &info) {
     HandleScope scope;
 
