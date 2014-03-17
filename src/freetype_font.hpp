@@ -10,11 +10,14 @@ extern "C"
 
 class FT_Font : public node::ObjectWrap {
 public:
-    static v8::Persistent<v8::FunctionTemplate> constructor;
+    static void Init();
+    static v8::Handle<v8::Value> NewInstance(const v8::Arguments& args);
     static bool HasInstance(v8::Handle<v8::Value> val);
 
-    static FT_Font* New(FT_Face ft_face);
-protected:
-    FT_Font(FT_Face ft_face);
+private:
+    explicit FT_Font(FT_Face ft_face);
     ~FT_Font();
+
+    static v8::Handle<v8::Value> New(const v8::Arguments& args);
+    static v8::Persistent<v8::FunctionTemplate> constructor;
 };

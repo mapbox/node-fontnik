@@ -64,36 +64,11 @@ FreetypeEngine::~FreetypeEngine() {
 }
 
 v8::Handle<v8::Value> FreetypeEngine::New(const v8::Arguments& args) {
-    if (!args.IsConstructCall()) {
-        return ThrowException(v8::Exception::TypeError(v8::String::New("Constructor must be called with new keyword")));
-    }
-    if (args.Length() != 1) {
-        return ThrowException(v8::Exception::TypeError(v8::String::New("Constructor must be called with new keyword")));
-    }
+}
 
-    FT_Face ft_face = nullptr;
-    if (args[0]->IsExternal()) {
-        ft_face = (FT_Face)v8::External::Cast(*args[0])->Value();
-    } else {
-        v8::String::Utf8Value font_name(args[0]->ToString());
-        /*
-        PangoFontDescription *desc = pango_font_description_from_string(*font_name);
-        pango_font = pango_font_map_load_font(pango_fontmap(), pango_context(), desc);
-        */
-    }
-
-    if (ft_face) {
-        FT_Font* font = FT_Font::New(ft_face);
-        // v8::Local<v8::Object> font = v8::Object::New();
-        font->Wrap(args.This());
-        args.This()->Set(v8::String::NewSymbol("family"), v8::String::New(ft_face->family_name), v8::ReadOnly);
-        args.This()->Set(v8::String::NewSymbol("style"), v8::String::New(ft_face->style_name), v8::ReadOnly);
-        args.This()->Set(v8::String::NewSymbol("length"), v8::Number::New(ft_face->num_glyphs), v8::ReadOnly);
-
-        return args.This();
-    } else {
-        return ThrowException(v8::Exception::Error(v8::String::New("No matching font found")));
-    }
+v8::Handle<v8::Value> FreetypeEngine::CreateFont(const v8::Arguments& args) {
+  v8::HandleScope scope;
+  return scope.Close(FT_Font::NewInstance(args));
 }
 
 v8::Handle<v8::Value> FreetypeEngine::New(std::string const& family_name) {
