@@ -37,10 +37,6 @@ void FreetypeEngine::Init(v8::Handle<v8::Object> target) {
     constructor->InstanceTemplate()->SetInternalFieldCount(1);
     constructor->SetClassName(name);
 
-    // Add all prototype methods, getters and setters here.
-    constructor->PrototypeTemplate()->SetAccessor(v8::String::NewSymbol("metrics"), Metrics);
-    constructor->PrototypeTemplate()->SetIndexedPropertyHandler(GetGlyph);
-
     // This has to be last, otherwise the properties won't show up on the
     // object in JavaScript.
     target->Set(name, constructor->GetFunction());
