@@ -81,3 +81,40 @@ v8::Handle<v8::Value> FT_Font::GetFamilyName(const v8::Arguments& args) {
 
     return scope.Close(v8::String::New(font->face->family_name)); 
 }
+
+v8::Handle<v8::Value> FT_Font::Metrics(v8::Local<v8::String> property, const v8::AccessorInfo &info) {
+    HandleScope scope;
+
+    FT_Font* font = v8::ObjectWrap::Unwrap<FT_Font>(info.This());
+    FT_Face* face = font->face;
+
+    FT_Error error = FT_Set_Char_Size(face, 0, size * 64, 72, 72);
+    if (error) {
+        return ThrowException(v8::Exception::Error(v8::String::New("Could not set char size")));
+    }
+
+    // Generate a list of all glyphs
+    llmr::face metrics;
+    metrics.set_family(face->family_name);
+    metrics.set_style(face->style_name);
+
+    for (int glyph_index = 0; glyph_index < face->num_glyphs; glyph_index++) {
+        FT_Error error = FT_Load_Glyph(face, glyph_index, FT_LOAD_NO_HINTING | FT_LOAD_RENDER);
+        if (error) {
+            return ThrowException(v8::Exception::Error(v8::String::New("Could not load glyph")));
+        }
+
+        llmr::glyph *glyph = metrics.add_glyphs();
+        glyph->set_id(glyph_index);
+        glyph->set_width((unsigned int)face->glyph->bitmap.width);
+        glyph->set_height((unsigned int)face->glyph->bitmap.rows);
+        glyph->set_left((unsigned int)face->glyph->bitmap_left);
+        glyph->set_top((unsigned int)face->glyph->bitmap_top);
+        glyph->set_advance(face->glyph->metrics.horiAdvance / 64);
+    }
+
+    FT_Done_Face(face);
+
+    std::string serialized = metrics.SerializeAsString();
+    return scope.Close(node::Buffer::New(serialized.data(), serialized.length())->handle_);
+}
