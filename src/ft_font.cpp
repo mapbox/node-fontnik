@@ -7,7 +7,7 @@
 #include "metrics.pb.h"
 
 // stl
-#include <exception>
+#include <stdexcept>
 #include <iostream>
 #include <fstream>
 #include <memory>
