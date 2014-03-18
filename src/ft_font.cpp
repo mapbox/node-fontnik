@@ -82,6 +82,7 @@ v8::Handle<v8::Value> FT_Font::New(const v8::Arguments& args) {
         ft_face = (FT_Face)v8::External::Cast(*args[0])->Value();
     } else {
         std::string font_name(*v8::String::Utf8Value(args[0]));
+        std::cout<<font_name<<'\n';
         std::map<std::string, std::pair<int,std::string>>::const_iterator itr;
         for (itr = name2file_.begin(); itr!=name2file_.end(); ++itr) {
             if (itr->first == font_name) {
