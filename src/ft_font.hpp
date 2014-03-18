@@ -28,7 +28,7 @@ public:
 
     static v8::Handle<v8::Value> New(FT_Face ft_face);
 private:
-    explicit FT_Font();
+    explicit FT_Font(FT_Face ft_face);
     ~FT_Font();
 
     static v8::Persistent<v8::FunctionTemplate> constructor;

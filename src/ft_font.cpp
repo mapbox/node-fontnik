@@ -17,7 +17,7 @@ const int FT_Font::buffer = 3;
 
 v8::Persistent<v8::FunctionTemplate> FT_Font::constructor;
 
-FT_Font::FT_Font()
+FT_Font::FT_Font(FT_Face ft_face)
     : node::ObjectWrap(),
     library_(nullptr) {
     FT_Error error = FT_Init_FreeType(&library_);
@@ -25,10 +25,11 @@ FT_Font::FT_Font()
     {
         throw std::runtime_error("can not load FreeType2 library");
     }
+    FT_Reference_Face(ft_face);
 }
 
 FT_Font::~FT_Font() {
-    // FT_Done_Face(ft_face);
+    FT_Done_Face(ft_face);
     FT_Done_FreeType(library_);
 }
 
@@ -116,9 +117,8 @@ v8::Handle<v8::Value> FT_Font::New(const v8::Arguments& args) {
     }
 
     if (ft_face) {
-        // FT_Font* font = new FT_Font(ft_face);
-        // font->Wrap(args.This());
-        args.This()->Set(v8::String::NewSymbol("backend"), v8::String::New("FREETYPE"), v8::ReadOnly);
+        FT_Font* font = new FT_Font(ft_face);
+        font->Wrap(args.This());
         args.This()->Set(v8::String::NewSymbol("family"), v8::String::New(ft_face->family_name), v8::ReadOnly);
         args.This()->Set(v8::String::NewSymbol("style"), v8::String::New(ft_face->style_name), v8::ReadOnly);
         args.This()->Set(v8::String::NewSymbol("length"), v8::Number::New(ft_face->num_glyphs), v8::ReadOnly);
