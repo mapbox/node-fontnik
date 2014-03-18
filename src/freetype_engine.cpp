@@ -1,18 +1,7 @@
 #include <node.h>
-#include <node_buffer.h>
 
 #include "freetype_engine.hpp"
 #include "freetype_font.hpp"
-#include "distmap.h"
-#include "globals.hpp"
-
-#include "metrics.pb.h"
-
-// stl
-#include <iostream>
-#include <fstream>
-#include <memory>
-
 
 // freetype2
 extern "C"
@@ -21,7 +10,6 @@ extern "C"
 #include FT_FREETYPE_H
 #include FT_STROKER_H
 }
-
 
 v8::Persistent<v8::FunctionTemplate> FreetypeEngine::constructor;
 
@@ -42,13 +30,10 @@ void FreetypeEngine::Init(v8::Handle<v8::Object> target) {
     target->Set(name, constructor->GetFunction());
 }
 
-const int FreetypeEngine::size = 24;
-const int FreetypeEngine::buffer = 3;
-
 FreetypeEngine::FreetypeEngine()
     : node::ObjectWrap(),
     library_(nullptr) {
-    FT_Error error = FT_Init_FreeType( &library_ );
+    FT_Error error = FT_Init_FreeType(&library_);
     if (error)
     {
         throw std::runtime_error("can not load FreeType2 library");
@@ -60,68 +45,15 @@ FreetypeEngine::~FreetypeEngine() {
 }
 
 v8::Handle<v8::Value> FreetypeEngine::New(const v8::Arguments& args) {
+    v8::HandleScope scope;
+    return scope.Close(FT_Font::NewInstance(args));
 }
 
-v8::Handle<v8::Value> FreetypeEngine::CreateFont(const v8::Arguments& args) {
-  v8::HandleScope scope;
-  return scope.Close(FT_Font::NewInstance(args));
-}
-
-v8::Handle<v8::Value> FreetypeEngine::New(std::string const& family_name) {
+v8::Handle<v8::Value> FreetypeEngine::New(FT_Face face) {
     v8::HandleScope scope;
 
-    std::map<std::string, std::pair<int,std::string> >::const_iterator itr;
-    itr = name2file_.find(family_name);
-    if (itr != name2file_.end())
-    {
-        FT_Face face;
+    v8::Local<v8::Value> value = v8::External::New(face);
+    v8::Local<v8::Object> object = constructor->GetFunction()->NewInstance(1, &value);
 
-        std::map<std::string,std::string>::const_iterator mem_font_itr = memory_fonts_.find(itr->second.second);
-
-        if (mem_font_itr != memory_fonts_.end()) // memory font
-        {
-            FT_Error error = FT_New_Memory_Face(library_,
-                                                reinterpret_cast<FT_Byte const*>(mem_font_itr->second.c_str()),
-                                                static_cast<FT_Long>(mem_font_itr->second.size()), // size
-                                                itr->second.first, // face index
-                                                &face);
-
-            // if (!error) return std::make_shared<font_face>(face);
-        }
-        else
-        {
-            // load font into memory
-#ifdef MAPNIK_THREADSAFE
-            mapnik::scoped_lock lock(mutex_);
-#endif
-            std::ifstream is(itr->second.second.c_str() , std::ios::binary);
-            std::string buffer((std::istreambuf_iterator<char>(is)),
-                               std::istreambuf_iterator<char>());
-            std::pair<std::map<std::string,std::string>::iterator,bool> result
-                = memory_fonts_.insert(std::make_pair(itr->second.second, buffer));
-
-            FT_Error error = FT_New_Memory_Face (library_,
-                                                 reinterpret_cast<FT_Byte const*>(result.first->second.c_str()),
-                                                 static_cast<FT_Long>(buffer.size()),
-                                                 itr->second.first,
-                                                 &face);
-            /*
-            if (!error) return std::make_shared<font_face>(face);
-            else
-            {
-                // we can't load font, erase it.
-                memory_fonts_.erase(result.first);
-            }
-            */
-        }
-        // return face_ptr();
-    }
-
-    // v8::Local<v8::Value> value = v8::External::New(family_name);
-    // v8::Local<v8::Object> object = constructor->GetFunction()->NewInstance(1, &value);
-
-    // return scope.Close(object);
+    return scope.Close(object);
 }
-
-std::map<std::string,std::pair<int,std::string> > FreetypeEngine::name2file_;
-std::map<std::string,std::string> FreetypeEngine::memory_fonts_;

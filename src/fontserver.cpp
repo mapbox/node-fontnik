@@ -1,9 +1,9 @@
 #include <node.h>
-#include "pango_engine.hpp"
 #include "pango_shaper.hpp"
+#include "ft_font.hpp"
 #include "tile.hpp"
 
-typedef PangoEngine Font;
+typedef FT_Font Font;
 
 void RegisterModule(v8::Handle<v8::Object> target) {
     InitShaping(target);

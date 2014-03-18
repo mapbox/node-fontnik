@@ -1,5 +1,5 @@
 #include "pango_shaper.hpp"
-#include "pango_engine.hpp"
+#include "ft_font.hpp"
 #include "globals.hpp"
 
 #include <map>
@@ -69,8 +69,11 @@ Handle<Value> Shaping(const Arguments& args) {
         if (pos != fonts.end()) {
             info->Set(sym_face, pos->second);
         } else {
-            fonts[glyph.font] = PangoEngine::New(glyph.font);
+            PangoFcFont *fc_font = PANGO_FC_FONT(glyph.font);
+            FT_Face face = pango_fc_font_lock_face(fc_font);
+            fonts[glyph.font] = FT_Font::New(face);
             info->Set(sym_face, fonts[glyph.font]);
+            pango_fc_font_unlock_face(fc_font);
         }
 
         info->Set(sym_glyph, Uint32::New(glyph.glyph));

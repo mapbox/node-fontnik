@@ -1,7 +1,7 @@
 #include <node.h>
 #include <node_buffer.h>
 
-#include "pango_engine.hpp"
+#include "pango_font.hpp"
 #include "distmap.h"
 #include "globals.hpp"
 
