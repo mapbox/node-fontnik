@@ -5,6 +5,7 @@
 // stl
 #include <string>
 #include <map>
+#include <vector>
 
 // freetype2
 extern "C"
@@ -16,17 +17,15 @@ extern "C"
 
 struct FT_LibraryRec_;
 
-/*
-class font_face;
-typedef std::shared_ptr<font_face> face_ptr;
-*/
-
 class FT_Font : public node::ObjectWrap {
 public:
     static void Init(v8::Handle<v8::Object> target);
     static bool HasInstance(v8::Handle<v8::Value> value);
 
     static v8::Handle<v8::Value> New(FT_Face ft_face);
+
+    static std::vector<std::string> face_names();
+    static std::map<std::string,std::pair<int,std::string> > const& get_mapping();
 private:
     explicit FT_Font(FT_Face ft_face);
     ~FT_Font();
@@ -38,6 +37,7 @@ private:
 
     static const int size;
     static const int buffer;
+    static FT_LibraryRec_ *library;
 
     static std::map<std::string, std::pair<int,std::string> > name2file_;
     static std::map<std::string, std::string> memory_fonts_;

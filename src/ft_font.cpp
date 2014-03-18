@@ -14,6 +14,7 @@
 
 const int FT_Font::size = 24;
 const int FT_Font::buffer = 3;
+FT_LibraryRec_* FT_Font::library;
 
 v8::Persistent<v8::FunctionTemplate> FT_Font::constructor;
 
@@ -21,10 +22,10 @@ FT_Font::FT_Font(FT_Face ft_face)
     : node::ObjectWrap(),
     library_(nullptr) {
     FT_Error error = FT_Init_FreeType(&library_);
-    if (error)
-    {
+    if (error) {
         throw std::runtime_error("can not load FreeType2 library");
     }
+    library = library_;
     FT_Reference_Face(ft_face);
 }
 
@@ -53,6 +54,21 @@ void FT_Font::Init(v8::Handle<v8::Object> target) {
     target->Set(name, constructor->GetFunction());
 }
 
+std::vector<std::string> FT_Font::face_names()
+{
+    std::vector<std::string> names;
+    std::map<std::string, std::pair<int,std::string>>::const_iterator itr;
+    for (itr = name2file_.begin(); itr!=name2file_.end(); ++itr) {
+        names.push_back(itr->first);
+    }
+    return names;
+}
+
+std::map<std::string, std::pair<int,std::string>> const& FT_Font::get_mapping()
+{
+    return name2file_;
+}
+
 v8::Handle<v8::Value> FT_Font::New(const v8::Arguments& args) {
     if (!args.IsConstructCall()) {
         return ThrowException(v8::Exception::TypeError(v8::String::New("Constructor must be called with new keyword")));
@@ -65,55 +81,45 @@ v8::Handle<v8::Value> FT_Font::New(const v8::Arguments& args) {
     if (args[0]->IsExternal()) {
         ft_face = (FT_Face)v8::External::Cast(*args[0])->Value();
     } else {
-        v8::String::Utf8Value font_name(args[0]->ToString());
-        /*
-        PangoFontDescription *desc = pango_font_description_from_string(*font_name);
-        pango_font = pango_font_map_load_font(pango_fontmap(), pango_context(), desc);
+        std::string font_name(*v8::String::Utf8Value(args[0]));
+        std::map<std::string, std::pair<int,std::string>>::const_iterator itr;
+        for (itr = name2file_.begin(); itr!=name2file_.end(); ++itr) {
+            if (itr->first == font_name) {
+                std::map<std::string,std::string>::const_iterator mem_font_itr = memory_fonts_.find(itr->second.second);
 
-        std::map<std::string, std::pair<int,std::string> >::const_iterator itr;
-        itr = name2file_.find(family_name);
-        if (itr != name2file_.end()) {
-            FT_Face ft_face;
-
-            std::map<std::string,std::string>::const_iterator mem_font_itr = memory_fonts_.find(itr->second.second);
-
-            if (mem_font_itr != memory_fonts_.end()) // memory font
-            {
-                FT_Error error = FT_New_Memory_Face(library_,
-                                                    reinterpret_cast<FT_Byte const*>(mem_font_itr->second.c_str()),
-                                                    static_cast<FT_Long>(mem_font_itr->second.size()), // size
-                                                    itr->second.first, // face index
-                                                    &ft_face);
-
-                if (!error) return std::make_shared<font_face>(ft_face);
-            }
-            else
-            {
-                // load font into memory
-#ifdef MAPNIK_THREADSAFE
-                mapnik::scoped_lock lock(mutex_);
-#endif
-                std::ifstream is(itr->second.second.c_str() , std::ios::binary);
-                std::string buffer((std::istreambuf_iterator<char>(is)),
-                                   std::istreambuf_iterator<char>());
-                std::pair<std::map<std::string,std::string>::iterator,bool> result
-                    = memory_fonts_.insert(std::make_pair(itr->second.second, buffer));
-
-                FT_Error error = FT_New_Memory_Face (library_,
-                                                     reinterpret_cast<FT_Byte const*>(result.first->second.c_str()),
-                                                     static_cast<FT_Long>(buffer.size()),
-                                                     itr->second.first,
-                                                     &ft_face);
-                if (!error) return std::make_shared<font_face>(ft_face);
-                else
+                if (mem_font_itr != memory_fonts_.end()) // memory font
                 {
-                    // we can't load font, erase it.
-                    memory_fonts_.erase(result.first);
+                    FT_Error error = FT_New_Memory_Face(library,
+                                                        reinterpret_cast<FT_Byte const*>(mem_font_itr->second.c_str()),
+                                                        static_cast<FT_Long>(mem_font_itr->second.size()), // size
+                                                        itr->second.first, // face index
+                                                        &ft_face);
+
+                    if (!error) {
+                        break;
+                    }
+                } else {
+                    // Load font into memory.
+                    std::ifstream is(itr->second.second.c_str() , std::ios::binary);
+                    std::string buffer((std::istreambuf_iterator<char>(is)),
+                                       std::istreambuf_iterator<char>());
+                    std::pair<std::map<std::string,std::string>::iterator,bool> result
+                        = memory_fonts_.insert(std::make_pair(itr->second.second, buffer));
+
+                    FT_Error error = FT_New_Memory_Face (library,
+                                                         reinterpret_cast<FT_Byte const*>(result.first->second.c_str()),
+                                                         static_cast<FT_Long>(buffer.size()),
+                                                         itr->second.first,
+                                                         &ft_face);
+                    if (!error) {
+                        break;
+                    } else {
+                        // We can't load font, erase it.
+                        memory_fonts_.erase(result.first);
+                    }
                 }
             }
-            return face_ptr();
         }
-        */
     }
 
     if (ft_face) {
