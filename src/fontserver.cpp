@@ -3,11 +3,9 @@
 #include "pango_shaper.hpp"
 #include "tile.hpp"
 
-using namespace v8;
-
 typedef PangoEngine Font;
 
-void RegisterModule(Handle<Object> target) {
+void RegisterModule(v8::Handle<v8::Object> target) {
     InitShaping(target);
     Font::Init(target);
     Tile::Init(target);
