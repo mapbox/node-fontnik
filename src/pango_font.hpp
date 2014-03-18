@@ -4,7 +4,7 @@
 
 #include <pango/pangoft2.h>
 
-class PangoEngine : public node::ObjectWrap {
+class Pango_Font : public node::ObjectWrap {
 public:
     static v8::Persistent<v8::FunctionTemplate> constructor;
     static void Init(v8::Handle<v8::Object> target);
@@ -12,8 +12,8 @@ public:
 
     static v8::Handle<v8::Value> New(PangoFont *pango_font);
 protected:
-    PangoEngine(PangoFont *pango_font);
-    ~PangoEngine();
+    Pango_Font(PangoFont *pango_font);
+    ~Pango_Font();
 
     static v8::Handle<v8::Value> New(const v8::Arguments& args);
     static v8::Handle<v8::Value> GetGlyph(uint32_t, const v8::AccessorInfo& info);

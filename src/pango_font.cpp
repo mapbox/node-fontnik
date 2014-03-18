@@ -10,13 +10,13 @@
 using namespace v8;
 
 
-Persistent<FunctionTemplate> PangoEngine::constructor;
+Persistent<FunctionTemplate> Pango_Font::constructor;
 
-void PangoEngine::Init(Handle<Object> target) {
+void Pango_Font::Init(Handle<Object> target) {
     HandleScope scope;
 
     Local<FunctionTemplate> tpl = FunctionTemplate::New(New);
-    Local<String> name = String::NewSymbol("PangoEngine");
+    Local<String> name = String::NewSymbol("Pango_Font");
 
     constructor = Persistent<FunctionTemplate>::New(tpl);
 
@@ -33,20 +33,20 @@ void PangoEngine::Init(Handle<Object> target) {
     target->Set(name, constructor->GetFunction());
 }
 
-const int PangoEngine::size = 24;
-const int PangoEngine::buffer = 3;
+const int Pango_Font::size = 24;
+const int Pango_Font::buffer = 3;
 
-PangoEngine::PangoEngine(PangoFont *pango_font)
+Pango_Font::Pango_Font(PangoFont *pango_font)
     : ObjectWrap(),
     font(pango_font) {
     g_object_ref(font);
 }
 
-PangoEngine::~PangoEngine() {
+Pango_Font::~Pango_Font() {
     g_object_unref(font);
 }
 
-Handle<Value> PangoEngine::New(const v8::Arguments& args) {
+Handle<Value> Pango_Font::New(const v8::Arguments& args) {
     if (!args.IsConstructCall()) {
         return ThrowException(Exception::TypeError(String::New("Constructor must be called with new keyword")));
     }
@@ -65,7 +65,7 @@ Handle<Value> PangoEngine::New(const v8::Arguments& args) {
 
     if (pango_font) {
         PangoFcFont *fc_font = PANGO_FC_FONT(pango_font);
-        PangoEngine* font = new PangoEngine(pango_font);
+        Pango_Font* font = new Pango_Font(pango_font);
         font->Wrap(args.This());
         FT_Face face = pango_fc_font_lock_face(fc_font);
         args.This()->Set(String::NewSymbol("family"), String::New(face->family_name), ReadOnly);
@@ -79,7 +79,7 @@ Handle<Value> PangoEngine::New(const v8::Arguments& args) {
     }
 }
 
-Handle<Value> PangoEngine::New(PangoFont* pango_font) {
+Handle<Value> Pango_Font::New(PangoFont* pango_font) {
     HandleScope scope;
 
     Local<Value> value = External::New(pango_font);
@@ -88,15 +88,15 @@ Handle<Value> PangoEngine::New(PangoFont* pango_font) {
     return scope.Close(object);
 }
 
-bool PangoEngine::HasInstance(Handle<Value> val) {
+bool Pango_Font::HasInstance(Handle<Value> val) {
     if (!val->IsObject()) return false;
     return constructor->HasInstance(val->ToObject());
 }
 
-Handle<Value> PangoEngine::GetGlyph(uint32_t glyph_index, const v8::AccessorInfo& info)
+Handle<Value> Pango_Font::GetGlyph(uint32_t glyph_index, const v8::AccessorInfo& info)
 {
     HandleScope scope;
-    PangoEngine* font = ObjectWrap::Unwrap<PangoEngine>(info.This());
+    Pango_Font* font = ObjectWrap::Unwrap<Pango_Font>(info.This());
     PangoFcFont *fc_font = PANGO_FC_FONT(font->font);
     FT_Face face = pango_fc_font_lock_face(fc_font);
     // fprintf(stderr, "x/y/h: %ld/%ld/%ld\n", face->size->metrics.x_scale, face->size->metrics.y_scale / 2048, face->size->metrics.height);
@@ -140,11 +140,11 @@ Handle<Value> PangoEngine::GetGlyph(uint32_t glyph_index, const v8::AccessorInfo
     }
 }
 
-Handle<Value> PangoEngine::Metrics(Local<String> property, const AccessorInfo &info)
+Handle<Value> Pango_Font::Metrics(Local<String> property, const AccessorInfo &info)
 {
     HandleScope scope;
 
-    PangoEngine* font = ObjectWrap::Unwrap<PangoEngine>(info.This());
+    Pango_Font* font = ObjectWrap::Unwrap<Pango_Font>(info.This());
     PangoFcFont *fc_font = PANGO_FC_FONT(font->font);
     FT_Face face = pango_fc_font_lock_face(fc_font);
 

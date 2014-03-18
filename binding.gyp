@@ -32,6 +32,7 @@
       'sources': [
         'src/fontserver.cpp',
         'src/ft_font.cpp',
+        'src/pango_font.cpp',
         'src/pango_shaper.cpp',
         'src/tile.cpp',
         'src/clipper.cpp',
