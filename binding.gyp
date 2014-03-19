@@ -31,10 +31,9 @@
       'target_name': 'fontserver',
       'sources': [
         'src/fontserver.cpp',
-        'src/ft_font.cpp',
         'src/pango_font.cpp',
         'src/pango_shaper.cpp',
-        'src/tile.cpp',
+        'src/tile_freetype.cpp',
         'src/clipper.cpp',
         'src/sdf_renderer.cpp',
         'src/distmap.c',
