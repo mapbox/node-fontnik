@@ -387,11 +387,11 @@ struct Glyph {
 
 class Face {
 public:
-    Face(PangoFont *font) : font(font) {
-        g_object_ref(font);
+    Face(FT_Face font) : font(font) {
+        FT_Reference_Face(font);
     }
     ~Face() {
-        g_object_unref(font);
+        FT_Done_Face(font);
     }
 
     const Glyph& glyph(uint32_t glyph_id) {
@@ -402,26 +402,23 @@ public:
             Glyph& glyph = glyphs[glyph_id];
             glyph.id = glyph_id;
 
-            PangoFcFont *fc_font = PANGO_FC_FONT(font);
-            FT_Face ft_face = pango_fc_font_lock_face(fc_font);
-
             int size = 24;
             int buffer = 3;
-            FT_Set_Char_Size(ft_face, 0, size * 64, 72, 72);
+            FT_Set_Char_Size(font, 0, size * 64, 72, 72);
 
-            FT_Error error = FT_Load_Glyph(ft_face, glyph_id, FT_LOAD_NO_HINTING | FT_LOAD_RENDER);
+            FT_Error error = FT_Load_Glyph(font, glyph_id, FT_LOAD_NO_HINTING | FT_LOAD_RENDER);
             if (error) {
                 fprintf(stderr, "glyph load error %d\n", error);
                 return glyph;
             }
 
-            glyph.width = ft_face->glyph->bitmap.width;
-            glyph.height = ft_face->glyph->bitmap.rows;
-            glyph.left = ft_face->glyph->bitmap_left;
-            glyph.top = ft_face->glyph->bitmap_top;
-            glyph.advance = ft_face->glyph->metrics.horiAdvance / 64;
+            glyph.width = font->glyph->bitmap.width;
+            glyph.height = font->glyph->bitmap.rows;
+            glyph.left = font->glyph->bitmap_left;
+            glyph.top = font->glyph->bitmap_top;
+            glyph.advance = font->glyph->metrics.horiAdvance / 64;
 
-            FT_GlyphSlot slot = ft_face->glyph;
+            FT_GlyphSlot slot = font->glyph;
             int width = slot->bitmap.width;
             int height = slot->bitmap.rows;
 
@@ -439,17 +436,15 @@ public:
                 free(distance);
             }
 
-            pango_fc_font_unlock_face(fc_font);
-
             return glyph;
         }
     }
 
 private:
-    PangoFont *font;
+    FT_Face font;
     std::map<uint32_t, Glyph> glyphs;
 
-    typedef std::map<PangoFont *, Face *> map;
+    typedef std::map<FT_Face, Face *> map;
     static pthread_once_t init;
     static pthread_key_t map_key;
     static void init_map() {
@@ -460,7 +455,7 @@ private:
     }
 
 public:
-    static Face *face(PangoFont *font)
+    static Face *face(FT_Face font)
     {
         // Get a thread-specific font-/glyphmap.
         pthread_once(&init, init_map);
@@ -487,22 +482,19 @@ pthread_key_t Face::map_key = 0;
 
 class TileFace {
 public:
-    TileFace(PangoFont *font) : font(font) {
-        g_object_ref(font);
-        PangoFcFont *fc_font = PANGO_FC_FONT(font);
-        FT_Face ft_face = pango_fc_font_lock_face(fc_font);
-        family = ft_face->family_name;
-        style = ft_face->style_name;
-        pango_fc_font_unlock_face(fc_font);
+    TileFace(FT_Face font) : font(font) {
+        FT_Reference_Face(font);
+        family = font->family_name;
+        style = font->style_name;
     }
     ~TileFace() {
-        g_object_unref(font);
+        FT_Done_Face(font);
     }
     inline void add_glyph(uint32_t glyph_id) {
         glyphs.insert(glyph_id);
     }
 
-    PangoFont *font;
+    FT_Face font;
     std::string family;
     std::string style;
     std::set<uint32_t> glyphs;
@@ -522,7 +514,7 @@ void Tile::AsyncShape(uv_work_t* req) {
     pango_layout_set_font_description(layout, desc);
 
 
-    typedef std::map<PangoFont *, TileFace *> Faces;
+    typedef std::map<FT_Face, TileFace *> Faces;
     Faces faces;
 
     llmr::vector::tile& tile = baton->tile->tile;
@@ -581,10 +573,14 @@ void Tile::AsyncShape(uv_work_t* req) {
                     // Try to find whether this font has already been used
                     // in this tile.
 
-                    Faces::const_iterator global_pos = faces.find(glyph.font);
+                    PangoFcFont *fc_font = PANGO_FC_FONT(glyph.font);
+                    FT_Face ft_face = pango_fc_font_lock_face(fc_font);
+                    pango_fc_font_unlock_face(fc_font);
+
+                    Faces::const_iterator global_pos = faces.find(ft_face);
                     if (global_pos == faces.end()) {
-                        TileFace *face = new TileFace(glyph.font);
-                        std::pair<PangoFont *, TileFace *> keyed(glyph.font, face);
+                        TileFace *face = new TileFace(ft_face);
+                        std::pair<FT_Face, TileFace *> keyed(ft_face, face);
                         global_pos = faces.insert(keyed).first;
                     }
 
@@ -626,11 +622,10 @@ void Tile::AsyncShape(uv_work_t* req) {
 
     // Insert SDF glyphs + bitmaps
     for (Faces::const_iterator it = faces.begin(); it != faces.end(); it++) {
-        const std::pair<PangoFont *, TileFace *>& pair = *it;
+        const std::pair<FT_Face, TileFace *>& pair = *it;
         TileFace *face = pair.second;
         llmr::vector::face *mutable_face = tile.add_faces();
-        PangoFcFont *fc_font = PANGO_FC_FONT(face->font);
-        FT_Face ft_face = pango_fc_font_lock_face(fc_font);
+        FT_Face ft_face = face->font;
         mutable_face->set_family(ft_face->family_name);
         mutable_face->set_style(ft_face->style_name);
 
@@ -642,8 +637,6 @@ void Tile::AsyncShape(uv_work_t* req) {
         //     omit.insert(glyph_index);
         //     char_code = FT_Get_Next_Char(ft_face, char_code, &glyph_index);
         // }
-
-        pango_fc_font_unlock_face(fc_font);
 
         Face *_face = Face::face(face->font);
 
