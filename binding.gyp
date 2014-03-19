@@ -31,7 +31,7 @@
       'target_name': 'fontserver',
       'sources': [
         'src/fontserver.cpp',
-        'src/tile_freetype.cpp',
+        'src/tile.cpp',
         'src/clipper.cpp',
         'src/sdf_renderer.cpp',
         'src/distmap.c',

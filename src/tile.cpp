@@ -13,16 +13,6 @@
 
 using namespace ClipperLib;
 
-// freetype2
-extern "C"
-{
-#include <ft2build.h>
-#include FT_FREETYPE_H
-#include FT_STROKER_H
-}
-
-struct FT_LibraryRec_;
-
 struct SimplifyBaton {
     v8::Persistent<v8::Function> callback;
     Tile *tile;
@@ -35,6 +25,22 @@ struct ShapeBaton {
 };
 
 v8::Persistent<v8::FunctionTemplate> Tile::constructor;
+
+Tile::Tile(const char *data, size_t length)
+    : node::ObjectWrap(),
+    library_(nullptr) {
+    tile.ParseFromArray(data, length);
+    pthread_mutex_init(&mutex, NULL);
+    FT_Error error = FT_Init_FreeType(&library_);
+    if (error) {
+        throw std::runtime_error("can not load FreeType2 library");
+    }
+}
+
+Tile::~Tile() {
+    FT_Done_FreeType(library_);
+    pthread_mutex_destroy(&mutex);
+}
 
 void Tile::Init(v8::Handle<v8::Object> target) {
     v8::HandleScope scope;
@@ -53,21 +59,10 @@ void Tile::Init(v8::Handle<v8::Object> target) {
     NODE_SET_PROTOTYPE_METHOD(constructor, "serialize", Serialize);
     NODE_SET_PROTOTYPE_METHOD(constructor, "simplify", Simplify);
     NODE_SET_PROTOTYPE_METHOD(constructor, "shape", Shape);
-    // constructor->PrototypeTemplate()->SetIndexedPropertyHandler(GetGlyph);
 
     // This has to be last, otherwise the properties won't show up on the
     // object in JavaScript.
     target->Set(name, constructor->GetFunction());
-}
-
-Tile::Tile(const char *data, size_t length)
-    : node::ObjectWrap() {
-    tile.ParseFromArray(data, length);
-    pthread_mutex_init(&mutex, NULL);
-}
-
-Tile::~Tile() {
-    pthread_mutex_destroy(&mutex);
 }
 
 v8::Handle<v8::Value> Tile::New(const v8::Arguments& args) {
