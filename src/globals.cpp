@@ -1,8 +1,6 @@
 #include "globals.hpp"
 #include <pthread.h>
 
-#include "sdf_renderer.hpp"
-
 pthread_once_t pango_init = PTHREAD_ONCE_INIT;
 pthread_key_t pango_fontmap_key;
 pthread_key_t pango_context_key;

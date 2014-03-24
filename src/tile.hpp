@@ -35,6 +35,7 @@ protected:
     static void AsyncShape(uv_work_t* req);
     static void ShapeAfter(uv_work_t* req);
 
+    static FT_LibraryRec_ *library;
     FT_LibraryRec_ *library_;
 
 public:

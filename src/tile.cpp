@@ -3,13 +3,15 @@
 
 #include "tile.hpp"
 #include "clipper.hpp"
-#include "globals.hpp"
-#include <pango/pangoft2.h>
-#include "sdf_renderer.hpp"
+#include "font_set.hpp"
+#include "font_engine_freetype.hpp"
+// #include "globals.hpp"
+#include "harfbuzz_shaper.hpp"
 
 #include "distmap.h"
 #include <set>
 #include <algorithm>
+#include <iostream>
 
 using namespace ClipperLib;
 
@@ -35,6 +37,7 @@ Tile::Tile(const char *data, size_t length)
     if (error) {
         throw std::runtime_error("can not load FreeType2 library");
     }
+    library = library_;
 }
 
 Tile::~Tile() {
@@ -505,6 +508,7 @@ void Tile::AsyncShape(uv_work_t* req) {
 
     pthread_mutex_lock(&baton->tile->mutex);
 
+    /*
     PangoRenderer *renderer = pango_renderer();
 
     PangoFontDescription *desc = pango_font_description_from_string(baton->fontstack.c_str());
@@ -512,6 +516,7 @@ void Tile::AsyncShape(uv_work_t* req) {
 
     PangoLayout *layout = pango_layout_new(pango_context());
     pango_layout_set_font_description(layout, desc);
+    */
 
 
     typedef std::map<FT_Face, TileFace *> Faces;
@@ -554,6 +559,11 @@ void Tile::AsyncShape(uv_work_t* req) {
             }
 
             if (text.size()) {
+                harfbuzz_shaper.shape_text(text,
+                                           baton->fontstack,
+                                           &library);
+
+                /*
                 // Shape the text.
                 pango_layout_set_text(layout, text.data(), text.size());
 
@@ -569,6 +579,9 @@ void Tile::AsyncShape(uv_work_t* req) {
                 // appear.
                 for (size_t j = 0; j < glyphs.size(); j++) {
                     const PangoSDFGlyph& glyph = glyphs[j];
+                    std::cout<<pango_font_description_to_string(pango_font_describe(glyph.font))<<'\n';
+                    std::cout<<glyph.x<<'\n';
+                    std::cout<<glyph.y<<'\n'<<'\n';
 
                     // Try to find whether this font has already been used
                     // in this tile.
@@ -604,6 +617,7 @@ void Tile::AsyncShape(uv_work_t* req) {
                     label->add_x(glyph.x);
                     label->add_y(glyph.y);
                 }
+            */
             }
         }
 
