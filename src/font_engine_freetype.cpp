@@ -22,6 +22,7 @@
 
 // mapnik
 #include "font_engine_freetype.hpp"
+#include "face.hpp"
 #include "fs.hpp"
 
 // boost
@@ -31,13 +32,15 @@
 // stl
 #include <algorithm>
 #include <stdexcept>
+#include <sstream>
+#include <fstream>
 
 // freetype2
 extern "C"
 {
 #include <ft2build.h>
 #include FT_FREETYPE_H
-#include FT_STROKER_H
+// #include FT_STROKER_H
 }
 
 freetype_engine::freetype_engine() :
@@ -123,7 +126,7 @@ bool freetype_engine::register_font(std::string const& file_name)
             else if (face->style_name)
                 s << "which reports a style name of '" << std::string(face->style_name) << "' and lacks a family name";
 
-            MAPNIK_LOG_ERROR(font_engine_freetype) << "register_font: " << s.str();
+            // MAPNIK_LOG_ERROR(font_engine_freetype) << "register_font: " << s.str();
         }
     }
     if (face)
@@ -182,7 +185,7 @@ bool freetype_engine::register_fonts(std::string const& dir, bool recurse)
     }
     catch (std::exception const& ex)
     {
-        MAPNIK_LOG_ERROR(font_engine_freetype) << "register_fonts: " << ex.what();
+        // MAPNIK_LOG_ERROR(font_engine_freetype) << "register_fonts: " << ex.what();
     }
     return success;
 }
@@ -254,6 +257,7 @@ face_ptr freetype_engine::create_face(std::string const& family_name)
 }
 
 
+/*
 stroker_ptr freetype_engine::create_stroker()
 {
     FT_Stroker s;
@@ -264,6 +268,7 @@ stroker_ptr freetype_engine::create_stroker()
     }
     return stroker_ptr();
 }
+*/
 
 
 
@@ -313,9 +318,11 @@ face_set_ptr face_manager<T>::get_face_set(const font_set &fset)
 #ifdef MAPNIK_LOG
         else
         {
+            /*
             MAPNIK_LOG_DEBUG(font_engine_freetype)
                     << "Failed to find face '" << *name
                     << "' in font set '" << fset.get_name() << "'\n";
+            */
         }
 #endif
     }

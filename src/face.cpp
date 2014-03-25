@@ -20,16 +20,12 @@
  *
  *****************************************************************************/
 // mapnik
-#include <mapnik/text/face.hpp>
-#include <mapnik/debug.hpp>
+#include "face.hpp"
 
 extern "C"
 {
 #include FT_GLYPH_H
 }
-
-namespace mapnik
-{
 
 font_face::font_face(FT_Face face)
     : face_(face), dimension_cache_(), char_height_(0.0)
@@ -96,11 +92,12 @@ void font_face::glyph_dimensions(glyph_info & glyph) const
 //TODO:    dimension_cache_.insert(std::pair<unsigned, char_info>(c, dim));
 }
 
-font_face::~font_face()
-{
+font_face::~font_face() {
+    /*
     MAPNIK_LOG_DEBUG(font_face) <<
         "font_face: Clean up face \"" << family_name() <<
         " " << style_name() << "\"";
+    */
 
     FT_Done_Face(face_);
 }
@@ -122,6 +119,7 @@ void font_face_set::set_character_sizes(double size)
 
 /******************************************************************************/
 
+/*
 void stroker::init(double radius)
 {
     FT_Stroker_Set(s_, (FT_Fixed) (radius * (1<<6)),
@@ -130,11 +128,9 @@ void stroker::init(double radius)
                    0);
 }
 
-stroker::~stroker()
-{
+stroker::~stroker() {
     MAPNIK_LOG_DEBUG(font_engine_freetype) << "stroker: Destroy stroker=" << s_;
 
     FT_Stroker_Done(s_);
 }
-
-}//ns mapnik
+*/
