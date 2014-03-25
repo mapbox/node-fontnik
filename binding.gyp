@@ -41,14 +41,14 @@
         'src/vector_tile.pb.cc'
       ],
       'include_dirs': [
-        '/usr/local/opt/icu4c/include/',
+        '<!@(pkg-config icu-uc --cflags-only-I | sed s/-I//g)',
         '<!@(pkg-config pangoft2 --cflags-only-I | sed s/-I//g)',
         '<!@(pkg-config freetype2 --cflags-only-I | sed s/-I//g)',
         '<!@(pkg-config harfbuzz --cflags-only-I | sed s/-I//g)',
         '<!@(pkg-config protobuf --cflags-only-I | sed s/-I//g)',
       ],
       'libraries': [
-        '/usr/local/opt/icu4c/',
+        '<!@(pkg-config icu-uc --libs)',
         '<!@(pkg-config pangoft2 --libs)',
         '<!@(pkg-config freetype2 --libs)',
         '<!@(pkg-config harfbuzz --libs)',

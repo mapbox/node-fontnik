@@ -30,10 +30,13 @@
 // stl
 #include <list>
 
+// icu
+#include <unicode/unistr.h>
+
 // harfbuzz
 #include <harfbuzz/hb.h>
 #include <harfbuzz/hb-ft.h>
-// #include <harfbuzz/hb-icu.h>
+#include <harfbuzz/hb-icu.h>
 
 // typedef std::vector<FT_Glyph> glyph_vector;
 
@@ -42,10 +45,17 @@ face_manager_freetype font_manager(engine);
 
 struct harfbuzz_shaper
 {
-static void shape_text(text_line &line,
+static void shape_text(std::string &value,
                        std::string &fontstack,
                        FT_Library &library)
 {
+    size_t length = value.size();
+    if (!length) return;
+
+    UnicodeString const &text = value.data();
+
+    /*
+    text_line line;
     unsigned start = line.first_char();
     unsigned end = line.last_char();
 
@@ -56,6 +66,7 @@ static void shape_text(text_line &line,
     // Preallocate memory based on estimated length.
     // glyph_vector glyphs;
     line.reserve(length);
+    */
 
     auto hb_buffer_deleter = [](hb_buffer_t * buffer) { hb_buffer_destroy(buffer);};
     const std::unique_ptr<hb_buffer_t, decltype(hb_buffer_deleter)> buffer(hb_buffer_create(),hb_buffer_deleter);
@@ -67,7 +78,8 @@ static void shape_text(text_line &line,
     for (; face_itr != face_end; ++face_itr)
     {
         hb_buffer_clear_contents(buffer.get());
-        hb_buffer_add_utf16(buffer.get(), text.getBuffer(), text.length(), text_item.start, text_item.end - text_item.start);
+        std::cout<<text.length()<<" "<<length<<'\n';
+        hb_buffer_add_utf16(buffer.get(), text.getBuffer(), text.length(), 0, length);
         // hb_buffer_set_direction(buffer.get(), (text_item.rtl == UBIDI_RTL)?HB_DIRECTION_RTL:HB_DIRECTION_LTR);
         // hb_buffer_set_script(buffer.get(), hb_icu_script_to_script(text_item.script));
         face_ptr const& face = *face_itr;
@@ -102,15 +114,15 @@ static void shape_text(text_line &line,
             tmp.char_index = glyphs[i].cluster;
             tmp.glyph_index = glyphs[i].codepoint;
             tmp.face = face;
-            tmp.format = text_item.format;
+            // tmp.format = text_item.format;
             face->glyph_dimensions(tmp);
             //tmp.width = positions[i].x_advance / 64.0; //Overwrite default width with better value provided by HarfBuzz
             tmp.width = positions[i].x_advance >> 6;
-            tmp.offset.set(positions[i].x_offset / 64.0, positions[i].y_offset / 64.0);
+            // tmp.offset.set(positions[i].x_offset / 64.0, positions[i].y_offset / 64.0);
             // width_map[glyphs[i].cluster] += tmp.width;
-            line.add_glyph(tmp, scale_factor);
+            // line.add_glyph(tmp, scale_factor);
         }
-        line.update_max_char_height(face->get_char_height());
+        // line.update_max_char_height(face->get_char_height());
         break; //When we reach this point the current font had all glyphs.
     }
 }

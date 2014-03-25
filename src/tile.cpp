@@ -559,9 +559,10 @@ void Tile::AsyncShape(uv_work_t* req) {
             }
 
             if (text.size()) {
-                harfbuzz_shaper.shape_text(text,
-                                           baton->fontstack,
-                                           &library);
+                harfbuzz_shaper shaper;
+                shaper.shape_text(text,
+                                  baton->fontstack,
+                                  library);
 
                 /*
                 // Shape the text.
