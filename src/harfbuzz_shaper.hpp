@@ -39,16 +39,16 @@
 #include <harfbuzz/hb-icu.h>
 
 class HarfbuzzShaper {
-    public:
-        HarfbuzzShaper();
-        ~HarfbuzzShaper();
+public:
+    HarfbuzzShaper();
+    ~HarfbuzzShaper();
 
-        static void shape_text(std::string &value,
-                               std::string &fontstack); 
-    private:
-        freetype_engine font_engine_;
-        face_manager<freetype_engine> font_manager_;
-        std::vector<FT_Glyph> glyph_vector;
+    void Shape(std::string &value,
+                           std::string &fontstack); 
+private:
+    freetype_engine font_engine_;
+    face_manager<freetype_engine> font_manager_;
+    std::vector<FT_Glyph> glyph_vector;
 };
 
 #endif // MAPNIK_HARFBUZZ_SHAPER_HPP

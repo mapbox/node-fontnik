@@ -25,12 +25,8 @@
 HarfbuzzShaper::HarfbuzzShaper()
     : font_manager_(font_engine_) {};
 
-HarfbuzzShaper::~HarfbuzzShaper();
-
-static void HarfbuzzShaper::shape_text(std::string &value,
-                       std::string &fontstack,
-                       FT_Library &library)
-{
+void HarfbuzzShaper::Shape(std::string &value,
+                                  std::string &fontstack) {
     size_t length = value.size();
     if (!length) return;
 

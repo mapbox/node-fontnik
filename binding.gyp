@@ -33,6 +33,7 @@
         'src/fontserver.cpp',
         'src/tile.cpp',
         'src/clipper.cpp',
+        'src/harfbuzz_shaper.cpp',
         'src/font_set.cpp',
         'src/utils.cpp',
         'src/fs.cpp',

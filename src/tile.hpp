@@ -3,6 +3,7 @@
 #include <node.h>
 
 #include "vector_tile.pb.h"
+#include "harfbuzz_shaper.hpp"
 
 class Tile : public node::ObjectWrap {
 public:

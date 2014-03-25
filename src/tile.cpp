@@ -6,7 +6,6 @@
 #include "font_set.hpp"
 #include "font_engine_freetype.hpp"
 // #include "globals.hpp"
-#include "harfbuzz_shaper.hpp"
 
 #include "distmap.h"
 #include <set>
@@ -553,8 +552,8 @@ void Tile::AsyncShape(uv_work_t* req) {
 
             if (text.size()) {
                 HarfbuzzShaper shaper;
-                shaper.shape_text(text,
-                                  baton->fontstack);
+                shaper.Shape(text,
+                             baton->fontstack);
 
                 /*
                 // Shape the text.

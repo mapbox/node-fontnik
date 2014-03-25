@@ -36,6 +36,7 @@
 
 // stl
 #include <vector>
+#include <map>
 
 struct FT_LibraryRec_;
 
