@@ -45,15 +45,13 @@
       ],
       'include_dirs': [
         '<!@(pkg-config icu-uc --cflags-only-I | sed s/-I//g)',
-        '<!@(pkg-config pangoft2 --cflags-only-I | sed s/-I//g)',
         '<!@(pkg-config freetype2 --cflags-only-I | sed s/-I//g)',
         '<!@(pkg-config harfbuzz --cflags-only-I | sed s/-I//g)',
         '<!@(pkg-config protobuf --cflags-only-I | sed s/-I//g)',
       ],
       'libraries': [
-        '<!@(pkg-config icu-uc --libs)',
-        '<!@(pkg-config pangoft2 --libs)',
         '<!@(pkg-config freetype2 --libs)',
+        '<!@(pkg-config icu-uc --libs)',
         '<!@(pkg-config harfbuzz --libs)',
         '<!@(pkg-config protobuf --libs)'
       ],
