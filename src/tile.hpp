@@ -4,16 +4,6 @@
 
 #include "vector_tile.pb.h"
 
-// freetype2
-extern "C"
-{
-#include <ft2build.h>
-#include FT_FREETYPE_H
-#include FT_STROKER_H
-}
-
-struct FT_LibraryRec_;
-
 class Tile : public node::ObjectWrap {
 public:
     static v8::Persistent<v8::FunctionTemplate> constructor;
@@ -34,9 +24,6 @@ protected:
     static v8::Handle<v8::Value> Shape(const v8::Arguments& args);
     static void AsyncShape(uv_work_t* req);
     static void ShapeAfter(uv_work_t* req);
-
-    static FT_LibraryRec_ *library;
-    FT_LibraryRec_ *library_;
 
 public:
     llmr::vector::tile tile;

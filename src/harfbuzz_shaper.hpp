@@ -38,13 +38,13 @@
 #include <harfbuzz/hb-ft.h>
 #include <harfbuzz/hb-icu.h>
 
-class harfbuzz_shaper {
+class HarfbuzzShaper {
     public:
-        harfbuzz_shaper();
-        ~harfbuzz_shaper();
+        HarfbuzzShaper();
+        ~HarfbuzzShaper();
+
         static void shape_text(std::string &value,
-                               std::string &fontstack,
-                               FT_Library &library); 
+                               std::string &fontstack); 
     private:
         freetype_engine font_engine_;
         face_manager<freetype_engine> font_manager_;

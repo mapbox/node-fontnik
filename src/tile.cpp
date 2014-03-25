@@ -29,19 +29,12 @@ struct ShapeBaton {
 v8::Persistent<v8::FunctionTemplate> Tile::constructor;
 
 Tile::Tile(const char *data, size_t length)
-    : node::ObjectWrap(),
-    library_(nullptr) {
+    : node::ObjectWrap() { 
     tile.ParseFromArray(data, length);
     pthread_mutex_init(&mutex, NULL);
-    FT_Error error = FT_Init_FreeType(&library_);
-    if (error) {
-        throw std::runtime_error("can not load FreeType2 library");
-    }
-    library = library_;
 }
 
 Tile::~Tile() {
-    FT_Done_FreeType(library_);
     pthread_mutex_destroy(&mutex);
 }
 
@@ -559,10 +552,9 @@ void Tile::AsyncShape(uv_work_t* req) {
             }
 
             if (text.size()) {
-                harfbuzz_shaper shaper;
+                HarfbuzzShaper shaper;
                 shaper.shape_text(text,
-                                  baton->fontstack,
-                                  library);
+                                  baton->fontstack);
 
                 /*
                 // Shape the text.
