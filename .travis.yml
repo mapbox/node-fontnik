@@ -7,7 +7,7 @@ before_install:
  - sudo add-apt-repository --yes ppa:george-edison55/gcc4.7-precise
  - sudo add-apt-repository --yes ppa:chris-lea/protobuf
  - sudo apt-get update
- - sudo apt-get install -y gcc-4.7 gcc g++ libprotobuf7 libprotobuf-dev protobuf-compiler libpango1.0-0 libpango1.0-dev libfreetype6-dev libicu libicu-dev
+ - sudo apt-get install -y gcc-4.7 gcc g++ libprotobuf7 libprotobuf-dev protobuf-compiler libpango1.0-0 libpango1.0-dev libfreetype6-dev libicu-dev
  - wget http://mapnik.s3.amazonaws.com/deps/harfbuzz-0.9.24.tar.bz2
  - tar xf harfbuzz-0.9.24.tar.bz2
  - cd harfbuzz-0.9.24
