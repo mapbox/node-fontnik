@@ -21,12 +21,14 @@
  *****************************************************************************/
 
 #include "harfbuzz_shaper.hpp"
+#include "glyph_info.hpp"
 
 HarfbuzzShaper::HarfbuzzShaper()
     : font_manager_(font_engine_) {};
 
 void HarfbuzzShaper::Shape(std::string &value,
-                                  std::string &fontstack) {
+                           std::string &fontstack) {
+
     size_t length = value.size();
     if (!length) return;
 

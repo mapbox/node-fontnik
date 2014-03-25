@@ -38,9 +38,6 @@
 #include <algorithm>
 #include <cmath>
 
-namespace mapnik
-{
-
 #ifdef MAPNIK_THREADSAFE
 using std::mutex;
 #endif
@@ -171,7 +168,5 @@ MAPNIK_DECL std::string utf16_to_utf8(std::wstring const& wstr);
 MAPNIK_DECL std::wstring utf8_to_utf16(std::string const& str);
 
 #endif  // _WINDOWS
-
-}
 
 #endif // MAPNIK_UTILS_HPP

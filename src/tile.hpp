@@ -3,7 +3,6 @@
 #include <node.h>
 
 #include "vector_tile.pb.h"
-#include "harfbuzz_shaper.hpp"
 
 class Tile : public node::ObjectWrap {
 public:
@@ -25,8 +24,6 @@ protected:
     static v8::Handle<v8::Value> Shape(const v8::Arguments& args);
     static void AsyncShape(uv_work_t* req);
     static void ShapeAfter(uv_work_t* req);
-
-    static HarfbuzzShaper shaper;
 
 public:
     llmr::vector::tile tile;

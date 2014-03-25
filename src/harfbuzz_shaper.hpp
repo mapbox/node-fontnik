@@ -20,8 +20,7 @@
  *
  *****************************************************************************/
 
-#ifndef MAPNIK_HARFBUZZ_SHAPER_HPP
-#define MAPNIK_HARFBUZZ_SHAPER_HPP
+#pragma once
 
 #include "font_engine_freetype.hpp"
 #include "face.hpp"
@@ -45,11 +44,9 @@ public:
     ~HarfbuzzShaper();
 
     void Shape(std::string &value,
-                           std::string &fontstack); 
+               std::string &fontstack); 
 private:
     freetype_engine font_engine_;
     face_manager<freetype_engine> font_manager_;
     GlyphVector glyphs;
 };
-
-#endif // MAPNIK_HARFBUZZ_SHAPER_HPP

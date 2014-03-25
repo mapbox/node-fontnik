@@ -13,6 +13,14 @@
 #include <algorithm>
 #include <iostream>
 
+// freetype2
+extern "C"
+{
+#include <ft2build.h>
+#include FT_FREETYPE_H
+// #include FT_STROKER_H
+}
+
 using namespace ClipperLib;
 
 struct SimplifyBaton {
@@ -27,6 +35,7 @@ struct ShapeBaton {
 };
 
 v8::Persistent<v8::FunctionTemplate> Tile::constructor;
+HarfbuzzShaper shaper;
 
 Tile::Tile(const char *data, size_t length)
     : node::ObjectWrap() { 
@@ -552,7 +561,6 @@ void Tile::AsyncShape(uv_work_t* req) {
             }
 
             if (text.size()) {
-                HarfbuzzShaper shaper;
                 shaper.Shape(text,
                              baton->fontstack);
 
