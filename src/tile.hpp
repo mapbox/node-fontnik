@@ -26,6 +26,8 @@ protected:
     static void AsyncShape(uv_work_t* req);
     static void ShapeAfter(uv_work_t* req);
 
+    static HarfbuzzShaper shaper;
+
 public:
     llmr::vector::tile tile;
     pthread_mutex_t mutex;

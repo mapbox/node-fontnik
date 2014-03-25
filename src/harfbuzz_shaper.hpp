@@ -24,7 +24,6 @@
 #define MAPNIK_HARFBUZZ_SHAPER_HPP
 
 #include "font_engine_freetype.hpp"
-#include "text_line.hpp"
 #include "face.hpp"
 
 // stl
@@ -38,6 +37,8 @@
 #include <harfbuzz/hb-ft.h>
 #include <harfbuzz/hb-icu.h>
 
+typedef std::vector<FT_Glyph> GlyphVector;
+
 class HarfbuzzShaper {
 public:
     HarfbuzzShaper();
@@ -48,7 +49,7 @@ public:
 private:
     freetype_engine font_engine_;
     face_manager<freetype_engine> font_manager_;
-    std::vector<FT_Glyph> glyph_vector;
+    GlyphVector glyphs;
 };
 
 #endif // MAPNIK_HARFBUZZ_SHAPER_HPP

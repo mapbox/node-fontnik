@@ -5,6 +5,7 @@
 #include "clipper.hpp"
 #include "font_set.hpp"
 #include "font_engine_freetype.hpp"
+#include "harfbuzz_shaper.hpp"
 // #include "globals.hpp"
 
 #include "distmap.h"

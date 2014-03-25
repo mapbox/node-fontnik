@@ -42,7 +42,6 @@ void HarfbuzzShaper::Shape(std::string &value,
     line.reserve(length);
 
     // Preallocate memory based on estimated length.
-    // glyph_vector glyphs;
     line.reserve(length);
     */
 
