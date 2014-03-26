@@ -19,23 +19,20 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  *
  *****************************************************************************/
-#ifndef MAPNIK_TEXT_LINE_HPP
-#define MAPNIK_TEXT_LINE_HPP
 
-//mapnik
+#pragma once
+
 #include "glyph_info.hpp"
 
 //stl
 #include <vector>
-
 
 /** This class stores all glyphs of a line in left to right order.
  *
  * It can be used for rendering but no text processing (like line breaking)
  * should be done!
  */
-class text_line
-{
+class text_line {
 public:
     text_line(unsigned first_char, unsigned last_char);
 
@@ -76,6 +73,7 @@ public:
 
     /** Number of glyphs. */
     unsigned size() const;
+
 private:
     glyph_vector glyphs_;
     double line_height_; //Includes line spacing (returned by freetype)
@@ -85,5 +83,3 @@ private:
     unsigned last_char_;
     bool first_line_;
 };
-
-#endif // MAPNIK_TEXT_LINE_HPP

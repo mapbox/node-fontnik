@@ -35,10 +35,8 @@ struct ShapeBaton {
 };
 
 v8::Persistent<v8::FunctionTemplate> Tile::constructor;
-HarfbuzzShaper shaper;
 
-Tile::Tile(const char *data, size_t length)
-    : node::ObjectWrap() { 
+Tile::Tile(const char *data, size_t length) : node::ObjectWrap() { 
     tile.ParseFromArray(data, length);
     pthread_mutex_init(&mutex, NULL);
 }
@@ -561,6 +559,7 @@ void Tile::AsyncShape(uv_work_t* req) {
             }
 
             if (text.size()) {
+                HarfbuzzShaper shaper;
                 shaper.Shape(text,
                              baton->fontstack);
 

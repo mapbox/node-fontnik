@@ -24,8 +24,8 @@
 
 font_face::font_face(FT_Face face)
     : face_(face),
-    dimension_cache_(),
-    char_height_(0.0) {}
+      dimension_cache_(),
+      char_height_(0.0) {}
 
 font_face::~font_face() {
     /*

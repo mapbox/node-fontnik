@@ -22,7 +22,6 @@
 
 #pragma once
 
-//mapnik
 #include "glyph_info.hpp"
 #include "noncopyable.hpp"
 
