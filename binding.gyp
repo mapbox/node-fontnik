@@ -37,8 +37,7 @@
         'src/font_engine_freetype.cpp',
         'src/face.cpp',
         'src/font_set.cpp',
-        'src/utils.cpp',
-        'src/fs.cpp',
+        'src/util.cpp',
         'src/distmap.c',
         'src/edtaa4func.c',
         'src/vector_tile.pb.cc'

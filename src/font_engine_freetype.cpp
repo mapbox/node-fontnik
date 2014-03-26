@@ -23,7 +23,7 @@
 // mapnik
 #include "font_engine_freetype.hpp"
 #include "face.hpp"
-#include "fs.hpp"
+#include "util.hpp"
 
 // boost
 #include <boost/algorithm/string.hpp>

@@ -20,39 +20,17 @@
  *
  *****************************************************************************/
 
-#ifdef _WINDOWS
-// windows specific methods for UTF8 from/to UTF16
-#include "utils.hpp"
+#pragma once
 
+// stl
 #include <string>
-#include <vector>
-#define NOMINMAX
-#include <windows.h>
 
-std::string utf16_to_utf8(std::wstring const& wstr)
-{
-    std::string str;
-    int size = WideCharToMultiByte(CP_UTF8, 0, wstr.c_str(), -1, 0, 0, 0, 0);
-    if(size > 0)
-    {
-        std::vector<char> buffer(size);
-        WideCharToMultiByte(CP_UTF8, 0, wstr.c_str(), -1, &buffer[0], size, 0, 0);
-        str.assign(buffer.begin(), buffer.end() - 1);
-    }
-    return str;
+namespace util {
+    bool exists(std::string const& value);
+    bool is_directory(std::string const& value);
+    bool remove(std::string const& value);
+    bool is_relative(std::string const& value);
+    std::string make_relative(std::string const& filepath, std::string const& base);
+    std::string make_absolute(std::string const& filepath, std::string const& base);
+    std::string dirname(std::string const& value);
 }
-
-std::wstring utf8_to_utf16 (std::string const& str)
-{
-    std::wstring wstr;
-    int size = MultiByteToWideChar(CP_UTF8, 0, str.c_str(), -1, 0, 0);
-    if (size > 0)
-    {
-        std::vector<wchar_t> buffer(size);
-        MultiByteToWideChar(CP_UTF8, 0, str.c_str(), -1, &buffer[0], size);
-        wstr.assign(buffer.begin(), buffer.end() - 1);
-    }
-    return wstr;
-}
-
-#endif // _WINDOWS
