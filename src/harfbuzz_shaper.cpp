@@ -26,6 +26,8 @@
 HarfbuzzShaper::HarfbuzzShaper()
     : font_manager_(font_engine_) {};
 
+HarfbuzzShaper::~HarfbuzzShaper() {};
+
 void HarfbuzzShaper::Shape(std::string &value,
                            std::string &fontstack) {
 

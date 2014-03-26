@@ -44,8 +44,8 @@
         'src/vector_tile.pb.cc'
       ],
       'include_dirs': [
-        '<!@(pkg-config icu-uc --cflags-only-I | sed s/-I//g)',
         '<!@(pkg-config freetype2 --cflags-only-I | sed s/-I//g)',
+        '<!@(pkg-config icu-uc --cflags-only-I | sed s/-I//g)',
         '<!@(pkg-config harfbuzz --cflags-only-I | sed s/-I//g)',
         '<!@(pkg-config protobuf --cflags-only-I | sed s/-I//g)',
       ],
