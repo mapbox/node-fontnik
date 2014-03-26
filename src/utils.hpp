@@ -23,7 +23,11 @@
 #ifndef MAPNIK_UTILS_HPP
 #define MAPNIK_UTILS_HPP
 
-#include <mapnik/config.hpp>
+
+#define MAPNIK_EXP
+#define MAPNIK_IMP
+#define MAPNIK_DECL
+
 
 // boost
 #ifdef MAPNIK_THREADSAFE
