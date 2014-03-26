@@ -33,8 +33,10 @@ font_set::font_set(font_set const& rhs)
       face_names_(rhs.face_names_) {}
 
 font_set& font_set::operator=(font_set const& other) {
-    if (this == &other)
+    if (this == &other) {
         return *this;
+    }
+
     name_ = other.name_;
     face_names_ = other.face_names_;
 

@@ -19,8 +19,8 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  *
  *****************************************************************************/
-#ifndef MAPNIK_FACE_HPP
-#define MAPNIK_FACE_HPP
+
+#pragma once
 
 //mapnik
 #include "glyph_info.hpp"
@@ -31,7 +31,8 @@ extern "C"
 {
 #include <ft2build.h>
 #include FT_FREETYPE_H
-#include FT_STROKER_H
+#include FT_GLYPH_H
+// #include FT_STROKER_H
 }
 
 //stl
@@ -40,33 +41,26 @@ extern "C"
 #include <string>
 #include <vector>
 
-class font_face : noncopyable
-{
+class font_face : noncopyable {
 public:
     font_face(FT_Face face);
+    ~font_face();
 
-    std::string family_name() const
-    {
+    std::string family_name() const{
         return std::string(face_->family_name);
     }
 
-    std::string style_name() const
-    {
+    std::string style_name() const {
         return std::string(face_->style_name);
     }
 
-    FT_Face get_face() const
-    {
+    FT_Face get_face() const {
         return face_;
     }
 
     double get_char_height() const;
-
     bool set_character_sizes(double size);
-
     void glyph_dimensions(glyph_info &glyph) const;
-
-    ~font_face();
 
 private:
     FT_Face face_;
@@ -75,12 +69,10 @@ private:
 };
 typedef std::shared_ptr<font_face> face_ptr;
 
-
-class font_face_set : private noncopyable
-{
+class font_face_set : private noncopyable {
 public:
     typedef std::vector<face_ptr>::iterator iterator;
-    font_face_set(void) : faces_(){}
+    font_face_set(void) : faces_() {}
 
     void add(face_ptr face);
     void set_character_sizes(double size);
@@ -93,7 +85,7 @@ private:
 };
 typedef std::shared_ptr<font_face_set> face_set_ptr;
 
-
+/*
 // FT_Stroker wrapper
 class stroker : noncopyable
 {
@@ -107,5 +99,4 @@ public:
 private:
     FT_Stroker s_;
 };
-
-#endif // FACE_HPP
+*/

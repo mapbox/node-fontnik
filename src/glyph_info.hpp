@@ -19,8 +19,8 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  *
  *****************************************************************************/
-#ifndef MAPNIK_GLYPH_INFO_HPP
-#define MAPNIK_GLYPH_INFO_HPP
+
+#pragma once
 
 #include <memory>
 
@@ -29,8 +29,7 @@ typedef std::shared_ptr<font_face> face_ptr;
 
 typedef unsigned glyph_index_t;
 
-struct glyph_info
-{
+struct glyph_info {
     glyph_info()
         : glyph_index(0),
           face(nullptr),
@@ -41,15 +40,15 @@ struct glyph_info
           line_height(0.0) {}
     glyph_index_t glyph_index;
     face_ptr face;
+
     // Position in the string of all characters i.e. before itemizing
     unsigned char_index;
     double width;
     double ymin;
     double ymax;
+
     // Line height returned by freetype, includes normal font
     // line spacing, but not additional user defined spacing
     double line_height;
     double height() const { return ymax-ymin; }
 };
-
-#endif // GLYPH_INFO_HPP

@@ -20,23 +20,21 @@
  *
  *****************************************************************************/
 
-#ifndef MAPNIK_FONT_ENGINE_FREETYPE_HPP
-#define MAPNIK_FONT_ENGINE_FREETYPE_HPP
+#pragma once
 
-// mapnik
 #include "font_set.hpp"
 
 // boost
-#include <memory>
 #include <boost/ptr_container/ptr_vector.hpp>
 #include <boost/optional.hpp>
+
+// stl
+#include <map>
+#include <memory>
 #ifdef MAPNIK_THREADSAFE
 #include <thread>
 #endif
-
-// stl
 #include <vector>
-#include <map>
 
 struct FT_LibraryRec_;
 
@@ -44,7 +42,6 @@ class font_face_set;
 typedef std::shared_ptr<font_face_set> face_set_ptr;
 class font_face;
 typedef std::shared_ptr<font_face> face_ptr;
-
 
 class freetype_engine {
 public:
@@ -95,5 +92,3 @@ private:
 };
 
 typedef face_manager<freetype_engine> face_manager_freetype;
-
-#endif // MAPNIK_FONT_ENGINE_FREETYPE_HPP

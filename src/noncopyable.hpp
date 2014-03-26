@@ -20,22 +20,19 @@
  *
  *****************************************************************************/
 
-#ifndef MAPNIK_NONCOPYABLE_HPP
-#define MAPNIK_NONCOPYABLE_HPP
+#pragma once
 
 namespace non_copyable_
 {
 
-class noncopyable
-{
+class noncopyable {
 protected:
     constexpr noncopyable() = default;
     ~noncopyable() = default;
     noncopyable( const noncopyable& ) = delete;
     noncopyable& operator=( const noncopyable& ) = delete;
 };
+
 }
 
 typedef non_copyable_::noncopyable noncopyable;
-
-#endif  // MAPNIK_NONCOPYABLE_HPP
