@@ -22,6 +22,9 @@
 
 #pragma once
 
+#include "pixel_position.hpp"
+
+// stl
 #include <memory>
 
 class font_face;
@@ -37,7 +40,8 @@ struct glyph_info {
           width(0.0),
           ymin(0.0),
           ymax(0.0),
-          line_height(0.0) {}
+          line_height(0.0),
+          offset() {}
     glyph_index_t glyph_index;
     face_ptr face;
 
@@ -50,5 +54,6 @@ struct glyph_info {
     // Line height returned by freetype, includes normal font
     // line spacing, but not additional user defined spacing
     double line_height;
+    pixel_position offset;
     double height() const { return ymax-ymin; }
 };

@@ -32,12 +32,12 @@ text_line::text_line(unsigned first_char, unsigned last_char)
       first_line_(false) {}
 
 void text_line::add_glyph(glyph_info const& glyph, double scale_factor_) {
-    line_height_ = std::max(line_height_, glyph.line_height + glyph.format->line_spacing);
+    line_height_ = std::max(line_height_, glyph.line_height);
     if (glyphs_.empty()) {
         width_ = glyph.width;
     } else if (glyph.width) {
         // Only add character spacing if the character is not a zero-width part of a cluster.
-        width_ += glyph.width + glyphs_.back().format->character_spacing  * scale_factor_;
+        width_ += glyph.width * scale_factor_;
     }
 
     glyphs_.push_back(glyph);

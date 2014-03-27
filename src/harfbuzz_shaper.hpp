@@ -23,6 +23,7 @@
 #pragma once
 
 #include "font_engine_freetype.hpp"
+#include "text_line.hpp"
 #include "face.hpp"
 
 // stl

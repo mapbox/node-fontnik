@@ -23,6 +23,8 @@
 #include "harfbuzz_shaper.hpp"
 #include "glyph_info.hpp"
 
+#include <iostream>
+
 HarfbuzzShaper::HarfbuzzShaper()
     : font_manager_(font_engine_) {};
 
@@ -31,13 +33,16 @@ HarfbuzzShaper::~HarfbuzzShaper() {};
 void HarfbuzzShaper::Shape(std::string &value,
                            std::string &fontstack) {
 
-    size_t length = value.size();
-    if (!length) return;
+    const double scale_factor = 1.0;
 
     UnicodeString const &text = value.data();
+    text_line line(0, value.size() - 1);
 
-    /*
-    text_line line;
+    // DEBUG
+    std::string str;
+    text.toUTF8String(str);
+    std::cout<<str<<'\n';
+
     unsigned start = line.first_char();
     unsigned end = line.last_char();
 
@@ -47,19 +52,19 @@ void HarfbuzzShaper::Shape(std::string &value,
 
     // Preallocate memory based on estimated length.
     line.reserve(length);
-    */
 
     auto hb_buffer_deleter = [](hb_buffer_t * buffer) { hb_buffer_destroy(buffer);};
     const std::unique_ptr<hb_buffer_t, decltype(hb_buffer_deleter)> buffer(hb_buffer_create(),hb_buffer_deleter);
-    // hb_buffer_set_unicode_funcs(buffer.get(), hb_icu_get_unicode_funcs());
+    hb_buffer_set_unicode_funcs(buffer.get(), hb_icu_get_unicode_funcs());
     hb_buffer_pre_allocate(buffer.get(), length);
+
+    // DEBUG
+    std::cout<<fontstack<<'\n';
 
     face_set_ptr face_set = font_manager_.get_face_set(fontstack);
     font_face_set::iterator face_itr = face_set->begin(), face_end = face_set->end();
-    for (; face_itr != face_end; ++face_itr)
-    {
+    for (; face_itr != face_end; ++face_itr) {
         hb_buffer_clear_contents(buffer.get());
-        std::cout<<text.length()<<" "<<length<<'\n';
         hb_buffer_add_utf16(buffer.get(), text.getBuffer(), text.length(), 0, length);
         // hb_buffer_set_direction(buffer.get(), (text_item.rtl == UBIDI_RTL)?HB_DIRECTION_RTL:HB_DIRECTION_LTR);
         // hb_buffer_set_script(buffer.get(), hb_icu_script_to_script(text_item.script));
@@ -75,35 +80,41 @@ void HarfbuzzShaper::Shape(std::string &value,
 
         bool font_has_all_glyphs = true;
         // Check if all glyphs are valid.
-        for (unsigned i=0; i<num_glyphs; ++i)
-        {
-            if (!glyphs[i].codepoint)
-            {
+        for (unsigned i = 0; i < num_glyphs; ++i) {
+            if (!glyphs[i].codepoint) {
                 font_has_all_glyphs = false;
                 break;
             }
         }
-        if (!font_has_all_glyphs && face_itr+1 != face_end)
-        {
+
+        if (!font_has_all_glyphs && face_itr+1 != face_end) {
             //Try next font in fontset
             continue;
         }
 
-        for (unsigned i=0; i<num_glyphs; ++i)
-        {
+        for (unsigned i = 0; i < num_glyphs; ++i) {
             glyph_info tmp;
             tmp.char_index = glyphs[i].cluster;
             tmp.glyph_index = glyphs[i].codepoint;
             tmp.face = face;
-            // tmp.format = text_item.format;
             face->glyph_dimensions(tmp);
-            //tmp.width = positions[i].x_advance / 64.0; //Overwrite default width with better value provided by HarfBuzz
+
+            // DEBUG
+            std::cout<<"Bit shift right 6: "<<(positions[i].x_advance >> 6)<<'\n';
+            std::cout<<"Divide by 64.0: "<<(positions[i].x_advance >> 6)<<'\n';
+
+            // tmp.width = positions[i].x_advance / 64.0; // Overwrite default width with better value provided by HarfBuzz
             tmp.width = positions[i].x_advance >> 6;
-            // tmp.offset.set(positions[i].x_offset / 64.0, positions[i].y_offset / 64.0);
+            tmp.offset.set(positions[i].x_offset / 64.0, positions[i].y_offset / 64.0);
             // width_map[glyphs[i].cluster] += tmp.width;
-            // line.add_glyph(tmp, scale_factor);
+            line.add_glyph(tmp, scale_factor);
         }
-        // line.update_max_char_height(face->get_char_height());
-        break; //When we reach this point the current font had all glyphs.
+
+        line.update_max_char_height(face->get_char_height());
+
+        // When we reach this point the current font had all glyphs.
+        break; 
     }
+
+    std::cout<<'\n';
 }

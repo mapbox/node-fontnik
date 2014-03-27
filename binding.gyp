@@ -30,10 +30,11 @@
     {
       'target_name': 'fontserver',
       'sources': [
+        'src/harfbuzz_shaper.cpp',
+        'src/text_line.cpp',
         'src/fontserver.cpp',
         'src/tile.cpp',
         'src/clipper.cpp',
-        'src/harfbuzz_shaper.cpp',
         'src/font_engine_freetype.cpp',
         'src/face.cpp',
         'src/font_set.cpp',
@@ -44,14 +45,13 @@
       ],
       'include_dirs': [
         '<!@(pkg-config freetype2 --cflags-only-I | sed s/-I//g)',
-        '<!@(pkg-config icu-uc --cflags-only-I | sed s/-I//g)',
-        '<!@(pkg-config harfbuzz --cflags-only-I | sed s/-I//g)',
+        '<!@(pkg-config harfbuzz-icu --cflags-only-I | sed s/-I//g)',
         '<!@(pkg-config protobuf --cflags-only-I | sed s/-I//g)',
       ],
       'libraries': [
         '<!@(pkg-config freetype2 --libs)',
         '<!@(pkg-config icu-uc --libs)',
-        '<!@(pkg-config harfbuzz --libs)',
+        '<!@(pkg-config harfbuzz-icu --libs)',
         '<!@(pkg-config protobuf --libs)'
       ],
       'xcode_settings': {
