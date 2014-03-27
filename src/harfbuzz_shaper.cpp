@@ -26,7 +26,9 @@
 #include <iostream>
 
 HarfbuzzShaper::HarfbuzzShaper()
-    : font_manager_(font_engine_) {};
+    : font_manager_(font_engine_) {
+    // font_engine_.register_fonts("./fonts", false);
+};
 
 HarfbuzzShaper::~HarfbuzzShaper() {};
 
@@ -37,6 +39,13 @@ void HarfbuzzShaper::Shape(std::string &value,
 
     UnicodeString const &text = value.data();
     text_line line(0, value.size() - 1);
+
+    // DEBUG
+    std::vector<std::string> names = font_engine_.face_names();
+    std::vector<std::string>::const_iterator itr;
+    for (itr = names.begin(); itr != names.end(); ++itr) {
+        std::cout<<&itr;
+    }
 
     // DEBUG
     std::string str;
