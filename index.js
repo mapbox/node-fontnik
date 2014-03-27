@@ -1,7 +1,7 @@
 var zlib = require('zlib');
 var path = require('path');
 var util = require('util');
-var fs = require('fs');
+var fontserver = require('./build/Release/fontserver.node');
 
 // Fontserver fontconfig directories must be set in the conf file prior to
 // require. Allow these to be passed in via FONTSERVER_FONTS env var.
@@ -9,10 +9,7 @@ var env_options = {};
 if (process.env['FONTSERVER_FONTS']) env_options.fonts = process.env['FONTSERVER_FONTS'].split(';');
 
 // Fontserver conf setup. Synchronous at require time.
-fs.writeFileSync('/tmp/fontserver-fc.conf', conf(env_options));
-process.env['FONTCONFIG_FILE'] = '/tmp/fontserver-fc.conf';
-
-var fontserver = require('./build/Release/fontserver.node');
+console.log(conf(env_options));
 
 module.exports = fontserver;
 module.exports.conf = conf;
@@ -46,21 +43,15 @@ function convert(zdata, options, callback) {
     }
 }
 
-// Write a fontconfig XML configuration file.
+// Register fonts in FreeType.
 function conf(options) {
     options = options || {};
     options.fonts = options.fonts || [path.resolve(__dirname + '/fonts')];
 
-    var fontdirs = options.fonts.map(function(d) {
-        return '<dir>' + d + '</dir>';
-    }).join('');
+    options.fonts.forEach(function(d) {
+        console.log(d);
+        fontserver.register_fonts(d, {recurse: true});
+    });
 
-    return util.format('<?xml version="1.0"?>\n\
-<!DOCTYPE fontconfig SYSTEM "fonts.dtd">\n\
-<fontconfig>\n\
-    %s\n\
-    <cachedir>/tmp/fontserver-fc-cache</cachedir>\n\
-    <config></config>\n\
-</fontconfig>\n', fontdirs);
+    return fontserver.faces;
 }
-
