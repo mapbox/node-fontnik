@@ -49,6 +49,8 @@
         '<!@(pkg-config protobuf --cflags-only-I | sed s/-I//g)',
       ],
       'libraries': [
+        '-lboost_system',
+        '-lboost_filesystem',
         '<!@(pkg-config freetype2 --libs)',
         '<!@(pkg-config icu-uc --libs)',
         '<!@(pkg-config harfbuzz-icu --libs)',

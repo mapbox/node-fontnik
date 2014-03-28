@@ -129,22 +129,14 @@ bool freetype_engine::register_font(std::string const& file_name) {
 }
 
 bool freetype_engine::register_fonts(std::string const& dir, bool recurse) {
-    std::cerr<<"BOOST_FILESYSTEM_VERSION "<<BOOST_FILESYSTEM_VERSION<<'\n';
-    std::cerr<<"Attempting to register: "<<dir<<'\n';
-    std::cerr<<"!util::exists "<<!util::exists(dir)<<'\n';
     if (!util::exists(dir)) {
-        std::cerr<<"Directory does not exist."<<'\n';
         return false;
     }
-    std::cerr<<"!util::is_directory "<<!util::is_directory(dir)<<'\n';
     if (!util::is_directory(dir)) {
-        std::cerr<<"Argument is a file, not a directory."<<'\n';
         return freetype_engine::register_font(dir);
     }
     bool success = false;
-    std::cerr<<"Success: "<<success<<'\n';
     try {
-        std::cerr<<"Entering try/catch."<<'\n';
         boost::filesystem::directory_iterator end_itr;
         for (boost::filesystem::directory_iterator itr(dir); itr != end_itr; ++itr) {
     #if (BOOST_FILESYSTEM_VERSION == 3)
@@ -152,7 +144,6 @@ bool freetype_engine::register_fonts(std::string const& dir, bool recurse) {
     #else // v2
             std::string file_name = itr->string();
     #endif
-        std::cerr<<"File name: "<<file_name<<'\n';
             if (boost::filesystem::is_directory(*itr) && recurse) {
                 if (register_fonts(file_name, true)) {
                     success = true;
@@ -166,12 +157,9 @@ bool freetype_engine::register_fonts(std::string const& dir, bool recurse) {
                 if (!boost::algorithm::starts_with(base_name,".") &&
                     boost::filesystem::is_regular_file(file_name) &&
                     is_font_file(file_name)) {
-                    std::cerr<<"Attempting to register: "<<base_name<<'\n';
                     if (freetype_engine::register_font(file_name)) {
                         success = true;
                     }
-                } else {
-                    std::cerr<<"Font "<<base_name<<" not registered."<<'\n';
                 }
             }
         }

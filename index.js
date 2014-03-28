@@ -9,7 +9,8 @@ var env_options = {};
 if (process.env['FONTSERVER_FONTS']) env_options.fonts = process.env['FONTSERVER_FONTS'].split(';');
 
 // Fontserver conf setup. Synchronous at require time.
-console.log(conf(env_options));
+var faces = conf(env_options);
+console.log(faces);
 
 module.exports = fontserver;
 module.exports.conf = conf;
@@ -49,9 +50,8 @@ function conf(options) {
     options.fonts = options.fonts || [path.resolve(__dirname + '/fonts')];
 
     options.fonts.forEach(function(d) {
-        console.log(d);
         fontserver.register_fonts(d, {recurse: true});
     });
 
-    return fontserver.faces;
+    return fontserver.faces();
 }

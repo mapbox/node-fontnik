@@ -60,7 +60,6 @@ namespace filesystem {
 
 namespace util {
     bool exists(std::string const& filepath) {
-        std::cerr<<"boost::filesystem::exists("<<filepath<<")"<<'\n';
         return boost::filesystem::exists(filepath);
     }
 
