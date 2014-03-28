@@ -10,7 +10,6 @@ if (process.env['FONTSERVER_FONTS']) env_options.fonts = process.env['FONTSERVER
 
 // Fontserver conf setup. Synchronous at require time.
 var faces = conf(env_options);
-console.log(faces);
 
 module.exports = fontserver;
 module.exports.conf = conf;
