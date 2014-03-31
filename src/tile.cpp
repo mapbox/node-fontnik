@@ -570,6 +570,7 @@ void Tile::AsyncShape(uv_work_t* req) {
                 pango_sdf_renderer_reset(PANGO_SDF_RENDERER(renderer));
                 pango_renderer_draw_layout (renderer, layout, 0, 0);
                 const PangoSDFGlyphs& glyphs = pango_sdf_renderer_get_glyphs(PANGO_SDF_RENDERER(renderer));
+                */
 
                 llmr::vector::label *label = mutable_layer->add_labels();
                 label->set_text(key);
@@ -577,11 +578,11 @@ void Tile::AsyncShape(uv_work_t* req) {
 
                 // Add all glyphs for this labels and add new font faces as they
                 // appear.
+                /*
                 for (size_t j = 0; j < glyphs.size(); j++) {
-                    const PangoSDFGlyph& glyph = glyphs[j];
-                    std::cout<<pango_font_description_to_string(pango_font_describe(glyph.font))<<'\n';
-                    std::cout<<glyph.x<<'\n';
-                    std::cout<<glyph.y<<'\n'<<'\n';
+                    const FT_Glyph glyph = glyphs[j];
+
+                    std::count<<glyph->format<<'\n';
 
                     // Try to find whether this font has already been used
                     // in this tile.
@@ -617,7 +618,7 @@ void Tile::AsyncShape(uv_work_t* req) {
                     label->add_x(glyph.x);
                     label->add_y(glyph.y);
                 }
-            */
+                */
             }
         }
 

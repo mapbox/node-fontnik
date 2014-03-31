@@ -28,6 +28,7 @@
 
 // stl
 #include <list>
+#include <sstream>
 
 // icu
 #include <unicode/unistr.h>
@@ -49,5 +50,6 @@ public:
 private:
     freetype_engine font_engine_;
     face_manager<freetype_engine> font_manager_;
+    std::vector<std::pair<std::string, face_ptr>> Split(const std::string &s, char delim, std::vector<std::pair<std::string, face_ptr>> &elems);
     GlyphVector glyphs;
 };
