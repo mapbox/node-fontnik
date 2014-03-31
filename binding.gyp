@@ -31,6 +31,7 @@
       'target_name': 'fontserver',
       'sources': [
         'src/harfbuzz_shaper.cpp',
+        'src/harfbuzz_glyph.cpp',
         'src/text_line.cpp',
         'src/fontserver.cpp',
         'src/tile.cpp',
