@@ -37,12 +37,22 @@
 #include <harfbuzz/hb-ft.h>
 #include <harfbuzz/hb-icu.h>
 
+// freetype2
+extern "C"
+{
+#include <ft2build.h>
+#include FT_FREETYPE_H
+// #include FT_STROKER_H
+}
+
 typedef std::vector<FT_Glyph> GlyphVector;
 
 class HarfbuzzShaper {
 public:
-    HarfbuzzShaper();
+    HarfbuzzShaper(FT_Library &library);
     ~HarfbuzzShaper();
+
+    HarfbuzzShaper& operator=(HarfbuzzShaper arg);
 
     void Shape(std::string &value,
                std::string &fontstack); 

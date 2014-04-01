@@ -25,10 +25,16 @@
 
 #include <iostream>
 
-HarfbuzzShaper::HarfbuzzShaper()
-    : font_manager_(font_engine_) {};
+HarfbuzzShaper::HarfbuzzShaper(FT_Library &library)
+    : font_engine_(library),
+    font_manager_(font_engine_) {};
 
 HarfbuzzShaper::~HarfbuzzShaper() {};
+
+HarfbuzzShaper& HarfbuzzShaper::operator=(HarfbuzzShaper arg) {
+    std::move(arg);
+    return *this;
+};
 
 void HarfbuzzShaper::Shape(std::string &value,
                            std::string &fontstack) {
@@ -103,7 +109,8 @@ void HarfbuzzShaper::Shape(std::string &value,
             face->glyph_dimensions(tmp);
 
             // DEBUG
-            // std::cout<<tmp.width<<' ';
+            std::cout<<tmp.width<<' ';
+
 
             // tmp.width = positions[i].x_advance / 64.0; // Overwrite default width with better value provided by HarfBuzz
             tmp.width = positions[i].x_advance >> 6;

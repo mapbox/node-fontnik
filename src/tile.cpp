@@ -5,21 +5,12 @@
 #include "clipper.hpp"
 #include "font_set.hpp"
 #include "font_engine_freetype.hpp"
-#include "harfbuzz_shaper.hpp"
 // #include "globals.hpp"
 
 #include "distmap.h"
 #include <set>
 #include <algorithm>
 #include <iostream>
-
-// freetype2
-extern "C"
-{
-#include <ft2build.h>
-#include FT_FREETYPE_H
-// #include FT_STROKER_H
-}
 
 using namespace ClipperLib;
 
@@ -35,15 +26,39 @@ struct ShapeBaton {
 };
 
 v8::Persistent<v8::FunctionTemplate> Tile::constructor;
+HarfbuzzShaper* Tile::shaper;
 
 Tile::Tile(const char *data, size_t length) : node::ObjectWrap() { 
     tile.ParseFromArray(data, length);
-    pthread_mutex_init(&mutex, NULL);
+
+    // Get a thread-specific FT_Library.
+    pthread_once(&init, InitLibrary);
+    FT_Library library_ = static_cast<FT_Library>(pthread_getspecific(library_key));
+    if (library_ == NULL) {
+        FT_Error error = FT_Init_FreeType(&library_);
+        if (error) {
+            throw std::runtime_error("Failed to initialize FreeType2 library");
+        }
+
+        pthread_setspecific(library_key, library_);
+    }
+
+    // Get a thread-specific HarfbuzzShaper.
+    pthread_once(&init, InitShaper);
+    shaper_ = static_cast<HarfbuzzShaper *>(pthread_getspecific(shaper_key));
+    if (shaper_ == NULL) {
+        HarfbuzzShaper shaper_(library_);
+        pthread_setspecific(shaper_key, &shaper_);
+    }
+
+    shaper = shaper_;
 }
 
-Tile::~Tile() {
-    pthread_mutex_destroy(&mutex);
-}
+Tile::~Tile() {}
+
+pthread_once_t Tile::init = PTHREAD_ONCE_INIT;
+pthread_key_t Tile::library_key = 0;
+pthread_key_t Tile::shaper_key = 0;
 
 void Tile::Init(v8::Handle<v8::Object> target) {
     v8::HandleScope scope;
@@ -559,9 +574,7 @@ void Tile::AsyncShape(uv_work_t* req) {
             }
 
             if (text.size()) {
-                HarfbuzzShaper shaper;
-                shaper.Shape(text,
-                             baton->fontstack);
+                shaper->Shape(text, baton->fontstack);
 
                 /*
                 // Shape the text.

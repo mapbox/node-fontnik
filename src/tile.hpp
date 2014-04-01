@@ -2,7 +2,18 @@
 
 #include <node.h>
 
+#include <pthread.h>
+#include "harfbuzz_shaper.hpp"
+
 #include "vector_tile.pb.h"
+
+// freetype2
+extern "C"
+{
+#include <ft2build.h>
+#include FT_FREETYPE_H
+// #include FT_STROKER_H
+}
 
 class Tile : public node::ObjectWrap {
 public:
@@ -24,6 +35,25 @@ protected:
     static v8::Handle<v8::Value> Shape(const v8::Arguments& args);
     static void AsyncShape(uv_work_t* req);
     static void ShapeAfter(uv_work_t* req);
+private:
+    static HarfbuzzShaper *shaper;
+    HarfbuzzShaper *shaper_;
+
+    static pthread_once_t init;
+
+    static pthread_key_t library_key;
+    static void InitLibrary() {
+        pthread_key_create(&library_key, DestroyLibrary);
+    }
+    static void DestroyLibrary(void *key) {
+        FT_Library library = static_cast<FT_Library>(key);
+        FT_Done_FreeType(library);
+    }
+
+    static pthread_key_t shaper_key;
+    static void InitShaper() {
+        pthread_key_create(&shaper_key, nullptr);
+    }
 
 public:
     llmr::vector::tile tile;
