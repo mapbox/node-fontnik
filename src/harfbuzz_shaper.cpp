@@ -58,28 +58,20 @@ void HarfbuzzShaper::Shape(std::string &value,
     hb_buffer_set_unicode_funcs(buffer.get(), hb_icu_get_unicode_funcs());
     hb_buffer_pre_allocate(buffer.get(), length);
 
-    /*
-    // DEBUG
-    std::vector<std::string> names = font_engine_.face_names();
-    std::vector<std::string>::const_iterator itr;
-    for (itr = names.begin(); itr != names.end(); ++itr) {
-        std::cout<<*itr<<'\n';
-    }
-    */
+    font_set fonts = font_set(fontstack);
+    fonts.add_fontstack(fontstack, ',');
 
-    std::vector<std::pair<std::string, face_ptr>> faces;
-    HarfbuzzShaper::Split(fontstack, ',', faces);
-
-    face_set_ptr face_set = font_manager_.get_face_set(faces.back().first);
+    face_set_ptr face_set = font_manager_.get_face_set(fonts);
 
     font_face_set::iterator face_itr = face_set->begin(), face_end = face_set->end();
     for (; face_itr != face_end; ++face_itr) {
+        face_ptr const& face = *face_itr;
+
         hb_buffer_clear_contents(buffer.get());
         hb_buffer_add_utf16(buffer.get(), text.getBuffer(), text.length(), 0, length);
         // hb_buffer_set_direction(buffer.get(), (text_item.rtl == UBIDI_RTL)?HB_DIRECTION_RTL:HB_DIRECTION_LTR);
         hb_buffer_set_direction(buffer.get(), HB_DIRECTION_LTR);
         // hb_buffer_set_script(buffer.get(), hb_icu_script_to_script(text_item.script));
-        face_ptr const& face = *face_itr;
         hb_font_t *font(hb_ft_font_create(face->get_face(), nullptr));
         hb_shape(font, buffer.get(), NULL, 0);
         hb_font_destroy(font);
@@ -93,7 +85,6 @@ void HarfbuzzShaper::Shape(std::string &value,
         // Check if all glyphs are valid.
         for (unsigned i = 0; i < num_glyphs; ++i) {
             if (!glyphs[i].codepoint) {
-                std::cout<<face_itr->get()->family_name()<<" "<<face_itr->get()->style_name()<<" is missing glyph: "<<glyphs[i].codepoint<<'\n';
                 font_has_all_glyphs = false;
                 break;
             }
@@ -112,10 +103,7 @@ void HarfbuzzShaper::Shape(std::string &value,
             face->glyph_dimensions(tmp);
 
             // DEBUG
-            /*
-            std::cout<<"Bit shift right 6: "<<(positions[i].x_advance >> 6)<<'\n';
-            std::cout<<"Divide by 64.0: "<<(positions[i].x_advance >> 6)<<'\n';
-            */
+            // std::cout<<tmp.width<<' ';
 
             // tmp.width = positions[i].x_advance / 64.0; // Overwrite default width with better value provided by HarfBuzz
             tmp.width = positions[i].x_advance >> 6;
@@ -129,17 +117,5 @@ void HarfbuzzShaper::Shape(std::string &value,
         // When we reach this point the current font had all glyphs.
         break; 
     }
-}
-
-std::vector<std::pair<std::string, face_ptr>> HarfbuzzShaper::Split(const std::string &s, char delim, std::vector<std::pair<std::string, face_ptr>> &elems) {
-    std::stringstream ss(s);
-    std::string item;
-    std::pair<std::string, face_ptr> face;
-
-    while (std::getline(ss, item, delim)) {
-        face = std::make_pair(item, font_manager_.get_face(item));
-        elems.push_back(face);
-    }
-
-    return elems;
+    std::cout<<'\n';
 }

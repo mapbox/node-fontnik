@@ -36,8 +36,11 @@ public:
     void set_name(std::string const& name);
     std::string const& get_name() const;
     void add_face_name(std::string const& face_name);
+    void add_fontstack(std::string const& fontstack, char delim);
     std::vector<std::string> const& get_face_names() const;
 private:
     std::string name_;
     std::vector<std::string> face_names_;
+    std::string trim(std::string const& str,
+                     std::string const& whitespace = " \t");
 };

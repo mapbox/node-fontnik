@@ -28,7 +28,6 @@
 
 // stl
 #include <list>
-#include <sstream>
 
 // icu
 #include <unicode/unistr.h>
