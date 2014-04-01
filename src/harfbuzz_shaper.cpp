@@ -25,13 +25,13 @@
 
 #include <iostream>
 
-HarfbuzzShaper::HarfbuzzShaper()
-    : font_manager_(font_engine_) {};
+HarfbuzzShaper::HarfbuzzShaper() {};
 
 HarfbuzzShaper::~HarfbuzzShaper() {};
 
 void HarfbuzzShaper::Shape(std::string &value,
-                           std::string &fontstack) {
+                           std::string &fontstack,
+                           face_manager_freetype &font_manager) {
 
     const double scale_factor = 1.0;
 
@@ -61,7 +61,7 @@ void HarfbuzzShaper::Shape(std::string &value,
     font_set fonts = font_set(fontstack);
     fonts.add_fontstack(fontstack, ',');
 
-    face_set_ptr face_set = font_manager_.get_face_set(fonts);
+    face_set_ptr face_set = font_manager.get_face_set(fonts);
 
     font_face_set::iterator face_itr = face_set->begin(), face_end = face_set->end();
     for (; face_itr != face_end; ++face_itr) {
@@ -117,5 +117,6 @@ void HarfbuzzShaper::Shape(std::string &value,
         // When we reach this point the current font had all glyphs.
         break; 
     }
+
     std::cout<<'\n';
 }

@@ -22,6 +22,9 @@
 
 #include "face.hpp"
 
+// stl
+#include <iostream>
+
 font_face::font_face(FT_Face face)
     : face_(face),
       dimension_cache_(),
@@ -82,13 +85,18 @@ void font_face::glyph_dimensions(glyph_info & glyph) const {
 
     FT_Set_Transform(face_, 0, &pen);
 
-    if (FT_Load_Glyph(face_, glyph.glyph_index, FT_LOAD_NO_HINTING)) {
+    FT_Error error;
+    error = FT_Load_Glyph(face_, glyph.glyph_index, FT_LOAD_NO_HINTING);
+    if (error) {
+        std::cout<<error<<' ';
         return;
     }
 
     FT_Glyph image;
 
-    if (FT_Get_Glyph(face_->glyph, &image)) {
+    error = FT_Get_Glyph(face_->glyph, &image);
+    if (error) {
+        std::cout<<error<<' ';
         return;
     }
 

@@ -2,6 +2,8 @@
 
 #include <node.h>
 
+#include "font_engine_freetype.hpp"
+
 #include "vector_tile.pb.h"
 
 class Tile : public node::ObjectWrap {
@@ -24,6 +26,9 @@ protected:
     static v8::Handle<v8::Value> Shape(const v8::Arguments& args);
     static void AsyncShape(uv_work_t* req);
     static void ShapeAfter(uv_work_t* req);
+
+    static freetype_engine font_engine_;
+    static face_manager_freetype font_manager;
 
 public:
     llmr::vector::tile tile;

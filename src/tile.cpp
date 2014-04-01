@@ -4,7 +4,6 @@
 #include "tile.hpp"
 #include "clipper.hpp"
 #include "font_set.hpp"
-#include "font_engine_freetype.hpp"
 #include "harfbuzz_shaper.hpp"
 // #include "globals.hpp"
 
@@ -35,6 +34,9 @@ struct ShapeBaton {
 };
 
 v8::Persistent<v8::FunctionTemplate> Tile::constructor;
+
+freetype_engine Tile::font_engine_;
+face_manager_freetype Tile::font_manager(font_engine_);
 
 Tile::Tile(const char *data, size_t length) : node::ObjectWrap() { 
     tile.ParseFromArray(data, length);
@@ -561,7 +563,8 @@ void Tile::AsyncShape(uv_work_t* req) {
             if (text.size()) {
                 HarfbuzzShaper shaper;
                 shaper.Shape(text,
-                             baton->fontstack);
+                             baton->fontstack,
+                             font_manager);
 
                 /*
                 // Shape the text.

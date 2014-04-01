@@ -22,7 +22,6 @@
 
 #pragma once
 
-#include "font_engine_freetype.hpp"
 #include "text_line.hpp"
 #include "face.hpp"
 
@@ -45,10 +44,9 @@ public:
     ~HarfbuzzShaper();
 
     void Shape(std::string &value,
-               std::string &fontstack); 
+               std::string &fontstack,
+               face_manager_freetype &font_manager);
 private:
-    freetype_engine font_engine_;
-    face_manager<freetype_engine> font_manager_;
     std::vector<std::pair<std::string, face_ptr>> Split(const std::string &s, char delim, std::vector<std::pair<std::string, face_ptr>> &elems);
     GlyphVector glyphs;
 };
