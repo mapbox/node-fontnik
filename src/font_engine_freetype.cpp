@@ -35,14 +35,24 @@
 #include <fstream>
 #include <iostream>
 
-FT_Library freetype_engine::library;
+// freetype2
+extern "C"
+{
+#include <ft2build.h>
+#include FT_FREETYPE_H
+// #include FT_STROKER_H
+}
 
-freetype_engine::freetype_engine(FT_Library library) :
+freetype_engine::freetype_engine() :
     library_(nullptr) {
-    library = library_;
+    FT_Error error = FT_Init_FreeType(&library_);
+    if (error) {
+        throw std::runtime_error("can not load FreeType2 library");
+    }
 }
 
 freetype_engine::~freetype_engine() {
+    FT_Done_FreeType(library_);
 }
 
 bool freetype_engine::is_font_file(std::string const& file_name) {
@@ -64,7 +74,13 @@ bool freetype_engine::register_font(std::string const& file_name) {
 #ifdef MAPNIK_THREADSAFE
     mapnik::scoped_lock lock(mutex_);
 #endif
-    FT_Error error;
+    // TODO: should this use library_ from constructor?
+    FT_Library library = 0;
+    FT_Error error = FT_Init_FreeType(&library);
+    if (error) {
+        throw std::runtime_error("Failed to initialize FreeType2 library");
+    }
+
     FT_Face face = 0;
     int num_faces = 0;
     bool success = false;
@@ -73,7 +89,7 @@ bool freetype_engine::register_font(std::string const& file_name) {
     // see the FT_FaceRec in freetype.h
     for (int i = 0; face == 0 || i < num_faces; i++) {
         // if face is null then this is the first face
-        error = FT_New_Face(library, file_name.c_str(), i, &face);
+        error = FT_New_Face (library, file_name.c_str(), i, &face);
         if (error) {
             break;
         }
@@ -105,6 +121,9 @@ bool freetype_engine::register_font(std::string const& file_name) {
     }
     if (face) {
         FT_Done_Face(face);
+    }
+    if (library) {
+        FT_Done_FreeType(library);
     }
     return success;
 }
@@ -175,7 +194,7 @@ face_ptr freetype_engine::create_face(std::string const& family_name) {
 
         // memory font
         if (mem_font_itr != memory_fonts_.end()) {
-            FT_Error error = FT_New_Memory_Face(library,
+            FT_Error error = FT_New_Memory_Face(library_,
                                                 reinterpret_cast<FT_Byte const*>(mem_font_itr->second.c_str()),
                                                 static_cast<FT_Long>(mem_font_itr->second.size()), // size
                                                 itr->second.first, // face index
@@ -192,7 +211,7 @@ face_ptr freetype_engine::create_face(std::string const& family_name) {
                                std::istreambuf_iterator<char>());
             std::pair<std::map<std::string,std::string>::iterator,bool> result = memory_fonts_.insert(std::make_pair(itr->second.second, buffer));
 
-            FT_Error error = FT_New_Memory_Face(library,
+            FT_Error error = FT_New_Memory_Face(library_,
                                                 reinterpret_cast<FT_Byte const*>(result.first->second.c_str()),
                                                 static_cast<FT_Long>(buffer.size()),
                                                 itr->second.first,
@@ -213,7 +232,7 @@ face_ptr freetype_engine::create_face(std::string const& family_name) {
 stroker_ptr freetype_engine::create_stroker()
 {
     FT_Stroker s;
-    FT_Error error = FT_Stroker_New(library, &s);
+    FT_Error error = FT_Stroker_New(library_, &s);
     if (!error)
     {
         return std::make_shared<stroker>(s);

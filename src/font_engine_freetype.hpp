@@ -31,29 +31,20 @@
 // stl
 #include <map>
 #include <memory>
+#ifdef MAPNIK_THREADSAFE
 #include <thread>
+#endif
 #include <vector>
 
-// freetype2
-extern "C"
-{
-#include <ft2build.h>
-#include FT_FREETYPE_H
-// #include FT_STROKER_H
-}
+struct FT_LibraryRec_;
 
 class font_face_set;
 typedef std::shared_ptr<font_face_set> face_set_ptr;
 class font_face;
 typedef std::shared_ptr<font_face> face_ptr;
 
-struct FT_LibraryRec_;
-
 class freetype_engine {
 public:
-    freetype_engine(FT_Library library);
-    virtual ~freetype_engine();
-
     static bool is_font_file(std::string const& file_name);
     /*! \brief register a font file
      *  @param file_name path to a font file.
@@ -69,10 +60,10 @@ public:
     static std::vector<std::string> face_names();
     static std::map<std::string,std::pair<int,std::string> > const& get_mapping();
     face_ptr create_face(std::string const& family_name);
+    virtual ~freetype_engine();
+    freetype_engine();
 private:
-    static FT_Library library;
-    FT_Library library_;
-
+    FT_LibraryRec_ *library_;
 #ifdef MAPNIK_THREADSAFE
     static std::mutex mutex_;
 #endif
