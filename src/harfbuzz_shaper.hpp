@@ -24,6 +24,8 @@
 
 #include "text_line.hpp"
 #include "face.hpp"
+#include "font_engine_freetype.hpp"
+#include "glyph_info.hpp"
 
 // stl
 #include <list>
@@ -43,9 +45,9 @@ public:
     HarfbuzzShaper();
     ~HarfbuzzShaper();
 
-    void Shape(std::string &value,
-               std::string &fontstack,
-               face_manager_freetype &font_manager);
+    std::vector<glyph_info> Shape(std::string &value,
+                                  std::string &fontstack,
+                                  face_manager_freetype &font_manager);
 private:
     std::vector<std::pair<std::string, face_ptr>> Split(const std::string &s, char delim, std::vector<std::pair<std::string, face_ptr>> &elems);
     GlyphVector glyphs;

@@ -30,11 +30,11 @@
     {
       'target_name': 'fontserver',
       'sources': [
+        'src/tile.cpp',
         'src/harfbuzz_shaper.cpp',
         'src/harfbuzz_glyph.cpp',
         'src/text_line.cpp',
         'src/fontserver.cpp',
-        'src/tile.cpp',
         'src/clipper.cpp',
         'src/font_engine_freetype.cpp',
         'src/face.cpp',

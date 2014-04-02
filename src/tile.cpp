@@ -5,6 +5,7 @@
 #include "clipper.hpp"
 #include "font_set.hpp"
 #include "harfbuzz_shaper.hpp"
+#include "glyph_info.hpp"
 // #include "globals.hpp"
 
 #include "distmap.h"
@@ -561,10 +562,11 @@ void Tile::AsyncShape(uv_work_t* req) {
             }
 
             if (text.size()) {
+                std::vector<glyph_info> glyphs;
                 HarfbuzzShaper shaper;
-                shaper.Shape(text,
-                             baton->fontstack,
-                             font_manager);
+                glyphs = shaper.Shape(text,
+                                      baton->fontstack,
+                                      font_manager);
 
                 /*
                 // Shape the text.
@@ -581,18 +583,20 @@ void Tile::AsyncShape(uv_work_t* req) {
 
                 // Add all glyphs for this labels and add new font faces as they
                 // appear.
-                /*
                 for (size_t j = 0; j < glyphs.size(); j++) {
-                    const FT_Glyph glyph = glyphs[j];
-
-                    std::count<<glyph->format<<'\n';
+                    glyph_info glyph = glyphs[j];
+                    // std::count<<glyph->format<<'\n';
 
                     // Try to find whether this font has already been used
                     // in this tile.
 
+                    /*
                     PangoFcFont *fc_font = PANGO_FC_FONT(glyph.font);
                     FT_Face ft_face = pango_fc_font_lock_face(fc_font);
                     pango_fc_font_unlock_face(fc_font);
+                    */
+
+                    FT_Face ft_face = glyph.face->get_face();
 
                     Faces::const_iterator global_pos = faces.find(ft_face);
                     if (global_pos == faces.end()) {
@@ -614,14 +618,13 @@ void Tile::AsyncShape(uv_work_t* req) {
                     }
                     int layer_face_id = pos - layer_faces.begin();
 
-                    face->add_glyph(glyph.glyph);
+                    face->add_glyph(glyph.glyph_index);
 
                     label->add_faces(layer_face_id);
-                    label->add_glyphs(glyph.glyph);
-                    label->add_x(glyph.x);
-                    label->add_y(glyph.y);
+                    label->add_glyphs(glyph.glyph_index);
+                    label->add_x(glyph.offset.x);
+                    label->add_y(glyph.offset.y);
                 }
-                */
             }
         }
 

@@ -29,10 +29,10 @@ HarfbuzzShaper::HarfbuzzShaper() {};
 
 HarfbuzzShaper::~HarfbuzzShaper() {};
 
-void HarfbuzzShaper::Shape(std::string &value,
-                           std::string &fontstack,
-                           face_manager_freetype &font_manager) {
-
+std::vector<glyph_info> HarfbuzzShaper::Shape(std::string &value,
+                                              std::string &fontstack,
+                                              face_manager_freetype &font_manager) {
+    std::vector<glyph_info> glyphs;
     const double scale_factor = 1.0;
 
     UnicodeString const &text = value.data();
@@ -47,7 +47,8 @@ void HarfbuzzShaper::Shape(std::string &value,
     unsigned end = line.last_char();
 
     size_t length = end - start;
-    if (!length) return;
+    if (!length) return glyphs;
+    // if (!length) return;
     line.reserve(length);
 
     // Preallocate memory based on estimated length.
@@ -76,15 +77,15 @@ void HarfbuzzShaper::Shape(std::string &value,
         hb_shape(font, buffer.get(), NULL, 0);
         hb_font_destroy(font);
 
-        unsigned num_glyphs = hb_buffer_get_length(buffer.get());
+        unsigned num_glyph_infos = hb_buffer_get_length(buffer.get());
 
-        hb_glyph_info_t *glyphs = hb_buffer_get_glyph_infos(buffer.get(), nullptr);
+        hb_glyph_info_t *glyph_infos = hb_buffer_get_glyph_infos(buffer.get(), nullptr);
         hb_glyph_position_t *positions = hb_buffer_get_glyph_positions(buffer.get(), nullptr);
 
         bool font_has_all_glyphs = true;
         // Check if all glyphs are valid.
-        for (unsigned i = 0; i < num_glyphs; ++i) {
-            if (!glyphs[i].codepoint) {
+        for (unsigned i = 0; i < num_glyph_infos; ++i) {
+            if (!glyph_infos[i].codepoint) {
                 font_has_all_glyphs = false;
                 break;
             }
@@ -95,10 +96,10 @@ void HarfbuzzShaper::Shape(std::string &value,
             continue;
         }
 
-        for (unsigned i = 0; i < num_glyphs; ++i) {
+        for (unsigned i = 0; i < num_glyph_infos; ++i) {
             glyph_info tmp;
-            tmp.char_index = glyphs[i].cluster;
-            tmp.glyph_index = glyphs[i].codepoint;
+            tmp.char_index = glyph_infos[i].cluster;
+            tmp.glyph_index = glyph_infos[i].codepoint;
             tmp.face = face;
             face->glyph_dimensions(tmp);
 
@@ -108,15 +109,19 @@ void HarfbuzzShaper::Shape(std::string &value,
             // tmp.width = positions[i].x_advance / 64.0; // Overwrite default width with better value provided by HarfBuzz
             tmp.width = positions[i].x_advance >> 6;
             tmp.offset.set(positions[i].x_offset / 64.0, positions[i].y_offset / 64.0);
-            // width_map[glyphs[i].cluster] += tmp.width;
+            // width_map[glyph_infos[i].cluster] += tmp.width;
             line.add_glyph(tmp, scale_factor);
+
+            // DEBUG
+            glyphs.push_back(tmp);
         }
 
         line.update_max_char_height(face->get_char_height());
 
         // When we reach this point the current font had all glyphs.
-        break; 
+        return glyphs;
+        // break; 
     }
 
-    std::cout<<'\n';
+    // std::cout<<'\n';
 }

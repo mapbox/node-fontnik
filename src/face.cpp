@@ -88,7 +88,7 @@ void font_face::glyph_dimensions(glyph_info & glyph) const {
     FT_Error error;
     error = FT_Load_Glyph(face_, glyph.glyph_index, FT_LOAD_NO_HINTING);
     if (error) {
-        std::cout<<error<<' ';
+        // std::cout<<error<<'\n';
         return;
     }
 
@@ -96,7 +96,7 @@ void font_face::glyph_dimensions(glyph_info & glyph) const {
 
     error = FT_Get_Glyph(face_->glyph, &image);
     if (error) {
-        std::cout<<error<<' ';
+        std::cout<<"FT_Get_Glyph Error: "<<error<<'\n';
         return;
     }
 
