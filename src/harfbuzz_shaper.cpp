@@ -39,7 +39,7 @@ std::vector<glyph_info> HarfbuzzShaper::Shape(std::string &value,
     // DEBUG
     std::string str;
     text.toUTF8String(str);
-    fprintf(stderr, "\n\n%s\n", str.c_str());
+    // fprintf(stderr, "%s\n", str.c_str());
 
     unsigned start = line.first_char();
     unsigned end = line.last_char();
@@ -61,6 +61,9 @@ std::vector<glyph_info> HarfbuzzShaper::Shape(std::string &value,
     fonts.add_fontstack(fontstack, ',');
 
     face_set_ptr face_set = font_manager.get_face_set(fonts);
+    // double size = text_item.format->text_size * scale_factor;
+    double size = 24.0 * scale_factor;
+    face_set->set_character_sizes(size);
 
     font_face_set::iterator face_itr = face_set->begin(), face_end = face_set->end();
     for (; face_itr != face_end; ++face_itr) {
@@ -99,6 +102,7 @@ std::vector<glyph_info> HarfbuzzShaper::Shape(std::string &value,
             tmp.char_index = glyph_infos[i].cluster;
             tmp.glyph_index = glyph_infos[i].codepoint;
             tmp.face = face;
+            tmp.text = value;
             face->glyph_dimensions(tmp);
 
             // DEBUG
@@ -108,7 +112,7 @@ std::vector<glyph_info> HarfbuzzShaper::Shape(std::string &value,
             tmp.width = positions[i].x_advance >> 6;
             tmp.offset.set(positions[i].x_offset / 64.0, positions[i].y_offset / 64.0);
             // width_map[glyph_infos[i].cluster] += tmp.width;
-            line.add_glyph(tmp, scale_factor);
+            // line.add_glyph(tmp, scale_factor);
 
             // DEBUG
             glyphs.push_back(tmp);

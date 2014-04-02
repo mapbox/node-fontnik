@@ -22,6 +22,9 @@
 
 #include "face.hpp"
 
+// icu
+#include <unicode/unistr.h>
+
 font_face::font_face(FT_Face face)
     : face_(face),
       dimension_cache_(),
@@ -82,11 +85,25 @@ void font_face::glyph_dimensions(glyph_info & glyph) const {
 
     FT_Set_Transform(face_, 0, &pen);
 
+    FT_UInt char_index = FT_Get_Char_Index(face_, glyph.glyph_index);
+    if (!char_index) {
+        // fprintf(stderr, "FT_Get_Char_Index Not Found for Char Code: %d\n", glyph.glyph_index);
+        return;
+    }
+
     FT_Error error;
-    error = FT_Load_Glyph(face_, glyph.glyph_index, FT_LOAD_NO_HINTING);
+    error = FT_Load_Glyph(face_, char_index, FT_LOAD_NO_HINTING);
     if (error) {
-        // fprintf(stderr, "FT_Load_Glyph Error: %d\n", error);
-        fprintf(stderr, "%d ", error);
+        UnicodeString const &text = glyph.text.data();
+        std::string str;
+        text.toUTF8String(str);
+
+        fprintf(stderr, "%s\n", str.c_str());
+        fprintf(stderr, "FT_Load_Glyph Error: %d\n", error);
+        fprintf(stderr, "Char Code: %d\n", glyph.glyph_index);
+        fprintf(stderr, "Glyph Index: %d\n", char_index);
+        fprintf(stderr, "Char Index: %d\n\n", glyph.char_index);
+        fprintf(stderr, "Is CID Keyed: %ld\n", FT_IS_CID_KEYED(face_));
         return;
     }
 

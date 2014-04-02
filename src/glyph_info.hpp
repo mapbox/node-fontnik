@@ -44,6 +44,7 @@ struct glyph_info {
           offset() {}
     glyph_index_t glyph_index;
     face_ptr face;
+    std::string text;
 
     // Position in the string of all characters i.e. before itemizing
     unsigned char_index;
