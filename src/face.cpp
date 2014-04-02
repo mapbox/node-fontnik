@@ -22,9 +22,6 @@
 
 #include "face.hpp"
 
-// stl
-#include <iostream>
-
 font_face::font_face(FT_Face face)
     : face_(face),
       dimension_cache_(),
@@ -88,7 +85,8 @@ void font_face::glyph_dimensions(glyph_info & glyph) const {
     FT_Error error;
     error = FT_Load_Glyph(face_, glyph.glyph_index, FT_LOAD_NO_HINTING);
     if (error) {
-        // std::cout<<error<<'\n';
+        // fprintf(stderr, "FT_Load_Glyph Error: %d\n", error);
+        fprintf(stderr, "%d ", error);
         return;
     }
 
@@ -96,7 +94,7 @@ void font_face::glyph_dimensions(glyph_info & glyph) const {
 
     error = FT_Get_Glyph(face_->glyph, &image);
     if (error) {
-        std::cout<<"FT_Get_Glyph Error: "<<error<<'\n';
+        fprintf(stderr, "FT_Get_Glyph Error: %d\n", error);
         return;
     }
 

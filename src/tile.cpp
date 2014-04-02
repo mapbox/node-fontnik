@@ -11,7 +11,6 @@
 #include "distmap.h"
 #include <set>
 #include <algorithm>
-#include <iostream>
 
 // freetype2
 extern "C"
@@ -669,6 +668,8 @@ void Tile::AsyncShape(uv_work_t* req) {
             //     continue;
             // }
 
+            // DEBUG: FreeType access here causes segfaults.
+            /*
             const Glyph& gl = _face->glyph(id);
 
             llmr::vector::glyph *glyph = mutable_face->add_glyphs();
@@ -681,6 +682,7 @@ void Tile::AsyncShape(uv_work_t* req) {
             if (gl.width > 0) {
                 glyph->set_bitmap(gl.bitmap);
             }
+            */
         }
 
         delete face;

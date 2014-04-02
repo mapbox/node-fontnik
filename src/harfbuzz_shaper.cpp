@@ -23,8 +23,6 @@
 #include "harfbuzz_shaper.hpp"
 #include "glyph_info.hpp"
 
-#include <iostream>
-
 HarfbuzzShaper::HarfbuzzShaper() {};
 
 HarfbuzzShaper::~HarfbuzzShaper() {};
@@ -41,7 +39,7 @@ std::vector<glyph_info> HarfbuzzShaper::Shape(std::string &value,
     // DEBUG
     std::string str;
     text.toUTF8String(str);
-    // std::cout<<str<<'\n'; 
+    fprintf(stderr, "\n\n%s\n", str.c_str());
 
     unsigned start = line.first_char();
     unsigned end = line.last_char();
@@ -104,7 +102,7 @@ std::vector<glyph_info> HarfbuzzShaper::Shape(std::string &value,
             face->glyph_dimensions(tmp);
 
             // DEBUG
-            // std::cout<<tmp.width<<' ';
+            // fprintf(stderr, "%f\n", tmp.width);
 
             // tmp.width = positions[i].x_advance / 64.0; // Overwrite default width with better value provided by HarfBuzz
             tmp.width = positions[i].x_advance >> 6;
@@ -122,6 +120,4 @@ std::vector<glyph_info> HarfbuzzShaper::Shape(std::string &value,
         return glyphs;
         // break; 
     }
-
-    // std::cout<<'\n';
 }

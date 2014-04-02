@@ -33,7 +33,6 @@
 #include <stdexcept>
 #include <sstream>
 #include <fstream>
-#include <iostream>
 
 // freetype2
 extern "C"
@@ -74,7 +73,6 @@ bool freetype_engine::register_font(std::string const& file_name) {
 #ifdef MAPNIK_THREADSAFE
     mapnik::scoped_lock lock(mutex_);
 #endif
-    // TODO: should this use library_ from constructor?
     FT_Library library = 0;
     FT_Error error = FT_Init_FreeType(&library);
     if (error) {
@@ -164,7 +162,7 @@ bool freetype_engine::register_fonts(std::string const& dir, bool recurse) {
             }
         }
     } catch (std::exception const& ex) {
-        std::cerr<<ex.what()<<'\n';
+        fprintf(stderr, "%s\n", ex.what());
         // MAPNIK_LOG_ERROR(font_engine_freetype) << "register_fonts: " << ex.what();
     }
     return success;
