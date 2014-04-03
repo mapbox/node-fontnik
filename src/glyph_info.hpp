@@ -38,6 +38,8 @@ struct glyph_info {
           face(nullptr),
           char_index(0),
           width(0.0),
+          x(0.0),
+          y(0.0),
           ymin(0.0),
           ymax(0.0),
           line_height(0.0),
@@ -48,7 +50,10 @@ struct glyph_info {
 
     // Position in the string of all characters i.e. before itemizing
     unsigned char_index;
+
     double width;
+    double x;
+    double y;
     double ymin;
     double ymax;
 

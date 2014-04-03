@@ -425,7 +425,7 @@ public:
             glyph.height = font->glyph->bitmap.rows;
             glyph.left = font->glyph->bitmap_left;
             glyph.top = font->glyph->bitmap_top;
-            glyph.advance = font->glyph->metrics.horiAdvance / 64;
+            glyph.advance = font->glyph->metrics.horiAdvance / 64.0;
 
             FT_GlyphSlot slot = font->glyph;
             int width = slot->bitmap.width;
@@ -565,6 +565,9 @@ void Tile::AsyncShape(uv_work_t* req) {
             }
 
             if (text.size()) {
+                // Clear cluster widths.
+                width_map_.clear();
+
                 const double scale_factor = 1.0;
                 std::vector<glyph_info> glyphs;
                 HarfbuzzShaper shaper;
@@ -589,12 +592,10 @@ void Tile::AsyncShape(uv_work_t* req) {
 
                 // Add all glyphs for this labels and add new font faces as they
                 // appear.
+                double xpos = 0.0;
                 for (size_t j = 0; j < glyphs.size(); j++) {
                     glyph_info glyph = glyphs[j];
-                    // std::count<<glyph->format<<'\n';
-
-                    // Try to find whether this font has already been used
-                    // in this tile.
+                    // std::cout<<glyph->format<<'\n';
 
                     /*
                     PangoFcFont *fc_font = PANGO_FC_FONT(glyph.font);
@@ -604,6 +605,8 @@ void Tile::AsyncShape(uv_work_t* req) {
 
                     FT_Face ft_face = glyph.face->get_face();
 
+                    // Try to find whether this font has already been
+                    // used in this tile.
                     Faces::const_iterator global_pos = faces.find(ft_face);
                     if (global_pos == faces.end()) {
                         TileFace *face = new TileFace(ft_face);
@@ -617,8 +620,8 @@ void Tile::AsyncShape(uv_work_t* req) {
                     // before; and get its position ID.s
                     std::vector<TileFace *>::iterator pos = std::find(layer_faces.begin(), layer_faces.end(), face);
                     if (pos == layer_faces.end()) {
-                        // Do not ref this font object here since we already ref'ed
-                        // it for the global font list.
+                        // Do not ref this font object here since we
+                        // already ref'ed it for the global font list.
                         layer_faces.push_back(face);
                         pos = layer_faces.end() - 1;
                     }
@@ -626,9 +629,12 @@ void Tile::AsyncShape(uv_work_t* req) {
 
                     face->add_glyph(glyph.glyph_index);
 
+                    // Increment xpos by glyph width.
+                    xpos += cluster_width(glyph.char_index);
+
                     label->add_faces(layer_face_id);
                     label->add_glyphs(glyph.glyph_index);
-                    label->add_x(glyph.offset.x);
+                    label->add_x(xpos);
                     label->add_y(glyph.offset.y);
                 }
             }
@@ -675,7 +681,6 @@ void Tile::AsyncShape(uv_work_t* req) {
             //     continue;
             // }
 
-            // DEBUG: FreeType access here causes segfaults.
             const Glyph& gl = _face->glyph(id);
 
             llmr::vector::glyph *glyph = mutable_face->add_glyphs();
