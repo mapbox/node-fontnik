@@ -30,8 +30,8 @@
     {
       'target_name': 'fontserver',
       'sources': [
-        'src/face.cpp',
         'src/tile.cpp',
+        'src/face.cpp',
         'src/harfbuzz_shaper.cpp',
         'src/harfbuzz_glyph.cpp',
         'src/text_line.cpp',

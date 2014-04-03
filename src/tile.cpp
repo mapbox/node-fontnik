@@ -35,10 +35,9 @@ struct ShapeBaton {
 
 v8::Persistent<v8::FunctionTemplate> Tile::constructor;
 
-freetype_engine Tile::font_engine_;
-face_manager_freetype Tile::font_manager(font_engine_);
-
-Tile::Tile(const char *data, size_t length) : node::ObjectWrap() { 
+Tile::Tile(const char *data, size_t length) : node::ObjectWrap(),
+    font_engine_(),
+    font_manager(font_engine_) { 
     tile.ParseFromArray(data, length);
     pthread_mutex_init(&mutex, NULL);
 }
@@ -373,10 +372,15 @@ v8::Handle<v8::Value> Tile::Shape(const v8::Arguments& args) {
     uv_work_t *req = new uv_work_t();
     req->data = baton;
 
-    int status = uv_queue_work(uv_default_loop(), req, AsyncShape, (uv_after_work_cb)ShapeAfter);
+    int status = uv_queue_work(uv_default_loop(), req, AsyncShapeWrapper, (uv_after_work_cb)ShapeAfter);
     assert(status == 0);
 
     return v8::Undefined();
+}
+
+void Tile::AsyncShapeWrapper(uv_work_t* req) {
+    ShapeBaton* baton = static_cast<ShapeBaton*>(req->data);
+    baton->tile->AsyncShape(req);
 }
 
 struct Glyph {
@@ -669,7 +673,6 @@ void Tile::AsyncShape(uv_work_t* req) {
             // }
 
             // DEBUG: FreeType access here causes segfaults.
-            /*
             const Glyph& gl = _face->glyph(id);
 
             llmr::vector::glyph *glyph = mutable_face->add_glyphs();
@@ -682,7 +685,6 @@ void Tile::AsyncShape(uv_work_t* req) {
             if (gl.width > 0) {
                 glyph->set_bitmap(gl.bitmap);
             }
-            */
         }
 
         delete face;

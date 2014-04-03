@@ -11,6 +11,7 @@ public:
     static v8::Persistent<v8::FunctionTemplate> constructor;
     static void Init(v8::Handle<v8::Object> target);
     static bool HasInstance(v8::Handle<v8::Value> val);
+    void AsyncShape(uv_work_t* req);
 protected:
     Tile(const char *data, size_t length);
     ~Tile();
@@ -24,11 +25,11 @@ protected:
     static void SimplifyAfter(uv_work_t* req);
 
     static v8::Handle<v8::Value> Shape(const v8::Arguments& args);
-    static void AsyncShape(uv_work_t* req);
+    static void AsyncShapeWrapper(uv_work_t* req);
     static void ShapeAfter(uv_work_t* req);
 
-    static freetype_engine font_engine_;
-    static face_manager_freetype font_manager;
+    freetype_engine font_engine_;
+    face_manager_freetype font_manager;
 
 public:
     llmr::vector::tile tile;
