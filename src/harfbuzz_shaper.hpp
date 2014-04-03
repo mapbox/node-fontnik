@@ -38,8 +38,6 @@
 #include <harfbuzz/hb-ft.h>
 #include <harfbuzz/hb-icu.h>
 
-typedef std::vector<FT_Glyph> GlyphVector;
-
 class HarfbuzzShaper {
 public:
     HarfbuzzShaper();
@@ -47,8 +45,9 @@ public:
 
     std::vector<glyph_info> Shape(std::string &value,
                                   std::string &fontstack,
-                                  face_manager_freetype &font_manager);
+                                  std::map<unsigned,double> &width_map,
+                                  face_manager_freetype &font_manager,
+                                  double scale_factor);
 private:
     std::vector<std::pair<std::string, face_ptr>> Split(const std::string &s, char delim, std::vector<std::pair<std::string, face_ptr>> &elems);
-    GlyphVector glyphs;
 };

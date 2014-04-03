@@ -565,11 +565,14 @@ void Tile::AsyncShape(uv_work_t* req) {
             }
 
             if (text.size()) {
+                const double scale_factor = 1.0;
                 std::vector<glyph_info> glyphs;
                 HarfbuzzShaper shaper;
                 glyphs = shaper.Shape(text,
                                       baton->fontstack,
-                                      font_manager);
+                                      width_map_,
+                                      font_manager,
+                                      scale_factor);
 
                 /*
                 // Shape the text.

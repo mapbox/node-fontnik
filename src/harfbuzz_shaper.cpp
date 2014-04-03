@@ -23,105 +23,105 @@
 #include "harfbuzz_shaper.hpp"
 #include "glyph_info.hpp"
 
+#include <iostream>
+
 HarfbuzzShaper::HarfbuzzShaper() {};
 
 HarfbuzzShaper::~HarfbuzzShaper() {};
 
 std::vector<glyph_info> HarfbuzzShaper::Shape(std::string &value,
                                               std::string &fontstack,
-                                              face_manager_freetype &font_manager) {
+                                              std::map<unsigned,double> &width_map,
+                                              face_manager_freetype &font_manager,
+                                              double scale_factor) {
     std::vector<glyph_info> glyphs;
-    const double scale_factor = 1.0;
-
-    UnicodeString const &text = value.data();
     text_line line(0, value.size() - 1);
-
-    // DEBUG
-    std::string str;
-    text.toUTF8String(str);
-    // fprintf(stderr, "%s\n", str.c_str());
 
     unsigned start = line.first_char();
     unsigned end = line.last_char();
-
+    UnicodeString const &text = value.data();
     size_t length = end - start;
     if (!length) return glyphs;
-    // if (!length) return;
-    line.reserve(length);
 
     // Preallocate memory based on estimated length.
     line.reserve(length);
+
+    // std::list<text_item> const& list = itemizer.itemize(start, end);
 
     auto hb_buffer_deleter = [](hb_buffer_t * buffer) { hb_buffer_destroy(buffer);};
     const std::unique_ptr<hb_buffer_t, decltype(hb_buffer_deleter)> buffer(hb_buffer_create(),hb_buffer_deleter);
     hb_buffer_set_unicode_funcs(buffer.get(), hb_icu_get_unicode_funcs());
     hb_buffer_pre_allocate(buffer.get(), length);
 
-    font_set fonts = font_set(fontstack);
-    fonts.add_fontstack(fontstack, ',');
+    // for (auto const& text_item : list) {
+        font_set fonts = font_set(fontstack);
+        fonts.add_fontstack(fontstack, ',');
 
-    face_set_ptr face_set = font_manager.get_face_set(fonts);
-    // double size = text_item.format->text_size * scale_factor;
-    double size = 24.0 * scale_factor;
-    face_set->set_character_sizes(size);
+        // face_set_ptr face_set = font_manager.get_face_set(text_item.format->face_name, text_item.format->fontset);
+        // double size = text_item.format->text_size * scale_factor;
+        face_set_ptr face_set = font_manager.get_face_set(fonts);
+        double size = 24.0 * scale_factor;
+        face_set->set_character_sizes(size);
 
-    font_face_set::iterator face_itr = face_set->begin(), face_end = face_set->end();
-    for (; face_itr != face_end; ++face_itr) {
-        face_ptr const& face = *face_itr;
+        font_face_set::iterator face_itr = face_set->begin(), face_end = face_set->end();
+        for (; face_itr != face_end; ++face_itr) {
+            face_ptr const& face = *face_itr;
 
-        hb_buffer_clear_contents(buffer.get());
-        hb_buffer_add_utf16(buffer.get(), text.getBuffer(), text.length(), 0, length);
-        // hb_buffer_set_direction(buffer.get(), (text_item.rtl == UBIDI_RTL)?HB_DIRECTION_RTL:HB_DIRECTION_LTR);
-        hb_buffer_set_direction(buffer.get(), HB_DIRECTION_LTR);
-        // hb_buffer_set_script(buffer.get(), hb_icu_script_to_script(text_item.script));
-        hb_font_t *font(hb_ft_font_create(face->get_face(), nullptr));
-        hb_shape(font, buffer.get(), NULL, 0);
-        hb_font_destroy(font);
+            hb_buffer_clear_contents(buffer.get());
+            hb_buffer_add_utf16(buffer.get(), text.getBuffer(), text.length(), 0, length);
+            // hb_buffer_set_direction(buffer.get(), (text_item.rtl == UBIDI_RTL)?HB_DIRECTION_RTL:HB_DIRECTION_LTR);
+            hb_buffer_set_direction(buffer.get(), HB_DIRECTION_LTR);
+            // hb_buffer_set_script(buffer.get(), hb_icu_script_to_script(text_item.script));
+            hb_font_t *font(hb_ft_font_create(face->get_face(), nullptr));
+            hb_shape(font, buffer.get(), NULL, 0);
+            hb_font_destroy(font);
 
-        unsigned num_glyph_infos = hb_buffer_get_length(buffer.get());
+            unsigned num_glyph_infos = hb_buffer_get_length(buffer.get());
 
-        hb_glyph_info_t *glyph_infos = hb_buffer_get_glyph_infos(buffer.get(), nullptr);
-        hb_glyph_position_t *positions = hb_buffer_get_glyph_positions(buffer.get(), nullptr);
+            hb_glyph_info_t *glyph_infos = hb_buffer_get_glyph_infos(buffer.get(), nullptr);
+            hb_glyph_position_t *positions = hb_buffer_get_glyph_positions(buffer.get(), nullptr);
 
-        bool font_has_all_glyphs = true;
-        // Check if all glyphs are valid.
-        for (unsigned i = 0; i < num_glyph_infos; ++i) {
-            if (!glyph_infos[i].codepoint) {
-                font_has_all_glyphs = false;
-                break;
+            bool font_has_all_glyphs = true;
+            // Check if all glyphs are valid.
+            for (unsigned i = 0; i < num_glyph_infos; ++i) {
+                if (!glyph_infos[i].codepoint) {
+                    font_has_all_glyphs = false;
+                    break;
+                }
             }
+
+            if (!font_has_all_glyphs && face_itr+1 != face_end) {
+                // Try next font in fontset.
+                continue;
+            }
+
+            for (unsigned i = 0; i < num_glyph_infos; ++i) {
+                glyph_info tmp;
+                tmp.char_index = glyph_infos[i].cluster;
+                tmp.glyph_index = glyph_infos[i].codepoint;
+                tmp.face = face;
+                // tmp.format = text_item.format;
+                tmp.text = value;
+                face->glyph_dimensions(tmp);
+
+                // Overwrite default width with better value from HarfBuzz
+                tmp.width = positions[i].x_advance / 64.0;
+
+                tmp.offset.set(positions[i].x_offset / 64.0,
+                               positions[i].y_offset / 64.0);
+
+                width_map[glyph_infos[i].cluster] += tmp.width;
+                line.add_glyph(tmp, scale_factor);
+
+                // DEBUG
+                glyphs.push_back(tmp);
+            }
+
+            line.update_max_char_height(face->get_char_height());
+
+            // When we reach this point the current font had all glyphs.
+            return glyphs;
+            // break; 
         }
-
-        if (!font_has_all_glyphs && face_itr+1 != face_end) {
-            //Try next font in fontset
-            continue;
-        }
-
-        for (unsigned i = 0; i < num_glyph_infos; ++i) {
-            glyph_info tmp;
-            tmp.char_index = glyph_infos[i].cluster;
-            tmp.glyph_index = glyph_infos[i].codepoint;
-            tmp.face = face;
-            tmp.text = value;
-            face->glyph_dimensions(tmp);
-
-            // DEBUG
-            // fprintf(stderr, "%f\n", tmp.width);
-
-            // tmp.width = positions[i].x_advance / 64.0; // Overwrite default width with better value provided by HarfBuzz
-            tmp.width = positions[i].x_advance >> 6;
-            tmp.offset.set(positions[i].x_offset / 64.0, positions[i].y_offset / 64.0);
-            // width_map[glyph_infos[i].cluster] += tmp.width;
-            // line.add_glyph(tmp, scale_factor);
-
-            // DEBUG
-            glyphs.push_back(tmp);
-        }
-
-        line.update_max_char_height(face->get_char_height());
-
-        // When we reach this point the current font had all glyphs.
-        return glyphs;
-        // break; 
-    }
+    // }
 }
