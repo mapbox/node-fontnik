@@ -6,7 +6,6 @@
 #include "font_set.hpp"
 #include "harfbuzz_shaper.hpp"
 #include "glyph_info.hpp"
-// #include "globals.hpp"
 
 #include "distmap.h"
 #include <set>
