@@ -23,7 +23,6 @@
 #pragma once
 
 #include "glyph_info.hpp"
-#include "noncopyable.hpp"
 
 // freetype2
 extern "C"
@@ -41,7 +40,7 @@ extern "C"
 #include <string>
 #include <vector>
 
-class font_face : noncopyable {
+class font_face {
 public:
     font_face(FT_Face face);
     ~font_face();
@@ -69,7 +68,7 @@ private:
 };
 typedef std::shared_ptr<font_face> face_ptr;
 
-class font_face_set : private noncopyable {
+class font_face_set {
 public:
     typedef std::vector<face_ptr>::iterator iterator;
     font_face_set(void) : faces_() {}
@@ -87,8 +86,7 @@ typedef std::shared_ptr<font_face_set> face_set_ptr;
 
 /*
 // FT_Stroker wrapper
-class stroker : noncopyable
-{
+class stroker {
 public:
     explicit stroker(FT_Stroker s)
         : s_(s) {}

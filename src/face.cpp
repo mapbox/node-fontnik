@@ -69,21 +69,9 @@ void font_face::glyph_dimensions(glyph_info & glyph) const {
     }
     */
 
-    FT_Vector pen;
-    pen.x = 0;
-    pen.y = 0;
-
-    // TODO: any benefit to using a matrix here?
-    /*
-    FT_Matrix matrix;
-    matrix.xx = (FT_Fixed)( 1 * 0x10000L );
-    matrix.xy = (FT_Fixed)( 0 * 0x10000L );
-    matrix.yx = (FT_Fixed)( 0 * 0x10000L );
-    matrix.yy = (FT_Fixed)( 1 * 0x10000L );
-    FT_Set_Transform(face_, &matrix, &pen);
-    */
-
-    FT_Set_Transform(face_, 0, &pen);
+    // TODO: Why is this necessary?
+    // Transform with identity matrix and null vector.
+    FT_Set_Transform(face_, 0, 0);
 
     FT_UInt char_index = FT_Get_Char_Index(face_, glyph.glyph_index);
     if (!char_index) {
@@ -94,16 +82,7 @@ void font_face::glyph_dimensions(glyph_info & glyph) const {
     FT_Error error;
     error = FT_Load_Glyph(face_, char_index, FT_LOAD_NO_HINTING);
     if (error) {
-        UnicodeString const &text = glyph.text.data();
-        std::string str;
-        text.toUTF8String(str);
-
-        fprintf(stderr, "%s\n", str.c_str());
         fprintf(stderr, "FT_Load_Glyph Error: %d\n", error);
-        fprintf(stderr, "Char Code: %d\n", glyph.glyph_index);
-        fprintf(stderr, "Glyph Index: %d\n", char_index);
-        fprintf(stderr, "Char Index: %d\n\n", glyph.char_index);
-        fprintf(stderr, "Is CID Keyed: %ld\n", FT_IS_CID_KEYED(face_));
         return;
     }
 

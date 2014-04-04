@@ -592,7 +592,6 @@ void Tile::AsyncShape(uv_work_t* req) {
 
                 // Add all glyphs for this labels and add new font faces as they
                 // appear.
-                double xpos = 0.0;
                 for (size_t j = 0; j < glyphs.size(); j++) {
                     glyph_info glyph = glyphs[j];
                     // std::cout<<glyph->format<<'\n';
@@ -629,12 +628,9 @@ void Tile::AsyncShape(uv_work_t* req) {
 
                     face->add_glyph(glyph.glyph_index);
 
-                    // Increment xpos by glyph width.
-                    xpos += cluster_width(glyph.char_index);
-
                     label->add_faces(layer_face_id);
                     label->add_glyphs(glyph.glyph_index);
-                    label->add_x(xpos);
+                    label->add_x(glyph.x);
                     label->add_y(glyph.offset.y);
                 }
             }

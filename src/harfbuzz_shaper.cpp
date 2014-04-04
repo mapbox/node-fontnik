@@ -95,6 +95,7 @@ std::vector<glyph_info> HarfbuzzShaper::Shape(std::string &value,
                 continue;
             }
 
+            pixel_position cluster_offset;
             for (unsigned i = 0; i < num_glyph_infos; ++i) {
                 glyph_info tmp;
                 tmp.char_index = glyph_infos[i].cluster;
@@ -106,6 +107,9 @@ std::vector<glyph_info> HarfbuzzShaper::Shape(std::string &value,
 
                 // Overwrite default width with better value from HarfBuzz
                 tmp.width = positions[i].x_advance / 64.0;
+
+                cluster_offset.x += tmp.width;
+                tmp.x = cluster_offset.x;
 
                 tmp.offset.set(positions[i].x_offset / 64.0,
                                positions[i].y_offset / 64.0);
