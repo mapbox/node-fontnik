@@ -6,16 +6,6 @@
       'hard_dependency': 1,
       'actions': [
         {
-          'action_name': 'run_protoc_metrics',
-          'inputs': [
-            './proto/metrics.proto'
-          ],
-          'outputs': [
-            "./src/metrics.pb.cc"
-          ],
-          'action': ['protoc','-Iproto/','--cpp_out=./src/','./proto/metrics.proto']
-        },
-        {
           'action_name': 'run_protoc_vector_tile',
           'inputs': [
             './proto/vector_tile.proto'
