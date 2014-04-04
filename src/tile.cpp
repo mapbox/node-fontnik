@@ -513,17 +513,6 @@ void Tile::AsyncShape(uv_work_t* req) {
 
     pthread_mutex_lock(&baton->tile->mutex);
 
-    /*
-    PangoRenderer *renderer = pango_renderer();
-
-    PangoFontDescription *desc = pango_font_description_from_string(baton->fontstack.c_str());
-    pango_font_description_set_absolute_size(desc, 24 * 1024);
-
-    PangoLayout *layout = pango_layout_new(pango_context());
-    pango_layout_set_font_description(layout, desc);
-    */
-
-
     typedef std::map<FT_Face, TileFace *> Faces;
     Faces faces;
 
@@ -569,21 +558,14 @@ void Tile::AsyncShape(uv_work_t* req) {
 
                 const double scale_factor = 1.0;
                 std::vector<glyph_info> glyphs;
+
+                // Shape the text.
                 HarfbuzzShaper shaper;
                 glyphs = shaper.Shape(text,
                                       baton->fontstack,
                                       width_map_,
                                       font_manager,
                                       scale_factor);
-
-                /*
-                // Shape the text.
-                pango_layout_set_text(layout, text.data(), text.size());
-
-                pango_sdf_renderer_reset(PANGO_SDF_RENDERER(renderer));
-                pango_renderer_draw_layout (renderer, layout, 0, 0);
-                const PangoSDFGlyphs& glyphs = pango_sdf_renderer_get_glyphs(PANGO_SDF_RENDERER(renderer));
-                */
 
                 llmr::vector::label *label = mutable_layer->add_labels();
                 label->set_text(key);
@@ -594,12 +576,6 @@ void Tile::AsyncShape(uv_work_t* req) {
                 for (size_t j = 0; j < glyphs.size(); j++) {
                     glyph_info glyph = glyphs[j];
                     // std::cout<<glyph->format<<'\n';
-
-                    /*
-                    PangoFcFont *fc_font = PANGO_FC_FONT(glyph.font);
-                    FT_Face ft_face = pango_fc_font_lock_face(fc_font);
-                    pango_fc_font_unlock_face(fc_font);
-                    */
 
                     FT_Face ft_face = glyph.face->get_face();
 
