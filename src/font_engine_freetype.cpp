@@ -21,7 +21,6 @@
  *****************************************************************************/
 
 #include "font_engine_freetype.hpp"
-#include "face.hpp"
 #include "util.hpp"
 
 // boost

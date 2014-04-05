@@ -23,6 +23,7 @@
 #pragma once
 
 #include "glyph_info.hpp"
+#include "globals.hpp"
 
 // freetype2
 extern "C"
@@ -34,7 +35,7 @@ extern "C"
 // #include FT_STROKER_H
 }
 
-//stl
+// stl
 #include <map>
 #include <memory>
 #include <string>
@@ -63,26 +64,11 @@ public:
 
 private:
     FT_Face face_;
-    mutable std::map<glyph_index_t, glyph_info> dimension_cache_;
+    mutable std::map<uint32_t, glyph_info> glyphs_;
     mutable double char_height_;
 };
+
 typedef std::shared_ptr<font_face> face_ptr;
-
-class font_face_set {
-public:
-    typedef std::vector<face_ptr>::iterator iterator;
-    font_face_set(void) : faces_() {}
-
-    void add(face_ptr face);
-    void set_character_sizes(double size);
-
-    unsigned size() const { return faces_.size(); }
-    iterator begin() { return faces_.begin(); }
-    iterator end() { return faces_.end(); }
-private:
-    std::vector<face_ptr> faces_;
-};
-typedef std::shared_ptr<font_face_set> face_set_ptr;
 
 /*
 // FT_Stroker wrapper

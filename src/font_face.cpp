@@ -20,23 +20,20 @@
  *
  *****************************************************************************/
 
-#include "face.hpp"
+#include "font_face.hpp"
+#include "distmap.h"
 
 // icu
 #include <unicode/unistr.h>
 
 font_face::font_face(FT_Face face)
     : face_(face),
-      dimension_cache_(),
-      char_height_(0.0) {}
+      glyphs_(),
+      char_height_(0.0) {
+    FT_Reference_Face(face);
+}
 
 font_face::~font_face() {
-    /*
-    MAPNIK_LOG_DEBUG(font_face) <<
-        "font_face: Clean up face \"" << family_name() <<
-        " " << style_name() << "\"";
-    */
-
     FT_Done_Face(face_);
 }
 
@@ -48,7 +45,7 @@ double font_face::get_char_height() const {
     glyph_info tmp;
     tmp.glyph_index = FT_Get_Char_Index(face_, 'X');
     glyph_dimensions(tmp);
-    char_height_ = tmp.height();
+    char_height_ = tmp.height;
 
     return char_height_;
 }
@@ -59,15 +56,20 @@ bool font_face::set_character_sizes(double size) {
 }
 
 void font_face::glyph_dimensions(glyph_info & glyph) const {
-    // TODO: Check if char is already in cache.
-    /*
-    std::map<glyph_index_t, glyph_info>::const_iterator itr;
-    itr = dimension_cache_.find(glyph.glyph_index);
-    if (itr != dimension_cache_.end()) {
+    // Check if char is already in cache.
+    std::map<uint32_t, glyph_info>::const_iterator itr;
+    itr = glyphs_.find(glyph.glyph_index);
+    if (itr != glyphs_.end()) {
         glyph = itr->second;
         return;
     }
-    */
+
+    // int size = 24;
+    int buffer = 3;
+    // FT_Set_Char_Size(font, 0, size * 64, 72, 72);
+
+    // TODO:  Insert by key or map.insert()?
+    // glyphs[glyph.glyph_index] = glyph;
 
     // TODO: Why is this necessary?
     // Transform with identity matrix and null vector.
@@ -75,45 +77,52 @@ void font_face::glyph_dimensions(glyph_info & glyph) const {
 
     FT_UInt char_index = FT_Get_Char_Index(face_, glyph.glyph_index);
     if (!char_index) {
-        // fprintf(stderr, "FT_Get_Char_Index Not Found for Char Code: %d\n", glyph.glyph_index);
         return;
     }
 
-    FT_Error error;
-    error = FT_Load_Glyph(face_, char_index, FT_LOAD_NO_HINTING);
+    FT_Error error = FT_Load_Glyph(face_, char_index, FT_LOAD_NO_HINTING | FT_LOAD_RENDER);
     if (error) {
         fprintf(stderr, "FT_Load_Glyph Error: %d\n", error);
         return;
     }
 
-    FT_Glyph image;
+    FT_GlyphSlot slot = face_->glyph;
+    int width = slot->bitmap.width;
+    int height = slot->bitmap.rows;
 
-    error = FT_Get_Glyph(face_->glyph, &image);
-    if (error) {
-        fprintf(stderr, "FT_Get_Glyph Error: %d\n", error);
-        return;
-    }
+    /*
+    FT_BBox bbox;
+    FT_Glyph_Get_CBox(slot, FT_GLYPH_BBOX_PIXELS, &bbox);
+    */
 
-    FT_BBox glyph_bbox;
-    FT_Glyph_Get_CBox(image, ft_glyph_bbox_pixels, &glyph_bbox);
-    FT_Done_Glyph(image);
-
-    glyph.ymin = glyph_bbox.yMin; // Pixels!
-    glyph.ymax = glyph_bbox.yMax;
+    // glyph.width = slot->advance.x / 64.0;
+    glyph.width = width;
+    glyph.height = height;
+    glyph.left = slot->bitmap_left;
+    glyph.top = slot->bitmap_top;
+    // glyph.ymin = bbox.yMin;
+    // glyph.ymax = bbox.yMax;
+    glyph.advance = slot->metrics.horiAdvance / 64.0;
     glyph.line_height = face_->size->metrics.height / 64.0;
-    glyph.width = face_->glyph->advance.x / 64.0;
 
-    // TODO: dimension_cache_.insert(std::pair<unsigned, char_info>(c, dim));
-}
+    // Create a signed distance field (SDF) for the glyph bitmap.
+    if (width > 0) {
+        unsigned int buffered_width = width + 2 * buffer;
+        unsigned int buffered_height = height + 2 * buffer;
 
-void font_face_set::add(face_ptr face) {
-    faces_.push_back(face);
-}
+        unsigned char *distance = make_distance_map((unsigned char *)slot->bitmap.buffer, width, height, buffer);
 
-void font_face_set::set_character_sizes(double size) {
-    for (face_ptr const& face : faces_) {
-        face->set_character_sizes(size);
+        glyph.bitmap.resize(buffered_width * buffered_height);
+        for (unsigned int y = 0; y < buffered_height; y++) {
+            memcpy((unsigned char *)glyph.bitmap.data() + buffered_width * y, distance + y * distmap_size, buffered_width);
+        }
+        free(distance);
     }
+
+    // TODO: Has no FT_Glyph object been created?
+    // FT_Done_Glyph(slot);
+
+    glyphs_.insert(std::pair<uint32_t, glyph_info>(glyph.glyph_index, glyph));
 }
 
 /*

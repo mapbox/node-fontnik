@@ -20,34 +20,14 @@
  *
  *****************************************************************************/
 
-#pragma once
+#include "font_face_set.hpp"
 
-#include "text_line.hpp"
-#include "font_face.hpp"
-#include "font_engine_freetype.hpp"
-#include "glyph_info.hpp"
+void font_face_set::add(face_ptr face) {
+    faces_.push_back(face);
+}
 
-// stl
-#include <list>
-
-// icu
-#include <unicode/unistr.h>
-
-// harfbuzz
-#include <harfbuzz/hb.h>
-#include <harfbuzz/hb-ft.h>
-#include <harfbuzz/hb-icu.h>
-
-class HarfbuzzShaper {
-public:
-    HarfbuzzShaper();
-    ~HarfbuzzShaper();
-
-    std::vector<glyph_info> Shape(std::string &value,
-                                  std::string &fontstack,
-                                  std::map<unsigned,double> &width_map,
-                                  face_manager_freetype &font_manager,
-                                  double scale_factor);
-private:
-    std::vector<std::pair<std::string, face_ptr>> Split(const std::string &s, char delim, std::vector<std::pair<std::string, face_ptr>> &elems);
-};
+void font_face_set::set_character_sizes(double size) {
+    for (face_ptr const& face : faces_) {
+        face->set_character_sizes(size);
+    }
+}

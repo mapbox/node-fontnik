@@ -102,7 +102,6 @@ std::vector<glyph_info> HarfbuzzShaper::Shape(std::string &value,
                 tmp.glyph_index = glyph_infos[i].codepoint;
                 tmp.face = face;
                 // tmp.format = text_item.format;
-                tmp.text = value;
                 face->glyph_dimensions(tmp);
 
                 // Overwrite default width with better value from HarfBuzz

@@ -22,6 +22,8 @@
 
 #pragma once
 
+#include "font_face.hpp"
+#include "font_face_set.hpp"
 #include "font_set.hpp"
 
 // boost
@@ -38,9 +40,7 @@
 
 struct FT_LibraryRec_;
 
-class font_face_set;
 typedef std::shared_ptr<font_face_set> face_set_ptr;
-class font_face;
 typedef std::shared_ptr<font_face> face_ptr;
 
 class freetype_engine {

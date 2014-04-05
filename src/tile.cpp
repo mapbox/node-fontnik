@@ -4,6 +4,7 @@
 #include "tile.hpp"
 #include "clipper.hpp"
 #include "font_set.hpp"
+#include "font_face_set.hpp"
 #include "harfbuzz_shaper.hpp"
 #include "glyph_info.hpp"
 
@@ -382,112 +383,6 @@ void Tile::AsyncShapeWrapper(uv_work_t* req) {
     baton->tile->AsyncShape(req);
 }
 
-struct Glyph {
-    uint32_t id;
-    std::string bitmap;
-
-    uint32_t width;
-    uint32_t height;
-    int32_t left;
-    int32_t top;
-    uint32_t advance;
-};
-
-class Face {
-public:
-    Face(FT_Face font) : font(font) {
-        FT_Reference_Face(font);
-    }
-    ~Face() {
-        FT_Done_Face(font);
-    }
-
-    const Glyph& glyph(uint32_t glyph_id) {
-        const std::map<uint32_t, Glyph>::iterator pos = glyphs.find(glyph_id);
-        if (pos != glyphs.end()) {
-            return pos->second;
-        } else {
-            Glyph& glyph = glyphs[glyph_id];
-            glyph.id = glyph_id;
-
-            int size = 24;
-            int buffer = 3;
-            FT_Set_Char_Size(font, 0, size * 64, 72, 72);
-
-            FT_Error error = FT_Load_Glyph(font, glyph_id, FT_LOAD_NO_HINTING | FT_LOAD_RENDER);
-            if (error) {
-                fprintf(stderr, "glyph load error %d\n", error);
-                return glyph;
-            }
-
-            glyph.width = font->glyph->bitmap.width;
-            glyph.height = font->glyph->bitmap.rows;
-            glyph.left = font->glyph->bitmap_left;
-            glyph.top = font->glyph->bitmap_top;
-            glyph.advance = font->glyph->metrics.horiAdvance / 64.0;
-
-            FT_GlyphSlot slot = font->glyph;
-            int width = slot->bitmap.width;
-            int height = slot->bitmap.rows;
-
-            // Create a signed distance field for the glyph bitmap.
-            if (width > 0) {
-                unsigned int buffered_width = width + 2 * buffer;
-                unsigned int buffered_height = height + 2 * buffer;
-
-                unsigned char *distance = make_distance_map((unsigned char *)slot->bitmap.buffer, width, height, buffer);
-
-                glyph.bitmap.resize(buffered_width * buffered_height);
-                for (unsigned int y = 0; y < buffered_height; y++) {
-                    memcpy((unsigned char *)glyph.bitmap.data() + buffered_width * y, distance + y * distmap_size, buffered_width);
-                }
-                free(distance);
-            }
-
-            return glyph;
-        }
-    }
-
-private:
-    FT_Face font;
-    std::map<uint32_t, Glyph> glyphs;
-
-    typedef std::map<FT_Face, Face *> map;
-    static pthread_once_t init;
-    static pthread_key_t map_key;
-    static void init_map() {
-        pthread_key_create(&map_key, delete_map);
-    }
-    static void delete_map(void *fontmap) {
-        delete (map *)fontmap;
-    }
-
-public:
-    static Face *face(FT_Face font)
-    {
-        // Get a thread-specific font-/glyphmap.
-        pthread_once(&init, init_map);
-        map *fontmap = (map *)pthread_getspecific(map_key);
-        if (fontmap == NULL) {
-            pthread_setspecific(map_key, fontmap = new map);
-        }
-
-        map::const_iterator pos = fontmap->find(font);
-        if (pos != fontmap->end()) {
-            return pos->second;
-        } else {
-            Face *face = new Face(font);
-            (*fontmap)[font] = face;
-            return face;
-        }
-    }
-
-};
-
-pthread_once_t Face::init = PTHREAD_ONCE_INIT;
-pthread_key_t Face::map_key = 0;
-
-
 class TileFace {
 public:
     TileFace(FT_Face font) : font(font) {
@@ -642,7 +537,7 @@ void Tile::AsyncShape(uv_work_t* req) {
         //     char_code = FT_Get_Next_Char(ft_face, char_code, &glyph_index);
         // }
 
-        Face *_face = Face::face(face->font);
+        face_ptr _face = font_face_set::face(face->font);
 
         for (std::set<uint32_t>::const_iterator it = face->glyphs.begin(); it != face->glyphs.end(); it++) {
             uint32_t id = *it;
@@ -652,7 +547,10 @@ void Tile::AsyncShape(uv_work_t* req) {
             //     continue;
             // }
 
-            const Glyph& gl = _face->glyph(id);
+            // const Glyph& gl = _face->glyph(id);
+            glyph_info gl;
+            gl.id = id;
+            _face->glyph_dimensions(gl);
 
             llmr::vector::glyph *glyph = mutable_face->add_glyphs();
             glyph->set_id(id);

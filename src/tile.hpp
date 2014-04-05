@@ -3,6 +3,7 @@
 #include <node.h>
 
 #include "font_engine_freetype.hpp"
+#include "font_face.hpp"
 
 #include "vector_tile.pb.h"
 

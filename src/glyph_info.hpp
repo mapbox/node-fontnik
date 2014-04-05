@@ -22,20 +22,21 @@
 
 #pragma once
 
+// #include "font_face.hpp"
 #include "pixel_position.hpp"
 
 // stl
 #include <memory>
 
+/*
 class font_face;
 typedef std::shared_ptr<font_face> face_ptr;
-
-typedef unsigned glyph_index_t;
+*/
 
 struct glyph_info {
     glyph_info()
         : glyph_index(0),
-          face(nullptr),
+          // face(nullptr),
           char_index(0),
           width(0.0),
           x(0.0),
@@ -44,14 +45,21 @@ struct glyph_info {
           ymax(0.0),
           line_height(0.0),
           offset() {}
-    glyph_index_t glyph_index;
-    face_ptr face;
-    std::string text;
+    uint32_t glyph_index;
+    // face_ptr face;
+
+    uint32_t id;
+    std::string bitmap;
 
     // Position in the string of all characters i.e. before itemizing
     unsigned char_index;
 
-    double width;
+    uint32_t width;
+    uint32_t height;
+    int32_t left;
+    int32_t top;
+    uint32_t advance;
+
     double x;
     double y;
     double ymin;
@@ -61,5 +69,5 @@ struct glyph_info {
     // line spacing, but not additional user defined spacing
     double line_height;
     pixel_position offset;
-    double height() const { return ymax-ymin; }
+    // double height() const { return ymax-ymin; }
 };
