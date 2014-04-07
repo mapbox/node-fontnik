@@ -21,6 +21,9 @@
  *****************************************************************************/
 
 #include "harfbuzz_shaper.hpp"
+#include "text_line.hpp"
+#include "font_face_set.hpp"
+#include "font_set.hpp"
 
 #include <iostream>
 
