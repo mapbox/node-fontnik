@@ -23,7 +23,6 @@
 #pragma once
 
 #include "glyph_info.hpp"
-#include "globals.hpp"
 
 // freetype2
 extern "C"

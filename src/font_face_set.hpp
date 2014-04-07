@@ -40,9 +40,6 @@ extern "C"
 // #include FT_STROKER_H
 }
 
-class font_face;
-typedef std::shared_ptr<font_face> face_ptr;
-
 class font_face_set {
 public:
     typedef std::vector<face_ptr>::iterator iterator;

@@ -24,6 +24,8 @@
 
 #include "text_line.hpp"
 #include "font_face.hpp"
+#include "font_face_set.hpp"
+#include "font_set.hpp"
 #include "font_engine_freetype.hpp"
 #include "glyph_info.hpp"
 

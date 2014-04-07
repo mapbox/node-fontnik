@@ -3,7 +3,6 @@
 
 #include "tile.hpp"
 #include "clipper.hpp"
-#include "font_set.hpp"
 #include "font_face_set.hpp"
 #include "harfbuzz_shaper.hpp"
 #include "glyph_info.hpp"

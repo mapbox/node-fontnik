@@ -21,7 +21,6 @@
  *****************************************************************************/
 
 #include "harfbuzz_shaper.hpp"
-#include "glyph_info.hpp"
 
 #include <iostream>
 
