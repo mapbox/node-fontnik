@@ -1,6 +1,7 @@
 #include <node.h>
 #include <node_buffer.h>
 
+#include "globals.hpp"
 #include "tile.hpp"
 #include "clipper.hpp"
 #include "font_face_set.hpp"
@@ -32,6 +33,10 @@ struct ShapeBaton {
 };
 
 v8::Persistent<v8::FunctionTemplate> Tile::constructor;
+
+// Init pthread fontmap keys for font_face_set.
+pthread_once_t font_face_set::init = PTHREAD_ONCE_INIT;
+pthread_key_t font_face_set::map_key = 0;
 
 Tile::Tile(const char *data, size_t length) : node::ObjectWrap(),
     font_engine_(),

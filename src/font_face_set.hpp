@@ -84,7 +84,4 @@ public:
     }
 };
 
-pthread_once_t font_face_set::init = PTHREAD_ONCE_INIT;
-pthread_key_t font_face_set::map_key = 0;
-
 typedef std::shared_ptr<font_face_set> face_set_ptr;

@@ -4,8 +4,7 @@
 pthread_once_t ft_init = PTHREAD_ONCE_INIT;
 pthread_key_t ft_fontmap_key;
 
-void ft_init_keys()
-{
+void ft_init_keys() {
     // TODO: destructors
     pthread_key_create(&ft_fontmap_key, NULL);
 }
