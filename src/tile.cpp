@@ -4,6 +4,7 @@
 #include "globals.hpp"
 #include "tile.hpp"
 #include "clipper.hpp"
+#include "tile_face.hpp"
 #include "font_face_set.hpp"
 #include "harfbuzz_shaper.hpp"
 
@@ -386,32 +387,12 @@ void Tile::AsyncShapeWrapper(uv_work_t* req) {
     baton->tile->AsyncShape(req);
 }
 
-class TileFace {
-public:
-    TileFace(FT_Face font) : font(font) {
-        FT_Reference_Face(font);
-        family = font->family_name;
-        style = font->style_name;
-    }
-    ~TileFace() {
-        FT_Done_Face(font);
-    }
-    inline void add_glyph(uint32_t glyph_id) {
-        glyphs.insert(glyph_id);
-    }
-
-    FT_Face font;
-    std::string family;
-    std::string style;
-    std::set<uint32_t> glyphs;
-};
-
 void Tile::AsyncShape(uv_work_t* req) {
     ShapeBaton* baton = static_cast<ShapeBaton*>(req->data);
 
     pthread_mutex_lock(&baton->tile->mutex);
 
-    typedef std::map<FT_Face, TileFace *> Faces;
+    typedef std::map<std::string, llmr::vector::face *> Faces;
     Faces faces;
 
     llmr::vector::tile& tile = baton->tile->tile;
@@ -438,7 +419,7 @@ void Tile::AsyncShape(uv_work_t* req) {
         }
 
         llmr::vector::layer* mutable_layer = tile.mutable_layers(i);
-        typedef std::vector<TileFace *> LayerFaces;
+        typedef std::vector<llmr::vector::face *> LayerFaces;
         LayerFaces layer_faces;
 
         // Process strings per layer.
@@ -475,101 +456,61 @@ void Tile::AsyncShape(uv_work_t* req) {
                     glyph_info glyph = glyphs[j];
                     // std::cout<<glyph->format<<'\n';
 
-                    FT_Face ft_face = glyph.face->get_face();
+                    TileFace tile_face = glyph.face;
+                    std::string name = tile_face.name();
 
                     // Try to find whether this font has already been
                     // used in this tile.
-                    Faces::const_iterator global_pos = faces.find(ft_face);
+                    Faces::const_iterator global_pos = faces.find(name);
                     if (global_pos == faces.end()) {
-                        TileFace *face = new TileFace(ft_face);
-                        std::pair<FT_Face, TileFace *> keyed(ft_face, face);
+                        llmr::vector::face *mutable_face = tile.add_faces();
+                        mutable_face->set_family(tile_face.family);
+                        mutable_face->set_style(tile_face.style);
+
+                        // Add a textual representation of the font so that we can figure out
+                        // later what font we need to use.
+                        mutable_layer->add_faces(name);
+
+                        std::pair<std::string, llmr::vector::face *> keyed(name, mutable_face);
                         global_pos = faces.insert(keyed).first;
                     }
 
-                    TileFace *face = global_pos->second;
+                    llmr::vector::face *mutable_face = global_pos->second;
 
                     // Find out whether this font has been used in this tile
                     // before; and get its position ID.s
-                    std::vector<TileFace *>::iterator pos = std::find(layer_faces.begin(), layer_faces.end(), face);
+                    std::vector<llmr::vector::face *>::iterator pos = std::find(layer_faces.begin(), layer_faces.end(), mutable_face);
                     if (pos == layer_faces.end()) {
                         // Do not ref this font object here since we
                         // already ref'ed it for the global font list.
-                        layer_faces.push_back(face);
+                        layer_faces.push_back(mutable_face);
                         pos = layer_faces.end() - 1;
                     }
                     int layer_face_id = pos - layer_faces.begin();
-
-                    face->add_glyph(glyph.glyph_index);
+                    std::cout<<name<<' '<<layer_face_id<<'\n';
 
                     label->add_faces(layer_face_id);
                     label->add_glyphs(glyph.glyph_index);
                     label->add_x(glyph.x);
                     label->add_y(glyph.offset.y);
+
+                    // Insert SDF glyphs + bitmaps
+                    llmr::vector::glyph *mutable_glyph = mutable_face->add_glyphs();
+                    mutable_glyph->set_id(glyph.glyph_index);
+                    mutable_glyph->set_width(glyph.width);
+                    mutable_glyph->set_height(glyph.height);
+                    mutable_glyph->set_left(glyph.left);
+                    mutable_glyph->set_top(glyph.top);
+                    mutable_glyph->set_advance(glyph.advance);
+                    if (glyph.width > 0) {
+                        mutable_glyph->set_bitmap(glyph.bitmap);
+                    }
                 }
             }
         }
 
-        // Add a textual representation of the font so that we can figure out
-        // later what font we need to use.
-        for (LayerFaces::const_iterator it = layer_faces.begin(); it != layer_faces.end(); it++) {
-            TileFace *face = *it;
-            mutable_layer->add_faces(face->family + " " + face->style);
-            // note: we don't delete the TileFace objects here because they
-            // are 'owned' by the global faces map and deleted later on.
-        }
-
-        // Insert FAKE stacks
         mutable_layer->add_stacks(baton->fontstack);
     }
-
-    // Insert SDF glyphs + bitmaps
-    for (Faces::const_iterator it = faces.begin(); it != faces.end(); it++) {
-        const std::pair<FT_Face, TileFace *>& pair = *it;
-        TileFace *face = pair.second;
-        llmr::vector::face *mutable_face = tile.add_faces();
-        FT_Face ft_face = face->font;
-        mutable_face->set_family(ft_face->family_name);
-        mutable_face->set_style(ft_face->style_name);
-
-        // Determine ASCII glyphs
-        // std::set<uint32_t> omit;
-        // FT_UInt glyph_index;
-        // FT_ULong char_code = FT_Get_First_Char(ft_face, &glyph_index);
-        // while (glyph_index != 0 && char_code < 256) {
-        //     omit.insert(glyph_index);
-        //     char_code = FT_Get_Next_Char(ft_face, char_code, &glyph_index);
-        // }
-
-        face_ptr _face = font_face_set::face(face->font);
-
-        for (std::set<uint32_t>::const_iterator it = face->glyphs.begin(); it != face->glyphs.end(); it++) {
-            uint32_t id = *it;
-
-            // Omit ASCII glyphs we determined earlier
-            // if (omit.find(id) != omit.end()) {
-            //     continue;
-            // }
-
-            // const Glyph& gl = _face->glyph(id);
-            glyph_info gl;
-            gl.id = id;
-            _face->glyph_dimensions(gl);
-
-            llmr::vector::glyph *glyph = mutable_face->add_glyphs();
-            glyph->set_id(id);
-            glyph->set_width(gl.width);
-            glyph->set_height(gl.height);
-            glyph->set_left(gl.left);
-            glyph->set_top(gl.top);
-            glyph->set_advance(gl.advance);
-            if (gl.width > 0) {
-                glyph->set_bitmap(gl.bitmap);
-            }
-        }
-
-        delete face;
-    }
-
 
     pthread_mutex_unlock(&baton->tile->mutex);
 }

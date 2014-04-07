@@ -22,6 +22,7 @@
 
 #include "harfbuzz_shaper.hpp"
 #include "text_line.hpp"
+#include "tile_face.hpp"
 #include "font_face_set.hpp"
 #include "font_set.hpp"
 
@@ -102,7 +103,7 @@ std::vector<glyph_info> HarfbuzzShaper::Shape(std::string &value,
                 glyph_info tmp;
                 tmp.char_index = glyph_infos[i].cluster;
                 tmp.glyph_index = glyph_infos[i].codepoint;
-                tmp.face = face;
+                tmp.face.set_face(face->get_face());
                 // tmp.format = text_item.format;
                 face->glyph_dimensions(tmp);
 
