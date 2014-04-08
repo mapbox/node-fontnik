@@ -28,10 +28,13 @@
 // stl
 #include <memory>
 
+class font_face;
+typedef std::shared_ptr<font_face> face_ptr;
+
 struct glyph_info {
     glyph_info()
         : glyph_index(0),
-          face(),
+          face(nullptr),
           char_index(0),
           width(0.0),
           x(0.0),
@@ -41,7 +44,7 @@ struct glyph_info {
           line_height(0.0),
           offset() {}
     uint32_t glyph_index;
-    TileFace face;
+    face_ptr face;
 
     uint32_t id;
     std::string bitmap;

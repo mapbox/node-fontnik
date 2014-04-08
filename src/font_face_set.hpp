@@ -53,35 +53,6 @@ public:
     iterator end() { return faces_.end(); }
 private:
     std::vector<face_ptr> faces_;
-
-    static pthread_once_t init;
-    static pthread_key_t map_key;
-    static void init_map() {
-        pthread_key_create(&map_key, delete_map);
-    }
-    static void delete_map(void *fontmap) {
-        delete (font_face_set *)fontmap;
-    }
-
-public:
-    static face_ptr face(FT_Face face) {
-        // Get a thread-specific font/glyph map.
-        pthread_once(&init, init_map);
-        font_face_set *fontmap = (font_face_set *)pthread_getspecific(map_key);
-        if (fontmap == NULL) {
-            pthread_setspecific(map_key, fontmap = new font_face_set);
-        }
-
-        for (font_face_set::iterator itr = fontmap->begin(); itr != fontmap->end(); ++itr) {
-            if (itr != fontmap->end()) {
-                face_ptr const &font = std::make_shared<font_face>(face);
-                fontmap->add(font);
-                return font;
-            } else if (itr->get()->get_face() == face) {
-                return *itr;
-            }
-        }
-    }
 };
 
 typedef std::shared_ptr<font_face_set> face_set_ptr;

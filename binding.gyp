@@ -21,7 +21,6 @@
       'target_name': 'fontserver',
       'sources': [
         'src/tile.cpp',
-        'src/globals.cpp',
         'src/font_face_set.cpp',
         'src/font_face.cpp',
         'src/harfbuzz_shaper.cpp',

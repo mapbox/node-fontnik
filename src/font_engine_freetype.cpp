@@ -26,6 +26,7 @@
 // boost
 #include <boost/algorithm/string.hpp>
 #include <boost/filesystem.hpp>
+#include <boost/thread/locks.hpp>
 
 // stl
 #include <algorithm>
@@ -40,6 +41,8 @@ extern "C"
 #include FT_FREETYPE_H
 // #include FT_STROKER_H
 }
+
+typedef boost::unique_lock<std::mutex> scoped_lock;
 
 freetype_engine::freetype_engine() :
     library_(nullptr) {
@@ -69,9 +72,9 @@ bool freetype_engine::is_font_file(std::string const& file_name) {
 }
 
 bool freetype_engine::register_font(std::string const& file_name) {
-#ifdef MAPNIK_THREADSAFE
-    mapnik::scoped_lock lock(mutex_);
-#endif
+// #ifdef MAPNIK_THREADSAFE
+    scoped_lock lock(mutex_);
+// #endif
     FT_Library library = 0;
     FT_Error error = FT_Init_FreeType(&library);
     if (error) {
@@ -200,9 +203,9 @@ face_ptr freetype_engine::create_face(std::string const& family_name) {
             if (!error) return std::make_shared<font_face>(face);
         } else {
             // load font into memory
-#ifdef MAPNIK_THREADSAFE
-            mapnik::scoped_lock lock(mutex_);
-#endif
+// #ifdef MAPNIK_THREADSAFE
+            scoped_lock lock(mutex_);
+// #endif
             std::ifstream is(itr->second.second.c_str(), std::ios::binary);
             std::string buffer((std::istreambuf_iterator<char>(is)),
                                std::istreambuf_iterator<char>());
@@ -297,9 +300,9 @@ face_set_ptr face_manager<T>::get_face_set(const std::string &name, boost::optio
     }
 }
 
-#ifdef MAPNIK_THREADSAFE
+// #ifdef MAPNIK_THREADSAFE
 std::mutex freetype_engine::mutex_;
-#endif
+// #endif
 std::map<std::string,std::pair<int,std::string> > freetype_engine::name2file_;
 std::map<std::string,std::string> freetype_engine::memory_fonts_;
 template class face_manager<freetype_engine>;

@@ -27,6 +27,7 @@
 
 // stl
 #include <list>
+#include <map>
 
 // icu
 #include <unicode/unistr.h>
@@ -41,8 +42,9 @@ public:
     HarfbuzzShaper();
     ~HarfbuzzShaper();
 
-    std::vector<glyph_info> Shape(std::string &value,
+    void Shape(std::string &value,
                                   std::string &fontstack,
+                                  std::map<uint32_t, glyph_info> &glyphs,
                                   std::map<unsigned,double> &width_map,
                                   face_manager_freetype &font_manager,
                                   double scale_factor);

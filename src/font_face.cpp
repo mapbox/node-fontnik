@@ -28,6 +28,8 @@
 
 font_face::font_face(FT_Face face)
     : face_(face),
+      family(face->family_name),
+      style(face->style_name),
       glyphs_(),
       char_height_(0.0) {
     FT_Reference_Face(face);

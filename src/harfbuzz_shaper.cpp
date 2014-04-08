@@ -32,19 +32,19 @@ HarfbuzzShaper::HarfbuzzShaper() {};
 
 HarfbuzzShaper::~HarfbuzzShaper() {};
 
-std::vector<glyph_info> HarfbuzzShaper::Shape(std::string &value,
-                                              std::string &fontstack,
-                                              std::map<unsigned,double> &width_map,
-                                              face_manager_freetype &font_manager,
-                                              double scale_factor) {
-    std::vector<glyph_info> glyphs;
+void HarfbuzzShaper::Shape(std::string &value,
+                           std::string &fontstack,
+                           std::map<uint32_t, glyph_info> &glyphs,
+                           std::map<unsigned,double> &width_map,
+                           face_manager_freetype &font_manager,
+                           double scale_factor) {
     text_line line(0, value.size() - 1);
 
     unsigned start = line.first_char();
     unsigned end = line.last_char();
     UnicodeString const &text = value.data();
     size_t length = end - start;
-    if (!length) return glyphs;
+    if (!length) return;
 
     // Preallocate memory based on estimated length.
     line.reserve(length);
@@ -103,7 +103,7 @@ std::vector<glyph_info> HarfbuzzShaper::Shape(std::string &value,
                 glyph_info tmp;
                 tmp.char_index = glyph_infos[i].cluster;
                 tmp.glyph_index = glyph_infos[i].codepoint;
-                tmp.face.set_face(face->get_face());
+                tmp.face = face;
                 // tmp.format = text_item.format;
                 face->glyph_dimensions(tmp);
 
@@ -119,15 +119,13 @@ std::vector<glyph_info> HarfbuzzShaper::Shape(std::string &value,
                 width_map[glyph_infos[i].cluster] += tmp.width;
                 line.add_glyph(tmp, scale_factor);
 
-                // DEBUG
-                glyphs.push_back(tmp);
+                glyphs.emplace(tmp.glyph_index, tmp);
             }
 
             line.update_max_char_height(face->get_char_height());
 
             // When we reach this point the current font had all glyphs.
-            return glyphs;
-            // break; 
+            break; 
         }
     // }
 }

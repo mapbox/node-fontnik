@@ -53,9 +53,13 @@ public:
     bool set_character_sizes(double size);
     void glyph_dimensions(glyph_info &glyph) const;
 
+    mutable std::map<uint32_t, glyph_info> glyphs_;
+
+    std::string family;
+    std::string style;
+
 private:
     FT_Face face_;
-    mutable std::map<uint32_t, glyph_info> glyphs_;
     mutable double char_height_;
 };
 

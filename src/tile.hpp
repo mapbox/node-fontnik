@@ -43,10 +43,6 @@ protected:
     // implemented with no overhead.
     std::map<unsigned, double> width_map_;
 
-    freetype_engine font_engine_;
-    face_manager_freetype font_manager;
-
 public:
     llmr::vector::tile tile;
-    pthread_mutex_t mutex;
 };

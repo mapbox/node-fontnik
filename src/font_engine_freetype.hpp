@@ -33,9 +33,9 @@
 // stl
 #include <map>
 #include <memory>
-#ifdef MAPNIK_THREADSAFE
+// #ifdef MAPNIK_THREADSAFE
 #include <thread>
-#endif
+// #endif
 #include <vector>
 
 struct FT_LibraryRec_;
@@ -64,9 +64,9 @@ public:
     freetype_engine();
 private:
     FT_LibraryRec_ *library_;
-#ifdef MAPNIK_THREADSAFE
+// #ifdef MAPNIK_THREADSAFE
     static std::mutex mutex_;
-#endif
+// #endif
     static std::map<std::string, std::pair<int,std::string> > name2file_;
     static std::map<std::string, std::string> memory_fonts_;
 };

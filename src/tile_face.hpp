@@ -2,6 +2,7 @@
 
 // stl
 #include <string>
+#include <set>
 
 // freetype2
 extern "C"
@@ -18,25 +19,23 @@ public:
     TileFace() {}
     ~TileFace() {}
 
-    /*
     inline void add_glyph(uint32_t glyph_id) {
         glyphs.insert(glyph_id);
     }
-    */
 
     void set_face(FT_Face face) {
         face_ = face;
-        family = face_->family_name;
-        style = face_->style_name;
+        family_name = face_->family_name;
+        style_name = face_->style_name;
     }
 
     std::string name() {
-        return family + ' ' + style;
+        return family_name + ' ' + style_name;
     }
 
-    std::string family;
-    std::string style;
-    // std::set<uint32_t> glyphs;
+    std::string family_name;
+    std::string style_name;
+    std::set<uint32_t> glyphs;
 
 private:
     FT_Face face_;
