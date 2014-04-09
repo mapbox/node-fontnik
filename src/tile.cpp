@@ -35,6 +35,8 @@ struct ShapeBaton {
     v8::Persistent<v8::Function> callback;
     Tile *tile;
     std::string fontstack;
+    bool error;
+    std::string error_msg;
 };
 
 v8::Persistent<v8::FunctionTemplate> Tile::constructor;
@@ -355,11 +357,13 @@ v8::Handle<v8::Value> Tile::Shape(const v8::Arguments& args) {
             v8::String::New("Second argument must be a callback function")));
     }
     v8::Local<v8::Function> callback = v8::Local<v8::Function>::Cast(args[1]);
+    // TODO - validate this is a string
     v8::String::Utf8Value fontstack(args[0]->ToString());
 
     Tile *tile = node::ObjectWrap::Unwrap<Tile>(args.This());
 
     ShapeBaton* baton = new ShapeBaton();
+    baton->error = false;
     baton->callback = v8::Persistent<v8::Function>::New(callback);
     baton->tile = tile;
     baton->fontstack = *fontstack;
@@ -367,167 +371,202 @@ v8::Handle<v8::Value> Tile::Shape(const v8::Arguments& args) {
     uv_work_t *req = new uv_work_t();
     req->data = baton;
 
-    int status = uv_queue_work(uv_default_loop(), req, AsyncShapeWrapper, (uv_after_work_cb)ShapeAfter);
+    int status = uv_queue_work(uv_default_loop(), req, AsyncShape, (uv_after_work_cb)ShapeAfter);
     assert(status == 0);
 
     return v8::Undefined();
 }
 
-void Tile::AsyncShapeWrapper(uv_work_t* req) {
-    ShapeBaton* baton = static_cast<ShapeBaton*>(req->data);
-    baton->tile->AsyncShape(req);
-}
-
 void Tile::AsyncShape(uv_work_t* req) {
     ShapeBaton* baton = static_cast<ShapeBaton*>(req->data);
+    // Maps char index (UTF-16) to width. If multiple glyphs map to the
+    // same char the sum of all widths is used.
+    // Note: this probably isn't the best solution. it would be better
+    // to have an object for each cluster, but it needs to be
+    // implemented with no overhead.
+    try {
+        std::map<unsigned, double> width_map_;
+        freetype_engine font_engine_;
+        face_manager_freetype font_manager(font_engine_);
 
-    freetype_engine font_engine_;
-    face_manager_freetype font_manager(font_engine_);
-
-    face_set_ptr face_set = font_manager.get_face_set(baton->fontstack);
-
-    typedef std::map<uint32_t, glyph_info> Glyphs;
-    Glyphs glyphs;
-
-    llmr::vector::tile& tile = baton->tile->tile;
-
-    // for every label
-    for (int i = 0; i < tile.layers_size(); i++) {
-        const llmr::vector::layer& layer = tile.layers(i);
-
-        typedef std::set<int> Strings;
-        Strings strings;
-
-        // Compile a set of all strings we need to shape.
-        for (int j = 0; j < layer.features_size(); j++) {
-            const llmr::vector::feature& feature = layer.features(j);
-
-            for (int k = 1; k < feature.tags_size(); k += 2) {
-                const std::string& key = layer.keys(feature.tags(k - 1));
-                if (key == "name") {
-                    // TODO: handle multiple fonts stacks
-                    strings.insert(feature.tags(k));
-                }
-                // TODO: extract all keys we need to shape
-            }
+        face_set_ptr face_set = font_manager.get_face_set(baton->fontstack);
+        if (!face_set) {
+            baton->error = true;
+            baton->error_msg = std::string("could not find face_set for ") + baton->fontstack;
+            return;
         }
 
-        llmr::vector::layer* mutable_layer = tile.mutable_layers(i);
-        font_face_set layer_faces;
+        typedef std::map<uint32_t, glyph_info> Glyphs;
+        Glyphs glyphs;
 
-        // Process strings per layer.
-        for (Strings::const_iterator it = strings.begin(); it != strings.end(); it++) {
-            int key = *it;
-            const llmr::vector::value& value = layer.values(key);
-            std::string text;
-            if (value.has_string_value()) {
-                text = value.string_value();
-            }
+        llmr::vector::tile& tile = baton->tile->tile;
 
-            if (text.size()) {
-                // Clear cluster widths.
-                width_map_.clear();
+        // for every label
+        for (int i = 0; i < tile.layers_size(); i++) {
+            const llmr::vector::layer& layer = tile.layers(i);
 
-                const double scale_factor = 1.0;
+            typedef std::set<int> Strings;
+            Strings strings;
 
-                // Shape the text.
-                HarfbuzzShaper shaper;
-                shaper.Shape(text,
-                             baton->fontstack,
-                             glyphs,
-                             width_map_,
-                             font_manager,
-                             scale_factor);
+            // Compile a set of all strings we need to shape.
+            for (int j = 0; j < layer.features_size(); j++) {
+                const llmr::vector::feature& feature = layer.features(j);
 
-                llmr::vector::label *label = mutable_layer->add_labels();
-                label->set_text(key);
-                label->set_stack(0); // TODO: support multiple font stacks
-
-                // Add all glyphs for this labels and add new font faces as they
-                // appear.
-                for (size_t j = 0; j < glyphs.size(); j++) {
-                    glyph_info glyph = glyphs[j];
-                    // std::cout<<glyph->format<<'\n';
-
-                    // Try to find whether this font has already been
-                    // used.
-                    font_face_set::iterator global_pos = std::find(face_set->begin(), face_set->end(), glyph.face);
-                    if (global_pos == face_set->end()) {
-                        face_set->add(glyph.face);
-                        global_pos = face_set->end() - 1;
+                for (int k = 1; k < feature.tags_size(); k += 2) {
+                    const std::string& key = layer.keys(feature.tags(k - 1));
+                    if (key == "name") {
+                        // TODO: handle multiple fonts stacks
+                        strings.insert(feature.tags(k));
                     }
-
-                    face_ptr const& face = *global_pos;
-
-                    // Find out whether this font has been used in this tile
-                    // before; and get its position ID.s
-                    font_face_set::iterator pos = std::find(layer_faces.begin(), layer_faces.end(), face);
-                    if (pos == layer_faces.end()) {
-                        // Do not ref this font object here since we
-                        // already ref'ed it for the global font list.
-                        layer_faces.add(face);
-                        pos = layer_faces.end() - 1;
-                    }
-                    int layer_face_id = pos - layer_faces.begin();
-
-                    label->add_faces(layer_face_id);
-                    label->add_glyphs(glyph.glyph_index);
-                    label->add_x(glyph.x);
-                    label->add_y(glyph.offset.y);
+                    // TODO: extract all keys we need to shape
                 }
             }
+
+            llmr::vector::layer* mutable_layer = tile.mutable_layers(i);
+            font_face_set layer_faces;
+
+            // Process strings per layer.
+            for (auto const& key : strings) {
+                const llmr::vector::value& value = layer.values(key);
+                std::string text;
+                if (value.has_string_value()) {
+                    text = value.string_value();
+                }
+
+                if (!text.empty()) {
+                    // Clear cluster widths.
+                    width_map_.clear();
+
+                    const double scale_factor = 1.0;
+
+                    // Shape the text.
+                    HarfbuzzShaper shaper;
+                    shaper.Shape(text,
+                                 baton->fontstack,
+                                 glyphs,
+                                 width_map_,
+                                 font_manager,
+                                 scale_factor);
+
+                    llmr::vector::label *label = mutable_layer->add_labels();
+                    label->set_text(key);
+                    label->set_stack(0); // TODO: support multiple font stacks
+
+                    // Add all glyphs for this labels and add new font faces as they
+                    // appear.
+                    for (size_t j = 0; j < glyphs.size(); j++) {
+                        glyph_info const& glyph = glyphs[j];
+                        // std::cout<<glyph->format<<'\n';
+
+                        // Try to find whether this font has already been
+                        // used.
+                        typedef std::vector<face_ptr>::const_iterator iterator_type;
+                        iterator_type itr = face_set->faces_.begin();
+                        iterator_type end = face_set->faces_.end();
+                        std::vector<face_ptr>::const_iterator item = std::find(itr, end, glyph.face);
+                        if (item == end) {
+                            face_set->add(glyph.face);
+                            face_ptr const& face = face_set->faces_.back();
+                            // Find out whether this font has been used in this tile
+                            // before; and get its position ID.s
+                            iterator_type itr2 = layer_faces.faces_.begin();
+                            iterator_type end2 = layer_faces.faces_.end();
+                            std::vector<face_ptr>::const_iterator item2 = std::find(itr2, end2, face);
+                            if (item2 == end2) {
+                                layer_faces.add(face);
+                                iterator_type pos = layer_faces.back();
+                                // DODGY?
+                                int layer_face_id = pos - layer_faces.begin();
+                                label->add_faces(layer_face_id);
+                                label->add_glyphs(glyph.glyph_index);
+                                label->add_x(glyph.x);
+                                label->add_y(glyph.offset.y);
+                            } else {
+                                // DODGY?
+                                int layer_face_id = item2 - layer_faces.begin();
+                                label->add_faces(layer_face_id);
+                                label->add_glyphs(glyph.glyph_index);
+                                label->add_x(glyph.x);
+                                label->add_y(glyph.offset.y);
+                            }
+                        } else {
+                            face_ptr const& face = *item;
+                            // Find out whether this font has been used in this tile
+                            // before; and get its position ID.s
+                            iterator_type itr2 = layer_faces.faces_.begin();
+                            iterator_type end2 = layer_faces.faces_.end();
+                            std::vector<face_ptr>::const_iterator item2 = std::find(itr2, end2, face);
+                            if (item2 == end2) {
+                                layer_faces.add(face);
+                                iterator_type pos = layer_faces.back();
+                                // DODGY?
+                                int layer_face_id = pos - layer_faces.begin();
+                                label->add_faces(layer_face_id);
+                                label->add_glyphs(glyph.glyph_index);
+                                label->add_x(glyph.x);
+                                label->add_y(glyph.offset.y);
+                            } else {
+                                // DODGY?
+                                int layer_face_id = item2 - layer_faces.begin();
+                                label->add_faces(layer_face_id);
+                                label->add_glyphs(glyph.glyph_index);
+                                label->add_x(glyph.x);
+                                label->add_y(glyph.offset.y);
+                            }
+                        }
+                    }
+                }
+            }
+
+            // Add a textual representation of the font so that we can figure out
+            // later what font we need to use.
+            for (auto const& face : layer_faces.faces_) {
+                std::string name = face->family + " " + face->style;
+                mutable_layer->add_faces(name);
+                // note: we don't delete the TileFace objects here because they
+                // are 'owned' by the global faces map and deleted later on.
+            }
+
+            // Insert FAKE stacks
+            mutable_layer->add_stacks(baton->fontstack);
         }
 
-        // Add a textual representation of the font so that we can figure out
-        // later what font we need to use.
-        for (font_face_set::iterator it = layer_faces.begin(); it != layer_faces.end(); it++) {
-            face_ptr const &face = *it;
-            std::string name = face->family + " " + face->style;
-            mutable_layer->add_faces(name);
-            // note: we don't delete the TileFace objects here because they
-            // are 'owned' by the global faces map and deleted later on.
-        }
+        // Insert SDF glyphs + bitmaps
+        for (auto const& face : face_set->faces_) {
+            llmr::vector::face *mutable_face = tile.add_faces();
+            mutable_face->set_family(face->family);
+            mutable_face->set_style(face->style);
 
-        // Insert FAKE stacks
-        mutable_layer->add_stacks(baton->fontstack);
-    }
-
-    // Insert SDF glyphs + bitmaps
-    font_face_set::iterator face_itr = face_set->begin(), face_end = face_set->end();
-    for (; face_itr != face_end; ++face_itr) {
-        face_ptr const &face = *face_itr;
-        llmr::vector::face *mutable_face = tile.add_faces();
-        mutable_face->set_family(face->family);
-        mutable_face->set_style(face->style);
-
-        // Determine ASCII glyphs
-        // std::set<uint32_t> omit;
-        // FT_UInt glyph_index;
-        // FT_ULong char_code = FT_Get_First_Char(ft_face, &glyph_index);
-        // while (glyph_index != 0 && char_code < 256) {
-        //     omit.insert(glyph_index);
-        //     char_code = FT_Get_Next_Char(ft_face, char_code, &glyph_index);
-        // }
-
-        for (Glyphs::const_iterator it = face->glyphs_.begin(); it != face->glyphs_.end(); it++) {
-            const glyph_info *glyph = &it->second;
-        
-            // Omit ASCII glyphs we determined earlier
-            // if (omit.find(id) != omit.end()) {
-            //     continue;
+            // Determine ASCII glyphs
+            // std::set<uint32_t> omit;
+            // FT_UInt glyph_index;
+            // FT_ULong char_code = FT_Get_First_Char(ft_face, &glyph_index);
+            // while (glyph_index != 0 && char_code < 256) {
+            //     omit.insert(glyph_index);
+            //     char_code = FT_Get_Next_Char(ft_face, char_code, &glyph_index);
             // }
+            for (auto const& glyph : face->glyphs_) {
+            
+                // Omit ASCII glyphs we determined earlier
+                // if (omit.find(id) != omit.end()) {
+                //     continue;
+                // }
 
-            llmr::vector::glyph *mutable_glyph = mutable_face->add_glyphs();
-            mutable_glyph->set_id(glyph->glyph_index);
-            mutable_glyph->set_width(glyph->width);
-            mutable_glyph->set_height(glyph->height);
-            mutable_glyph->set_left(glyph->left);
-            mutable_glyph->set_top(glyph->top);
-            mutable_glyph->set_advance(glyph->advance);
-            if (glyph->width > 0) {
-                mutable_glyph->set_bitmap(glyph->bitmap);
+                llmr::vector::glyph *mutable_glyph = mutable_face->add_glyphs();
+                mutable_glyph->set_id(glyph.second.glyph_index);
+                mutable_glyph->set_width(glyph.second.width);
+                mutable_glyph->set_height(glyph.second.height);
+                mutable_glyph->set_left(glyph.second.left);
+                mutable_glyph->set_top(glyph.second.top);
+                mutable_glyph->set_advance(glyph.second.advance);
+                if (glyph.second.width > 0) {
+                    mutable_glyph->set_bitmap(glyph.second.bitmap);
+                }
             }
-        }
+    }
+    } catch (std::exception const& ex) {
+        baton->error = true;
+        baton->error_msg = ex.what();
     }
 }
 
@@ -535,17 +574,18 @@ void Tile::ShapeAfter(uv_work_t* req) {
     v8::HandleScope scope;
     ShapeBaton* baton = static_cast<ShapeBaton*>(req->data);
 
-    const unsigned argc = 1;
-    v8::Local<v8::Value> argv[argc] = { v8::Local<v8::Value>::New(v8::Null()) };
-
     v8::TryCatch try_catch;
-    baton->callback->Call(v8::Context::GetCurrent()->Global(), argc, argv);
+    if (baton->error) {
+        v8::Local<v8::Value> argv[1] = { v8::Exception::Error(v8::String::New(baton->error_msg.c_str())) };
+        baton->callback->Call(v8::Context::GetCurrent()->Global(), 1, argv);
+    } else {
+        v8::Local<v8::Value> argv[1] = { v8::Local<v8::Value>::New(v8::Null()) };
+        baton->callback->Call(v8::Context::GetCurrent()->Global(), 1, argv);
+    }
     if (try_catch.HasCaught()) {
         node::FatalException(try_catch);
     }
-
     baton->callback.Dispose();
-
     delete baton;
     delete req;
 }

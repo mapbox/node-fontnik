@@ -51,8 +51,8 @@ public:
     unsigned size() const { return faces_.size(); }
     iterator begin() { return faces_.begin(); }
     iterator end() { return faces_.end(); }
-private:
     std::vector<face_ptr> faces_;
+private:
 };
 
 typedef std::shared_ptr<font_face_set> face_set_ptr;
