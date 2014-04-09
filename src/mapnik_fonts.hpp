@@ -12,7 +12,7 @@
 
 using namespace v8;
 
-namespace node_mapnik {
+namespace fontserver {
 
 static inline Handle<Value> register_fonts(const Arguments& args)
 {

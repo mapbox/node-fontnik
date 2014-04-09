@@ -28,13 +28,16 @@ function convert(zdata, options, callback) {
     function inflated(err, data) {
         if (err) return callback(err);
         tile = new fontserver.Tile(data);
-        tile.simplify(simplified);
+        // tile.simplify(simplified);
+        tile.shape(options.fontstack, shaped);
     }
 
+    /*
     function simplified(err) {
         if (err) return callback(err);
         tile.shape(options.fontstack, shaped);
     }
+    */
 
     function shaped(err) {
         if (err) return callback(err);

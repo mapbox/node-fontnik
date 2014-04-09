@@ -184,6 +184,9 @@ std::map<std::string,std::pair<int,std::string> > const& freetype_engine::get_ma
 }
 
 face_ptr freetype_engine::create_face(std::string const& family_name) {
+// #ifdef MAPNIK_THREADSAFE
+    scoped_lock lock(mutex_);
+// #endif
     std::map<std::string, std::pair<int,std::string> >::const_iterator itr;
     itr = name2file_.find(family_name);
 
@@ -203,9 +206,6 @@ face_ptr freetype_engine::create_face(std::string const& family_name) {
             if (!error) return std::make_shared<font_face>(face);
         } else {
             // load font into memory
-// #ifdef MAPNIK_THREADSAFE
-            scoped_lock lock(mutex_);
-// #endif
             std::ifstream is(itr->second.second.c_str(), std::ios::binary);
             std::string buffer((std::istreambuf_iterator<char>(is)),
                                std::istreambuf_iterator<char>());
