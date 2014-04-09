@@ -455,8 +455,12 @@ void Tile::AsyncShape(uv_work_t* req) {
 
                     // Add all glyphs for this labels and add new font faces as they
                     // appear.
-                    for (size_t j = 0; j < glyphs.size(); j++) {
-                        fontserver::glyph_info const& glyph = glyphs[j];
+                    for (auto const& glyph_pos : glyphs) {
+                        fontserver::glyph_info const& glyph = glyph_pos.second;
+
+                        // DEBUG: This makes segfaults.
+                        FT_Face font_face = glyph.face->get_face();
+
                         // std::cout<<glyph->format<<'\n';
 
                         // Try to find whether this font has already been
