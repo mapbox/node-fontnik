@@ -22,12 +22,16 @@
 
 #include "font_face_set.hpp"
 
-void font_face_set::add(face_ptr face) {
+namespace fontserver {
+
+void font_face_set::add(fontserver::face_ptr face) {
     faces_.push_back(face);
 }
 
 void font_face_set::set_character_sizes(double size) {
-    for (face_ptr const& face : faces_) {
+    for (fontserver::face_ptr const& face : faces_) {
         face->set_character_sizes(size);
     }
+}
+
 }

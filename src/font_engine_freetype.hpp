@@ -40,6 +40,8 @@
 
 struct FT_LibraryRec_;
 
+namespace fontserver {
+
 typedef std::shared_ptr<font_face_set> face_set_ptr;
 typedef std::shared_ptr<font_face> face_ptr;
 
@@ -92,3 +94,5 @@ private:
 };
 
 typedef face_manager<freetype_engine> face_manager_freetype;
+
+}

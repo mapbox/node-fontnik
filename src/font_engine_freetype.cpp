@@ -44,6 +44,8 @@ extern "C"
 
 typedef boost::unique_lock<std::mutex> scoped_lock;
 
+namespace fontserver {
+
 freetype_engine::freetype_engine() :
     library_(nullptr) {
     FT_Error error = FT_Init_FreeType(&library_);
@@ -306,3 +308,5 @@ std::mutex freetype_engine::mutex_;
 std::map<std::string,std::pair<int,std::string> > freetype_engine::name2file_;
 std::map<std::string,std::string> freetype_engine::memory_fonts_;
 template class face_manager<freetype_engine>;
+
+}

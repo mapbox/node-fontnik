@@ -28,8 +28,10 @@
 // stl
 #include <memory>
 
+namespace fontserver {
+
 class font_face;
-typedef std::shared_ptr<font_face> face_ptr;
+typedef std::shared_ptr<fontserver::font_face> face_ptr;
 
 struct glyph_info {
     glyph_info()
@@ -69,3 +71,5 @@ struct glyph_info {
     pixel_position offset;
     // double height() const { return ymax-ymin; }
 };
+
+}

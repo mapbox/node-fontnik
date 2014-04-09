@@ -27,6 +27,8 @@
 //stl
 #include <vector>
 
+namespace fontserver {
+
 /** This class stores all glyphs of a line in left to right order.
  *
  * It can be used for rendering but no text processing (like line breaking)
@@ -36,12 +38,12 @@ class text_line {
 public:
     text_line(unsigned first_char, unsigned last_char);
 
-    typedef std::vector<glyph_info> glyph_vector;
+    typedef std::vector<fontserver::glyph_info> glyph_vector;
     typedef glyph_vector::const_iterator const_iterator;
     /** Get glyph vector. */
     glyph_vector const& glyphs() const { return glyphs_; }
     /** Append glyph. */
-    void add_glyph(glyph_info const& glyph, double scale_factor_);
+    void add_glyph(fontserver::glyph_info const& glyph, double scale_factor_);
 
     /** Preallocate memory. */
     void reserve(glyph_vector::size_type length);
@@ -83,3 +85,5 @@ private:
     unsigned last_char_;
     bool first_line_;
 };
+
+}

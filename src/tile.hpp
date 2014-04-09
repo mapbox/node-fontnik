@@ -2,8 +2,6 @@
 
 #include <node.h>
 
-#include "font_engine_freetype.hpp"
-
 #include "vector_tile.pb.h"
 
 class Tile : public node::ObjectWrap {

@@ -26,11 +26,11 @@
 // icu
 #include <unicode/unistr.h>
 
+namespace fontserver {
+
 font_face::font_face(FT_Face face)
-    : face_(face),
-      family(face->family_name),
-      style(face->style_name),
-      glyphs_(),
+    : glyphs_(),
+      face_(face),
       char_height_(0.0) {
     FT_Reference_Face(face);
 }
@@ -141,3 +141,5 @@ stroker::~stroker() {
     FT_Stroker_Done(s_);
 }
 */
+
+}

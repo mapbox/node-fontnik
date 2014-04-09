@@ -2,6 +2,7 @@
 #include <node_buffer.h>
 
 #include "tile.hpp"
+#include "font_engine_freetype.hpp"
 #include "clipper.hpp"
 #include "tile_face.hpp"
 #include "font_face_set.hpp"
@@ -357,7 +358,7 @@ v8::Handle<v8::Value> Tile::Shape(const v8::Arguments& args) {
             v8::String::New("Second argument must be a callback function")));
     }
     v8::Local<v8::Function> callback = v8::Local<v8::Function>::Cast(args[1]);
-    // TODO - validate this is a string
+    // TODO: validate this is a string
     v8::String::Utf8Value fontstack(args[0]->ToString());
 
     Tile *tile = node::ObjectWrap::Unwrap<Tile>(args.This());
@@ -386,17 +387,17 @@ void Tile::AsyncShape(uv_work_t* req) {
     // implemented with no overhead.
     try {
         std::map<unsigned, double> width_map_;
-        freetype_engine font_engine_;
-        face_manager_freetype font_manager(font_engine_);
+        fontserver::freetype_engine font_engine_;
+        fontserver::face_manager_freetype font_manager(font_engine_);
 
-        face_set_ptr face_set = font_manager.get_face_set(baton->fontstack);
+        fontserver::face_set_ptr face_set = font_manager.get_face_set(baton->fontstack);
         if (!face_set) {
             baton->error = true;
             baton->error_msg = std::string("could not find face_set for ") + baton->fontstack;
             return;
         }
 
-        typedef std::map<uint32_t, glyph_info> Glyphs;
+        typedef std::map<uint32_t, fontserver::glyph_info> Glyphs;
         Glyphs glyphs;
 
         llmr::vector::tile& tile = baton->tile->tile;
@@ -423,7 +424,7 @@ void Tile::AsyncShape(uv_work_t* req) {
             }
 
             llmr::vector::layer* mutable_layer = tile.mutable_layers(i);
-            font_face_set layer_faces;
+            fontserver::font_face_set layer_faces;
 
             // Process strings per layer.
             for (auto const& key : strings) {
@@ -455,23 +456,23 @@ void Tile::AsyncShape(uv_work_t* req) {
                     // Add all glyphs for this labels and add new font faces as they
                     // appear.
                     for (size_t j = 0; j < glyphs.size(); j++) {
-                        glyph_info const& glyph = glyphs[j];
+                        fontserver::glyph_info const& glyph = glyphs[j];
                         // std::cout<<glyph->format<<'\n';
 
                         // Try to find whether this font has already been
                         // used.
-                        typedef std::vector<face_ptr>::const_iterator iterator_type;
+                        typedef std::vector<fontserver::face_ptr>::const_iterator iterator_type;
                         iterator_type itr = face_set->faces_.begin();
                         iterator_type end = face_set->faces_.end();
-                        std::vector<face_ptr>::const_iterator item = std::find(itr, end, glyph.face);
+                        std::vector<fontserver::face_ptr>::const_iterator item = std::find(itr, end, glyph.face);
                         if (item == end) {
                             face_set->add(glyph.face);
-                            face_ptr const& face = face_set->faces_.back();
+                            fontserver::face_ptr const& face = face_set->faces_.back();
                             // Find out whether this font has been used in this tile
                             // before; and get its position ID.s
                             iterator_type itr2 = layer_faces.faces_.begin();
                             iterator_type end2 = layer_faces.faces_.end();
-                            std::vector<face_ptr>::const_iterator item2 = std::find(itr2, end2, face);
+                            std::vector<fontserver::face_ptr>::const_iterator item2 = std::find(itr2, end2, face);
                             if (item2 == end2) {
                                 layer_faces.add(face);
                                 // DODGY?
@@ -489,12 +490,12 @@ void Tile::AsyncShape(uv_work_t* req) {
                                 label->add_y(glyph.offset.y);
                             }
                         } else {
-                            face_ptr const& face = *item;
+                          fontserver::face_ptr const& face = *item;
                             // Find out whether this font has been used in this tile
                             // before; and get its position ID.s
                             iterator_type itr2 = layer_faces.faces_.begin();
                             iterator_type end2 = layer_faces.faces_.end();
-                            std::vector<face_ptr>::const_iterator item2 = std::find(itr2, end2, face);
+                            std::vector<fontserver::face_ptr>::const_iterator item2 = std::find(itr2, end2, face);
                             if (item2 == end2) {
                                 layer_faces.add(face);
                                 // DODGY?
@@ -519,7 +520,7 @@ void Tile::AsyncShape(uv_work_t* req) {
             // Add a textual representation of the font so that we can figure out
             // later what font we need to use.
             for (auto const& face : layer_faces.faces_) {
-                std::string name = face->family + " " + face->style;
+                std::string name = face->family_name() + " " + face->style_name();
                 mutable_layer->add_faces(name);
                 // note: we don't delete the TileFace objects here because they
                 // are 'owned' by the global faces map and deleted later on.
@@ -532,8 +533,8 @@ void Tile::AsyncShape(uv_work_t* req) {
         // Insert SDF glyphs + bitmaps
         for (auto const& face : face_set->faces_) {
             llmr::vector::face *mutable_face = tile.add_faces();
-            mutable_face->set_family(face->family);
-            mutable_face->set_style(face->style);
+            mutable_face->set_family(face->family_name());
+            mutable_face->set_style(face->style_name());
 
             // Determine ASCII glyphs
             // std::set<uint32_t> omit;

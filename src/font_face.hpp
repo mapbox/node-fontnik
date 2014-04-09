@@ -40,10 +40,20 @@ extern "C"
 #include <string>
 #include <vector>
 
+namespace fontserver {
+
 class font_face {
 public:
     font_face(FT_Face face);
     ~font_face();
+
+    std::string family_name() const {
+        return std::string(face_->family_name);
+    }
+
+    std::string style_name() const {
+        return std::string(face_->style_name);
+    }
 
     FT_Face get_face() const {
         return face_;
@@ -55,15 +65,14 @@ public:
 
     mutable std::map<uint32_t, glyph_info> glyphs_;
 
-    std::string family;
-    std::string style;
-
 private:
     FT_Face face_;
     mutable double char_height_;
 };
 
 typedef std::shared_ptr<font_face> face_ptr;
+
+}
 
 /*
 // FT_Stroker wrapper

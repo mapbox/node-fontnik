@@ -44,10 +44,10 @@ public:
 
     void Shape(std::string &value,
                                   std::string &fontstack,
-                                  std::map<uint32_t, glyph_info> &glyphs,
+                                  std::map<uint32_t, fontserver::glyph_info> &glyphs,
                                   std::map<unsigned,double> &width_map,
-                                  face_manager_freetype &font_manager,
+                                  fontserver::face_manager_freetype &font_manager,
                                   double scale_factor);
 private:
-    std::vector<std::pair<std::string, face_ptr>> Split(const std::string &s, char delim, std::vector<std::pair<std::string, face_ptr>> &elems);
+    std::vector<std::pair<std::string, fontserver::face_ptr>> Split(const std::string &s, char delim, std::vector<std::pair<std::string, fontserver::face_ptr>> &elems);
 };

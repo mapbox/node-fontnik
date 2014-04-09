@@ -34,11 +34,11 @@ HarfbuzzShaper::~HarfbuzzShaper() {};
 
 void HarfbuzzShaper::Shape(std::string &value,
                            std::string &fontstack,
-                           std::map<uint32_t, glyph_info> &glyphs,
+                           std::map<uint32_t, fontserver::glyph_info> &glyphs,
                            std::map<unsigned,double> &width_map,
-                           face_manager_freetype &font_manager,
+                           fontserver::face_manager_freetype &font_manager,
                            double scale_factor) {
-    text_line line(0, value.size() - 1);
+    fontserver::text_line line(0, value.size() - 1);
 
     unsigned start = line.first_char();
     unsigned end = line.last_char();
@@ -62,13 +62,13 @@ void HarfbuzzShaper::Shape(std::string &value,
 
         // face_set_ptr face_set = font_manager.get_face_set(text_item.format->face_name, text_item.format->fontset);
         // double size = text_item.format->text_size * scale_factor;
-        face_set_ptr face_set = font_manager.get_face_set(fonts);
+        fontserver::face_set_ptr face_set = font_manager.get_face_set(fonts);
         double size = 24.0 * scale_factor;
         face_set->set_character_sizes(size);
 
-        font_face_set::iterator face_itr = face_set->begin(), face_end = face_set->end();
+        fontserver::font_face_set::iterator face_itr = face_set->begin(), face_end = face_set->end();
         for (; face_itr != face_end; ++face_itr) {
-            face_ptr const& face = *face_itr;
+          fontserver::face_ptr const& face = *face_itr;
 
             hb_buffer_clear_contents(buffer.get());
             hb_buffer_add_utf16(buffer.get(), text.getBuffer(), text.length(), 0, length);
@@ -100,7 +100,7 @@ void HarfbuzzShaper::Shape(std::string &value,
 
             pixel_position cluster_offset;
             for (unsigned i = 0; i < num_glyph_infos; ++i) {
-                glyph_info tmp;
+                fontserver::glyph_info tmp;
                 tmp.char_index = glyph_infos[i].cluster;
                 tmp.glyph_index = glyph_infos[i].codepoint;
                 tmp.face = face;
