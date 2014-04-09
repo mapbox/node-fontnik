@@ -5,6 +5,7 @@ var fs = require('fs');
 var zdata = fs.readFileSync(__dirname + '/fixtures/mapbox-streets-v4.13.1306.3163.vector.pbf');
 var Protobuf = require('./format/protobuf');
 var VectorTile = require('./format/vectortile');
+var diff = require('deep-diff');
 
 function nobuffer(key, val) {
     return key !== '_buffer' && key !== 'bitmap' ? val : undefined;
@@ -12,7 +13,7 @@ function nobuffer(key, val) {
 
 function jsonEqual(key, json) {
     fs.writeFileSync(__dirname + '/expected/'+key+'.json', JSON.stringify(json, null, 2));
-    assert.deepEqual(json, require('./expected/'+key+'.json'));
+    assert.deepEqual(json, JSON.parse(fs.readFileSync(__dirname + '/expected/'+key+'.json')));
 }
 
 describe('convert', function() {
@@ -61,7 +62,7 @@ describe('convert', function() {
 
     it('shape', function(done) {
         var tile = new fontserver.Tile(data);
-        tile.shape('Open Sans', function(err) {
+        tile.shape('Open Sans Regular', function(err) {
             assert.ifError(err);
             var vt = new VectorTile(new Protobuf(new Uint8Array(tile.serialize())));
             var json = JSON.parse(JSON.stringify(vt, nobuffer));
@@ -75,7 +76,7 @@ describe('convert', function() {
         var remaining = 10;
         for (var i = 0; i < 10; i++) (function() {
             var tile = new fontserver.Tile(data);
-            tile.shape('Open Sans', function(err) {
+            tile.shape('Open Sans Regular', function(err) {
                 assert.ifError(err);
                 var vt = new VectorTile(new Protobuf(new Uint8Array(tile.serialize())));
                 var json = JSON.parse(JSON.stringify(vt, nobuffer));

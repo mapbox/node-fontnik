@@ -19,7 +19,7 @@ module.exports.convert = convert;
 function convert(zdata, options, callback) {
     'use strict';
     options = options || {};
-    options.fontstack = options.fontstack || 'Open Sans';
+    options.fontstack = options.fontstack || 'Open Sans Regular';
 
     var tile;
 
