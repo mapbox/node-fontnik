@@ -474,16 +474,15 @@ void Tile::AsyncShape(uv_work_t* req) {
                             std::vector<face_ptr>::const_iterator item2 = std::find(itr2, end2, face);
                             if (item2 == end2) {
                                 layer_faces.add(face);
-                                iterator_type pos = layer_faces.back();
                                 // DODGY?
-                                int layer_face_id = pos - layer_faces.begin();
+                                int layer_face_id = item2 - layer_faces.faces_.begin();
                                 label->add_faces(layer_face_id);
                                 label->add_glyphs(glyph.glyph_index);
                                 label->add_x(glyph.x);
                                 label->add_y(glyph.offset.y);
                             } else {
                                 // DODGY?
-                                int layer_face_id = item2 - layer_faces.begin();
+                                int layer_face_id = item2 - layer_faces.faces_.begin();
                                 label->add_faces(layer_face_id);
                                 label->add_glyphs(glyph.glyph_index);
                                 label->add_x(glyph.x);
@@ -498,16 +497,15 @@ void Tile::AsyncShape(uv_work_t* req) {
                             std::vector<face_ptr>::const_iterator item2 = std::find(itr2, end2, face);
                             if (item2 == end2) {
                                 layer_faces.add(face);
-                                iterator_type pos = layer_faces.back();
                                 // DODGY?
-                                int layer_face_id = pos - layer_faces.begin();
+                                int layer_face_id = item2 - layer_faces.faces_.begin();
                                 label->add_faces(layer_face_id);
                                 label->add_glyphs(glyph.glyph_index);
                                 label->add_x(glyph.x);
                                 label->add_y(glyph.offset.y);
                             } else {
                                 // DODGY?
-                                int layer_face_id = item2 - layer_faces.begin();
+                                int layer_face_id = item2 - layer_faces.faces_.begin();
                                 label->add_faces(layer_face_id);
                                 label->add_glyphs(glyph.glyph_index);
                                 label->add_x(glyph.x);
