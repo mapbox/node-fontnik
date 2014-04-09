@@ -459,7 +459,9 @@ void Tile::AsyncShape(uv_work_t* req) {
                         fontserver::glyph_info const& glyph = glyph_pos.second;
 
                         // DEBUG: This makes segfaults.
+                        font_engine_.mutex_.lock();
                         FT_Face font_face = glyph.face->get_face();
+                        font_engine_.mutex_.unlock();
 
                         // std::cout<<glyph->format<<'\n';
 

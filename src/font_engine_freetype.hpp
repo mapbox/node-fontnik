@@ -64,11 +64,11 @@ public:
     face_ptr create_face(std::string const& family_name);
     virtual ~freetype_engine();
     freetype_engine();
-private:
-    FT_LibraryRec_ *library_;
 // #ifdef MAPNIK_THREADSAFE
     static std::mutex mutex_;
 // #endif
+private:
+    FT_LibraryRec_ *library_;
     static std::map<std::string, std::pair<int,std::string> > name2file_;
     static std::map<std::string, std::string> memory_fonts_;
 };
