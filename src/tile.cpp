@@ -11,6 +11,7 @@
 #include "distmap.h"
 #include <set>
 #include <algorithm>
+#include <memory>
 
 // boost
 #include <boost/thread/locks.hpp>
@@ -459,7 +460,7 @@ void Tile::AsyncShape(uv_work_t* req) {
                         fontserver::glyph_info const& glyph = glyph_pos.second;
 
                         // DEBUG: This makes segfaults.
-                        FT_Face font_face = glyph.face->get_face();
+                        fontserver::face_ptr font_face = std::make_shared<fontserver::font_face>(glyph.face);
 
                         // std::cout<<glyph->format<<'\n';
 
@@ -468,9 +469,9 @@ void Tile::AsyncShape(uv_work_t* req) {
                         typedef std::vector<fontserver::face_ptr>::const_iterator iterator_type;
                         iterator_type itr = face_set->faces_.begin();
                         iterator_type end = face_set->faces_.end();
-                        std::vector<fontserver::face_ptr>::const_iterator item = std::find(itr, end, glyph.face);
+                        std::vector<fontserver::face_ptr>::const_iterator item = std::find(itr, end, font_face);
                         if (item == end) {
-                            face_set->add(glyph.face);
+                            face_set->add(font_face);
                             fontserver::face_ptr const& face = face_set->faces_.back();
                             // Find out whether this font has been used in this tile
                             // before; and get its position ID.s

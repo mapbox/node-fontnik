@@ -68,7 +68,7 @@ void HarfbuzzShaper::Shape(std::string &value,
 
         fontserver::font_face_set::iterator face_itr = face_set->begin(), face_end = face_set->end();
         for (; face_itr != face_end; ++face_itr) {
-          fontserver::face_ptr const& face = *face_itr;
+            fontserver::face_ptr const& face = *face_itr;
 
             hb_buffer_clear_contents(buffer.get());
             hb_buffer_add_utf16(buffer.get(), text.getBuffer(), text.length(), 0, length);
@@ -103,7 +103,7 @@ void HarfbuzzShaper::Shape(std::string &value,
                 fontserver::glyph_info tmp;
                 tmp.char_index = glyph_infos[i].cluster;
                 tmp.glyph_index = glyph_infos[i].codepoint;
-                tmp.face = face;
+                tmp.face = face->get_face();
                 // tmp.format = text_item.format;
                 face->glyph_dimensions(tmp);
 

@@ -46,7 +46,7 @@ struct glyph_info {
           line_height(0.0),
           offset() {}
     uint32_t glyph_index;
-    face_ptr face;
+    FT_Face face;
 
     uint32_t id;
     std::string bitmap;

@@ -38,6 +38,16 @@
 // #endif
 #include <vector>
 
+// freetype2
+extern "C"
+{
+#include <ft2build.h>
+#include FT_FREETYPE_H
+// #include FT_SYSTEM_H 
+#include FT_MODULE_H 
+// #include FT_STROKER_H
+}
+
 struct FT_LibraryRec_;
 
 namespace fontserver {
@@ -69,7 +79,6 @@ public:
 // #endif
 private:
     FT_LibraryRec_ *library_;
-    FT_MemoryRec_ *memory_;
     static std::map<std::string, std::pair<int,std::string> > name2file_;
     static std::map<std::string, std::string> memory_fonts_;
 };

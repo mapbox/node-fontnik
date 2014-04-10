@@ -34,32 +34,23 @@
 #include <sstream>
 #include <fstream>
 
-// freetype2
-extern "C"
-{
-#include <ft2build.h>
-#include FT_FREETYPE_H
-#include FT_MODULE_H 
-// #include FT_STROKER_H
-}
-
 typedef boost::unique_lock<std::mutex> scoped_lock;
 
 namespace fontserver {
 
 freetype_engine::freetype_engine() :
     library_(nullptr) {
-    FT_Error error = FT_New_Library(memory_, &library_);
+
+    FT_Error error = FT_Init_FreeType(&library_);
     if (error) {
         std::ostringstream runtime_error;
         runtime_error<<"Can not load FreeType2 library: FT_Error "<<error;
         throw std::runtime_error(runtime_error.str());
     }
-    std::cout<<"Loaded FreeType2 library!"<<'\n';
 }
 
 freetype_engine::~freetype_engine() {
-    FT_Done_Library(library_);
+    FT_Done_FreeType(library_);
 }
 
 bool freetype_engine::is_font_file(std::string const& file_name) {
@@ -309,6 +300,7 @@ face_set_ptr face_manager<T>::get_face_set(const std::string &name, boost::optio
 // #ifdef MAPNIK_THREADSAFE
 std::mutex freetype_engine::mutex_;
 // #endif
+
 std::map<std::string,std::pair<int,std::string> > freetype_engine::name2file_;
 std::map<std::string,std::string> freetype_engine::memory_fonts_;
 template class face_manager<freetype_engine>;
