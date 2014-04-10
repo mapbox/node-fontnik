@@ -39,6 +39,7 @@ extern "C"
 {
 #include <ft2build.h>
 #include FT_FREETYPE_H
+#include FT_MODULE_H 
 // #include FT_STROKER_H
 }
 
@@ -48,14 +49,17 @@ namespace fontserver {
 
 freetype_engine::freetype_engine() :
     library_(nullptr) {
-    FT_Error error = FT_Init_FreeType(&library_);
+    FT_Error error = FT_New_Library(memory_, &library_);
     if (error) {
-        throw std::runtime_error("can not load FreeType2 library");
+        std::ostringstream runtime_error;
+        runtime_error<<"Can not load FreeType2 library: FT_Error "<<error;
+        throw std::runtime_error(runtime_error.str());
     }
+    std::cout<<"Loaded FreeType2 library!"<<'\n';
 }
 
 freetype_engine::~freetype_engine() {
-    FT_Done_FreeType(library_);
+    FT_Done_Library(library_);
 }
 
 bool freetype_engine::is_font_file(std::string const& file_name) {

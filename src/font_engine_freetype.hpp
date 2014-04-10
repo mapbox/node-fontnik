@@ -69,6 +69,7 @@ public:
 // #endif
 private:
     FT_LibraryRec_ *library_;
+    FT_MemoryRec_ *memory_;
     static std::map<std::string, std::pair<int,std::string> > name2file_;
     static std::map<std::string, std::string> memory_fonts_;
 };
