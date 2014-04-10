@@ -5,7 +5,6 @@ var fs = require('fs');
 var zdata = fs.readFileSync(__dirname + '/fixtures/mapbox-streets-v4.13.1306.3163.vector.pbf');
 var Protobuf = require('./format/protobuf');
 var VectorTile = require('./format/vectortile');
-var diff = require('deep-diff');
 
 function nobuffer(key, val) {
     return key !== '_buffer' && key !== 'bitmap' ? val : undefined;
