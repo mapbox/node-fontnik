@@ -40,27 +40,34 @@ public:
 
     typedef std::vector<fontserver::glyph_info> glyph_vector;
     typedef glyph_vector::const_iterator const_iterator;
+
     /** Get glyph vector. */
     glyph_vector const& glyphs() const { return glyphs_; }
+
     /** Append glyph. */
     void add_glyph(fontserver::glyph_info const& glyph, double scale_factor_);
 
     /** Preallocate memory. */
     void reserve(glyph_vector::size_type length);
+
     /** Iterator to first glyph. */
     const_iterator begin() const;
+
     /** Iterator beyond last glyph. */
     const_iterator end() const;
 
     /** Width of all glyphs including character spacing. */
     double width() const { return width_; }
+
     /** Real line height. For first line: max_char_height(), for all others: line_height(). */
     double height() const;
 
     /** Height of the tallest glyph in this line. */
     double max_char_height() const { return max_char_height_; }
+
     /** Called for each font/style to update the maximum height of this line. */
     void update_max_char_height(double max_char_height);
+
     /** Line height including line spacing. */
     double line_height() const { return line_height_; }
 
@@ -70,6 +77,7 @@ public:
 
     /** Index of first UTF-16 char. */
     unsigned first_char() const;
+
     /** Index of last UTF-16 char. */
     unsigned last_char() const;
 
@@ -78,8 +86,14 @@ public:
 
 private:
     glyph_vector glyphs_;
-    double line_height_; //Includes line spacing (returned by freetype)
-    double max_char_height_; //Height of 'X' character of the largest font in this run. //TODO: Initialize this!
+
+    // Includes line spacing (returned by FreeType).
+    double line_height_;
+
+    // Height of 'X' character of the largest font in this run.
+    // TODO: Initialize this!
+    double max_char_height_;
+
     double width_;
     unsigned first_char_;
     unsigned last_char_;

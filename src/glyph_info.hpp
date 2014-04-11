@@ -22,7 +22,7 @@
 
 #pragma once
 
-#include "tile_face.hpp"
+#include "char_properties_ptr.hpp"
 #include "pixel_position.hpp"
 
 // stl
@@ -31,7 +31,7 @@
 namespace fontserver {
 
 class font_face;
-typedef std::shared_ptr<fontserver::font_face> face_ptr;
+typedef std::shared_ptr<font_face> face_ptr;
 
 struct glyph_info {
     glyph_info()
@@ -44,17 +44,25 @@ struct glyph_info {
           ymin(0.0),
           ymax(0.0),
           line_height(0.0),
-          offset() {}
-    uint32_t glyph_index;
-    FT_Face face;
+          offset(),
+          format() {}
 
+    uint32_t glyph_index;
+    face_ptr face;
+
+    // TODO: from fontserver Glyph class
     uint32_t id;
     std::string bitmap;
+
+    std::string family_name;
+    std::string style_name;
 
     // Position in the string of all characters i.e. before itemizing
     unsigned char_index;
 
     uint32_t width;
+
+    // From fontserver Glyph class
     uint32_t height;
     int32_t left;
     int32_t top;
@@ -62,6 +70,7 @@ struct glyph_info {
 
     double x;
     double y;
+
     double ymin;
     double ymax;
 
@@ -69,6 +78,7 @@ struct glyph_info {
     // line spacing, but not additional user defined spacing
     double line_height;
     pixel_position offset;
+    char_properties_ptr format;
     // double height() const { return ymax-ymin; }
 };
 

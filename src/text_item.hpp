@@ -20,18 +20,31 @@
  *
  *****************************************************************************/
 
-#include "font_face_set.hpp"
+#include "char_properties_ptr.hpp"
+
+// ICU
+#include <unicode/uscript.h>
+#include <unicode/ubidi.h>
 
 namespace fontserver {
 
-void font_face_set::add(face_ptr face) {
-    faces_.push_back(face);
-}
+struct text_item {
+    text_item()
+        : start(0),
+          end(0),
+          script(),
+          format(),
+          rtl(UBIDI_LTR) {}
 
-void font_face_set::set_character_sizes(double size) {
-    for (face_ptr const& face : faces_) {
-        face->set_character_sizes(size);
-    }
-}
+    // First char (UTF16 offset)
+    unsigned start;
+
+    // Char _after_ the last char (UTF16 offset)
+    unsigned end;
+
+    UScriptCode script;
+    char_properties_ptr format;
+    UBiDiDirection rtl;
+};
 
 }

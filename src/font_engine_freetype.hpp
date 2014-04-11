@@ -22,8 +22,6 @@
 
 #pragma once
 
-#include "font_face.hpp"
-#include "font_face_set.hpp"
 #include "font_set.hpp"
 
 // boost
@@ -33,9 +31,7 @@
 // stl
 #include <map>
 #include <memory>
-// #ifdef MAPNIK_THREADSAFE
 #include <thread>
-// #endif
 #include <vector>
 
 // freetype2
@@ -43,8 +39,6 @@ extern "C"
 {
 #include <ft2build.h>
 #include FT_FREETYPE_H
-// #include FT_SYSTEM_H 
-#include FT_MODULE_H 
 // #include FT_STROKER_H
 }
 
@@ -52,11 +46,17 @@ struct FT_LibraryRec_;
 
 namespace fontserver {
 
-typedef std::shared_ptr<font_face_set> face_set_ptr;
+class font_face;
 typedef std::shared_ptr<font_face> face_ptr;
+
+class font_face_set;
+typedef std::shared_ptr<font_face_set> face_set_ptr;
 
 class freetype_engine {
 public:
+    freetype_engine();
+    virtual ~freetype_engine();
+
     static bool is_font_file(std::string const& file_name);
     /*! \brief register a font file
      *  @param file_name path to a font file.
@@ -70,16 +70,12 @@ public:
      */
     static bool register_fonts(std::string const& dir, bool recurse = false);
     static std::vector<std::string> face_names();
-    static std::map<std::string,std::pair<int,std::string> > const& get_mapping();
+    static std::map<std::string, std::pair<int, std::string>> const& get_mapping();
     face_ptr create_face(std::string const& family_name);
-    virtual ~freetype_engine();
-    freetype_engine();
-// #ifdef MAPNIK_THREADSAFE
-    static std::mutex mutex_;
-// #endif
 private:
     FT_LibraryRec_ *library_;
-    static std::map<std::string, std::pair<int,std::string> > name2file_;
+    static std::mutex mutex_;
+    static std::map<std::string, std::pair<int, std::string>> name2file_;
     static std::map<std::string, std::string> memory_fonts_;
 };
 
@@ -89,9 +85,9 @@ class face_manager {
     typedef std::map<std::string, face_ptr> face_ptr_cache_type;
 
 public:
-    face_manager(T & engine)
+    face_manager(T &engine)
         : engine_(engine),
-        face_ptr_cache_()  {}
+          face_ptr_cache_() {}
 
     face_ptr get_face(std::string const& name);
     face_set_ptr get_face_set(std::string const& name);
@@ -99,7 +95,7 @@ public:
     face_set_ptr get_face_set(std::string const& name, boost::optional<font_set> fset);
 
 private:
-    font_engine_type & engine_;
+    font_engine_type &engine_;
     face_ptr_cache_type face_ptr_cache_;
 };
 

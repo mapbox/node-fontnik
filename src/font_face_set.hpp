@@ -25,9 +25,7 @@
 #include "font_face.hpp"
 
 // stl
-#include <map>
 #include <memory>
-#include <string>
 #include <vector>
 
 // freetype2
@@ -35,8 +33,6 @@ extern "C"
 {
 #include <ft2build.h>
 #include FT_FREETYPE_H
-#include FT_GLYPH_H
-#include FT_ERRORS_H
 // #include FT_STROKER_H
 }
 
@@ -53,8 +49,8 @@ public:
     unsigned size() const { return faces_.size(); }
     iterator begin() { return faces_.begin(); }
     iterator end() { return faces_.end(); }
-    std::vector<face_ptr> faces_;
 private:
+    std::vector<face_ptr> faces_;
 };
 
 typedef std::shared_ptr<font_face_set> face_set_ptr;

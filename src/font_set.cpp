@@ -23,8 +23,9 @@
 #include "font_set.hpp"
 
 // stl
-#include <string>
 #include <sstream>
+
+namespace fontserver {
 
 font_set::font_set(std::string const& name)
     : name_(name) {}
@@ -33,18 +34,16 @@ font_set::font_set(font_set const& rhs)
     : name_(rhs.name_),
       face_names_(rhs.face_names_) {}
 
+font_set::~font_set() {}
+
 font_set& font_set::operator=(font_set const& other) {
-    if (this == &other) {
-        return *this;
-    }
+    if (this == &other) return *this;
 
     name_ = other.name_;
     face_names_ = other.face_names_;
 
     return *this;
 }
-
-font_set::~font_set() {}
 
 std::size_t font_set::size() const {
     return face_names_.size();
@@ -90,3 +89,4 @@ std::string font_set::trim(std::string const& str,
     return str.substr(strBegin, strRange);
 }
 
+}

@@ -20,18 +20,13 @@
  *
  *****************************************************************************/
 
-#include "font_face_set.hpp"
+#pragma once
+
+#include <memory>
 
 namespace fontserver {
 
-void font_face_set::add(face_ptr face) {
-    faces_.push_back(face);
-}
-
-void font_face_set::set_character_sizes(double size) {
-    for (face_ptr const& face : faces_) {
-        face->set_character_sizes(size);
-    }
-}
+struct char_properties;
+typedef std::shared_ptr<char_properties> char_properties_ptr;
 
 }

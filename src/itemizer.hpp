@@ -20,12 +20,9 @@
  *
  *****************************************************************************/
 
-#ifndef MAPNIK_TEXT_ITEMIZER_HPP
-#define MAPNIK_TEXT_ITEMIZER_HPP
+#pragma once
 
-//mapnik
-#include <mapnik/text/char_properties_ptr.hpp>
-#include <mapnik/value_types.hpp>
+#include "text_item.hpp"
 
 // stl
 #include <string>
@@ -34,76 +31,72 @@
 
 // ICU
 #include <unicode/unistr.h>
-#include <unicode/uscript.h>
-#include <unicode/ubidi.h>
-namespace mapnik
-{
 
-
-struct text_item
-{
-    /** First char (UTF16 offset) */
-    unsigned start;
-    /** Char _after_ the last char (UTF16 offset) */
-    unsigned end;
-    UScriptCode script;
-    char_properties_ptr format;
-    UBiDiDirection rtl;
-    text_item() :
-        start(0), end(0), script(), format(), rtl(UBIDI_LTR)
-    {
-
-    }
-};
+namespace fontserver {
 
 /** This class splits text into parts which all have the same
  * - direction (LTR, RTL)
  * - format
  * - script (http://en.wikipedia.org/wiki/Scripts_in_Unicode)
  **/
-class text_itemizer
-{
+class text_itemizer {
 public:
     text_itemizer();
-    void add_text(mapnik::value_unicode_string str, char_properties_ptr format);
-    std::list<text_item> const& itemize(unsigned start=0, unsigned end=0);
+
+    void add_text(UnicodeString str, char_properties_ptr format);
+    std::list<text_item> const& itemize(unsigned start = 0, unsigned end = 0);
     void clear();
-    mapnik::value_unicode_string const& text() const { return text_; }
+    UnicodeString const& text() const { return text_; }
+
     /** Returns the start and end position of a certain line.
      *
      * Only forced line breaks with \n characters are handled here.
      */
     std::pair<unsigned, unsigned> line(unsigned i) const;
+
     unsigned num_lines() const;
+
 private:
-    template<typename T> struct run
-    {
-        run(T data, unsigned start, unsigned end) :  start(start), end(end), data(data){}
+    template<typename T>
+    struct run {
+        run(T data, unsigned start, unsigned end)
+            : data(data),
+              start(start),
+              end(end) {}
+        T data;
         unsigned start;
         unsigned end;
-        T data;
     };
+
     typedef run<char_properties_ptr> format_run_t;
     typedef run<UBiDiDirection> direction_run_t;
     typedef run<UScriptCode> script_run_t;
     typedef std::list<format_run_t> format_run_list;
     typedef std::list<script_run_t> script_run_list;
     typedef std::list<direction_run_t> direction_run_list;
-    mapnik::value_unicode_string text_;
-    /// Format runs are always sorted by char index
+
+    UnicodeString text_;
+
+    // Format runs are always sorted by char index
     format_run_list format_runs_;
-    /// Directions runs are always in visual order! This is different from
-    /// format and script runs!
+
+    // Directions runs are always in visual order! This is different from
+    // format and script runs!
     direction_run_list direction_runs_;
-    /// Script runs are always sorted by char index
+
+    // Script runs are always sorted by char index
     script_run_list script_runs_;
+
     void itemize_direction(unsigned start, unsigned end);
     void itemize_script();
     void create_item_list();
-    std::list<text_item> output_;
-    template <typename T> typename T::const_iterator find_run(T const& list, unsigned position);
-    std::vector<unsigned> forced_line_breaks_; //Positions of \n characters
-};
-} //ns mapnik
 
-#endif // TEXT_ITEMIZER_HPP
+    std::list<text_item> output_;
+
+    template <typename T> typename T::const_iterator find_run(T const& list, unsigned position);
+
+    // Positions of \n characters
+    std::vector<unsigned> forced_line_breaks_;
+};
+
+}

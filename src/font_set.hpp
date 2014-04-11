@@ -26,12 +26,16 @@
 #include <string>
 #include <vector>
 
+namespace fontserver {
+
 class font_set {
 public:
     font_set(std::string const& name);
     font_set(font_set const& rhs);
-    font_set& operator=(font_set const& rhs);
     ~font_set();
+
+    font_set& operator=(font_set const& rhs);
+
     std::size_t size() const;
     void set_name(std::string const& name);
     std::string const& get_name() const;
@@ -44,3 +48,5 @@ private:
     std::string trim(std::string const& str,
                      std::string const& whitespace = " \t");
 };
+
+}

@@ -22,8 +22,10 @@
 
 #pragma once
 
-#include "glyph_info.hpp"
+#include "text_line.hpp"
+#include "itemizer.hpp"
 #include "font_engine_freetype.hpp"
+#include "glyph_info.hpp"
 
 // stl
 #include <list>
@@ -37,17 +39,19 @@
 #include <harfbuzz/hb-ft.h>
 #include <harfbuzz/hb-icu.h>
 
-class HarfbuzzShaper {
-public:
-    HarfbuzzShaper();
-    ~HarfbuzzShaper();
+namespace fontserver {
 
-    void Shape(std::string &value,
-                                  std::string &fontstack,
-                                  std::map<uint32_t, fontserver::glyph_info> &glyphs,
-                                  std::map<unsigned,double> &width_map,
-                                  fontserver::face_manager_freetype &font_manager,
-                                  double scale_factor);
-private:
-    std::vector<std::pair<std::string, fontserver::face_ptr>> Split(const std::string &s, char delim, std::vector<std::pair<std::string, fontserver::face_ptr>> &elems);
+class harfbuzz_shaper {
+public:
+    harfbuzz_shaper();
+    ~harfbuzz_shaper();
+
+    static void shape_text(text_line &line,
+                           text_itemizer &itemizer,
+                           std::map<uint32_t, glyph_info> &glyphs,
+                           std::map<unsigned, double> &width_map,
+                           face_manager_freetype &font_manager,
+                           double scale_factor);
 };
+
+}

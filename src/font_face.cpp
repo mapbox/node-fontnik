@@ -23,20 +23,28 @@
 #include "font_face.hpp"
 #include "distmap.h"
 
+// stl
+#include <iostream>
+
 // icu
 #include <unicode/unistr.h>
 
 namespace fontserver {
 
 font_face::font_face(FT_Face face)
-    : glyphs_(),
-      face_(face),
+    : face_(face),
+      glyphs_(),
       char_height_(0.0) {}
 
+font_face::~font_face() {
+    std::cout << "font_face: Clean up face " << family_name()
+        << " " << style_name() << "\n";
+
+    FT_Done_Face(face_);
+}
+
 double font_face::get_char_height() const {
-    if (char_height_ != 0.0) {
-        return char_height_;
-    }
+    if (char_height_ != 0.0) return char_height_;
 
     glyph_info tmp;
     tmp.glyph_index = FT_Get_Char_Index(face_, 'X');
@@ -48,10 +56,10 @@ double font_face::get_char_height() const {
 
 bool font_face::set_character_sizes(double size) {
     char_height_ = 0.0;
-    return !FT_Set_Char_Size(face_,0,(FT_F26Dot6)(size * (1<<6)),0,0);
+    return !FT_Set_Char_Size(face_, 0, (FT_F26Dot6)(size * (1<<6)), 0, 0);
 }
 
-void font_face::glyph_dimensions(glyph_info & glyph) const {
+void font_face::glyph_dimensions(glyph_info &glyph) const {
     // Check if char is already in cache.
     std::map<uint32_t, glyph_info>::const_iterator itr;
     itr = glyphs_.find(glyph.glyph_index);
@@ -60,46 +68,38 @@ void font_face::glyph_dimensions(glyph_info & glyph) const {
         return;
     }
 
-    // int size = 24;
+    // TODO: remove hardcoded buffer size?
     int buffer = 3;
-    // FT_Set_Char_Size(font, 0, size * 64, 72, 72);
 
-    // TODO:  Insert by key or map.insert()?
-    // glyphs[glyph.glyph_index] = glyph;
-
-    // TODO: Why is this necessary?
     // Transform with identity matrix and null vector.
+    // TODO: Is this necessary?
     FT_Set_Transform(face_, 0, 0);
 
     FT_UInt char_index = FT_Get_Char_Index(face_, glyph.glyph_index);
-    if (!char_index) {
-        return;
-    }
+    if (!char_index) return;
 
-    FT_Error error = FT_Load_Glyph(face_, char_index, FT_LOAD_NO_HINTING | FT_LOAD_RENDER);
-    if (error) {
-        fprintf(stderr, "FT_Load_Glyph Error: %d\n", error);
-        return;
-    }
+    if (FT_Load_Glyph(face_, char_index, FT_LOAD_NO_HINTING)) return;
 
     FT_GlyphSlot slot = face_->glyph;
     int width = slot->bitmap.width;
     int height = slot->bitmap.rows;
 
-    /*
-    FT_BBox bbox;
-    FT_Glyph_Get_CBox(slot, FT_GLYPH_BBOX_PIXELS, &bbox);
-    */
+    FT_Glyph image;
+    if (FT_Get_Glyph(slot, &image)) return;
 
-    // glyph.width = slot->advance.x / 64.0;
+    FT_BBox bbox;
+    FT_Glyph_Get_CBox(image, FT_GLYPH_BBOX_PIXELS, &bbox);
+    FT_Done_Glyph(image);
+
     glyph.width = width;
     glyph.height = height;
     glyph.left = slot->bitmap_left;
     glyph.top = slot->bitmap_top;
-    // glyph.ymin = bbox.yMin;
-    // glyph.ymax = bbox.yMax;
-    glyph.advance = slot->metrics.horiAdvance / 64.0;
+
+    glyph.ymin = bbox.yMin;
+    glyph.ymax = bbox.yMax;
     glyph.line_height = face_->size->metrics.height / 64.0;
+    glyph.advance = slot->metrics.horiAdvance / 64.0;
 
     // Create a signed distance field (SDF) for the glyph bitmap.
     if (width > 0) {
@@ -114,9 +114,6 @@ void font_face::glyph_dimensions(glyph_info & glyph) const {
         }
         free(distance);
     }
-
-    // TODO: Has no FT_Glyph object been created?
-    // FT_Done_Glyph(slot);
 
     glyphs_.insert(std::pair<uint32_t, glyph_info>(glyph.glyph_index, glyph));
 }

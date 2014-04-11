@@ -24,27 +24,26 @@
 
 #include "glyph_info.hpp"
 
+// stl
+#include <map>
+#include <memory>
+#include <string>
+
 // freetype2
 extern "C"
 {
 #include <ft2build.h>
 #include FT_FREETYPE_H
 #include FT_GLYPH_H
-#include FT_ERRORS_H
 // #include FT_STROKER_H
 }
-
-// stl
-#include <map>
-#include <memory>
-#include <string>
-#include <vector>
 
 namespace fontserver {
 
 class font_face {
 public:
     font_face(FT_Face face);
+    ~font_face();
 
     std::string family_name() const {
         return std::string(face_->family_name);
@@ -62,10 +61,9 @@ public:
     bool set_character_sizes(double size);
     void glyph_dimensions(glyph_info &glyph) const;
 
-    mutable std::map<uint32_t, glyph_info> glyphs_;
-
 private:
     FT_Face face_;
+    mutable std::map<uint32_t, glyph_info> glyphs_;
     mutable double char_height_;
 };
 
