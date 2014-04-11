@@ -31,13 +31,7 @@ namespace fontserver {
 font_face::font_face(FT_Face face)
     : glyphs_(),
       face_(face),
-      char_height_(0.0) {
-    FT_Reference_Face(face);
-}
-
-font_face::~font_face() {
-    FT_Done_Face(face_);
-}
+      char_height_(0.0) {}
 
 double font_face::get_char_height() const {
     if (char_height_ != 0.0) {

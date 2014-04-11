@@ -45,7 +45,6 @@ namespace fontserver {
 class font_face {
 public:
     font_face(FT_Face face);
-    ~font_face();
 
     std::string family_name() const {
         return std::string(face_->family_name);
