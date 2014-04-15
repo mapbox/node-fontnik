@@ -9,14 +9,17 @@
  *
  *   created on: 10/17/2001
  *   created by: Eric R. Mader
+ *
+ * NOTE: This file is copied from ICU.
+ * http://source.icu-project.org/repos/icu/icu/trunk/license.html
  */
 
 #ifndef __SCRPTRUN_H
 #define __SCRPTRUN_H
 
-#include "unicode/utypes.h"
-#include "unicode/uobject.h"
-#include "unicode/uscript.h"
+#include <unicode/utypes.h>
+#include <unicode/uobject.h>
+#include <unicode/uscript.h>
 
 struct ScriptRecord
 {
