@@ -17,7 +17,7 @@
 #include <unicode/utypes.h>
 #include <unicode/uscript.h>
 
-#include "scrptrun.h"
+#include "scrptrun.hpp"
 
 #define ARRAY_SIZE(array) (sizeof array  / sizeof array[0])
 
