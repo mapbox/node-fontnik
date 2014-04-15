@@ -20,7 +20,7 @@
  *
  *****************************************************************************/
 
-#include "char_properties_ptr.hpp"
+#include "text_format_ptr.hpp"
 
 // ICU
 #include <unicode/uscript.h>
@@ -43,7 +43,7 @@ struct text_item {
     unsigned end;
 
     UScriptCode script;
-    char_properties_ptr format;
+    text_format_ptr format;
     UBiDiDirection rtl;
 };
 

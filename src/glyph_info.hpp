@@ -22,7 +22,7 @@
 
 #pragma once
 
-#include "char_properties_ptr.hpp"
+#include "text_format_ptr.hpp"
 #include "pixel_position.hpp"
 
 // stl
@@ -78,7 +78,7 @@ struct glyph_info {
     // line spacing, but not additional user defined spacing
     double line_height;
     pixel_position offset;
-    char_properties_ptr format;
+    text_format_ptr format;
     // double height() const { return ymax-ymin; }
 };
 

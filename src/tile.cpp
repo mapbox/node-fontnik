@@ -6,7 +6,7 @@
 #include "clipper.hpp"
 #include "tile_face.hpp"
 #include "font_face_set.hpp"
-#include "char_properties_ptr.hpp"
+#include "text_format_ptr.hpp"
 #include "harfbuzz_shaper.hpp"
 
 #include "distmap.h"
@@ -445,7 +445,7 @@ void Tile::AsyncShape(uv_work_t* req) {
 
                     fontserver::text_line line(0, str.length() - 1);
 
-                    fontserver::char_properties_ptr format;
+                    fontserver::text_format_ptr format;
                     /*
                     format->fontstack = baton->fontstack;
                     format->fontset = face_set;

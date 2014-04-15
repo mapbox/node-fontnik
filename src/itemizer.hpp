@@ -43,7 +43,7 @@ class text_itemizer {
 public:
     text_itemizer();
 
-    void add_text(UnicodeString str, char_properties_ptr format);
+    void add_text(UnicodeString str, text_format_ptr format);
     std::list<text_item> const& itemize(unsigned start = 0, unsigned end = 0);
     void clear();
     UnicodeString const& text() const { return text_; }
@@ -68,7 +68,7 @@ private:
         unsigned end;
     };
 
-    typedef run<char_properties_ptr> format_run_t;
+    typedef run<text_format_ptr> format_run_t;
     typedef run<UBiDiDirection> direction_run_t;
     typedef run<UScriptCode> script_run_t;
     typedef std::list<format_run_t> format_run_list;

@@ -40,7 +40,7 @@ text_itemizer::text_itemizer()
     forced_line_breaks_.push_back(0);
 }
 
-void text_itemizer::add_text(UnicodeString str, char_properties_ptr format) {
+void text_itemizer::add_text(UnicodeString str, text_format_ptr format) {
     unsigned start = text_.length();
     text_ += str;
     format_runs_.emplace_back(format, start, text_.length());
