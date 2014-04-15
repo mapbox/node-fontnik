@@ -27,9 +27,6 @@
 #include <iostream>
 #include <cassert>
 
-// ICU
-#include "scrptrun.hpp"
-
 namespace fontserver {
 
 text_itemizer::text_itemizer()

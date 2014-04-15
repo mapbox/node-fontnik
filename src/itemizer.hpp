@@ -31,6 +31,7 @@
 
 // ICU
 #include <unicode/unistr.h>
+#include "icu/scrptrun.h"
 
 namespace fontserver {
 

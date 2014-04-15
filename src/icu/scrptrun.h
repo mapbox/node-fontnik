@@ -9,9 +9,6 @@
  *
  *   created on: 10/17/2001
  *   created by: Eric R. Mader
- *
- * NOTE: This file is copied from ICU.
- * http://source.icu-project.org/repos/icu/icu/trunk/license.html
  */
 
 #ifndef __SCRPTRUN_H
