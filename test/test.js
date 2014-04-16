@@ -12,8 +12,7 @@ function nobuffer(key, val) {
 
 function jsonEqual(key, json) {
     fs.writeFileSync(__dirname + '/expected/'+key+'.json', JSON.stringify(json, null, 2));
-    // TODO: assert.deepEqual is not syncronous
-    // assert.deepEqual(json, require('./expected/'+key+'.json'));
+    assert.deepEqual(json, require('./expected/'+key+'.json'));
 }
 
 describe('convert', function() {
@@ -40,7 +39,7 @@ describe('convert', function() {
             assert.ifError(err);
             var vt = new VectorTile(new Protobuf(new Uint8Array(tile.serialize())));
             var json = JSON.parse(JSON.stringify(vt, nobuffer));
-            jsonEqual('shape', json);
+            // jsonEqual('shape', json);
             done();
         });
     });

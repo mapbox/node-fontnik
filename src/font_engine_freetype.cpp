@@ -105,8 +105,6 @@ bool freetype_engine::register_font(std::string const& file_name) {
         if (face->family_name && face->style_name) {
             std::string name = std::string(face->family_name) + " " + std::string(face->style_name);
 
-            std::cout << "Loaded " << name << '\n';
-
             // Skip fonts with leading . in the name.
             if (!boost::algorithm::starts_with(name, ".")) {
                 name2file_.insert(std::make_pair(name, std::make_pair(i, file_name)));

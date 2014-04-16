@@ -148,7 +148,6 @@ void Tile::AsyncShape(uv_work_t* req) {
             baton->error_msg = std::string("could not find face_set for ") + baton->fontstack;
             return;
         }
-        // std::cout << baton->fontstack << ' ' << face_set->size() << '\n';
 
         typedef std::map<uint32_t, fontserver::glyph_info> Glyphs;
         Glyphs glyphs;
@@ -222,32 +221,26 @@ void Tile::AsyncShape(uv_work_t* req) {
                     // faces as they appear.
                     for (auto const& glyph_pos : glyphs) {
                         fontserver::glyph_info const& glyph = glyph_pos.second;
-                        // std::cout << glyph.glyph_index << ' ';
-            
+
                         fontserver::face_ptr const& face = std::make_shared<fontserver::font_face>(*glyph.face);
 
                         // Try to find whether this font has already been
-                        // used.
-                        typedef std::vector<fontserver::face_ptr>::iterator iterator_type;
-                        iterator_type itr = face_set->begin();
-                        iterator_type end = face_set->end();
-                        iterator_type item = std::find(itr, end, face);
-                        if (item == end) {
+                        // used in this tile.
+                        fontserver::font_face_set::iterator face_itr = std::find(face_set->begin(), face_set->end(), glyph.face);
+                        if (face_itr == face_set->end()) {
                             face_set->add(face);
                         }
 
                         // Find out whether this font has been used in 
-                        // this tile before and get its position
-                        iterator_type itr2 = layer_faces->begin();
-                        iterator_type end2 = layer_faces->end();
-                        iterator_type item2 = std::find(itr2, end2, face);
-                        if (item2 == end2) {
+                        // this tile before and get its position.
+                        fontserver::font_face_set::iterator layer_itr = std::find(layer_faces->begin(), layer_faces->end(), glyph.face);
+                        if (layer_itr == layer_faces->end()) {
                             layer_faces->add(face);
-                            item2 = end2 - 1;
+                            layer_itr = layer_faces->end() - 1;
                         }
 
                         // DODGY?
-                        int layer_face_id = item2 - layer_faces->begin();
+                        int layer_face_id = layer_itr - layer_faces->begin();
 
                         label->add_faces(layer_face_id);
                         label->add_glyphs(glyph.glyph_index);
@@ -316,18 +309,17 @@ void Tile::ShapeAfter(uv_work_t* req) {
     v8::HandleScope scope;
     ShapeBaton* baton = static_cast<ShapeBaton*>(req->data);
 
+    const unsigned argc = 1;
+    v8::Local<v8::Value> argv[argc] = { v8::Local<v8::Value>::New(v8::Null()) };
+
     v8::TryCatch try_catch;
-    if (baton->error) {
-        v8::Local<v8::Value> argv[1] = { v8::Exception::Error(v8::String::New(baton->error_msg.c_str())) };
-        baton->callback->Call(v8::Context::GetCurrent()->Global(), 1, argv);
-    } else {
-        v8::Local<v8::Value> argv[1] = { v8::Local<v8::Value>::New(v8::Null()) };
-        baton->callback->Call(v8::Context::GetCurrent()->Global(), 1, argv);
-    }
+    baton->callback->Call(v8::Context::GetCurrent()->Global(), argc, argv);
     if (try_catch.HasCaught()) {
         node::FatalException(try_catch);
     }
+
     baton->callback.Dispose();
+
     delete baton;
     delete req;
 }
