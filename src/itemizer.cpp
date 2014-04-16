@@ -27,9 +27,6 @@
 #include <iostream>
 #include <cassert>
 
-// icu
-#include "icu/scrptrun.hpp"
-
 namespace fontserver {
 
 text_itemizer::text_itemizer()
@@ -167,8 +164,8 @@ void text_itemizer::create_item_list() {
         script_run_list::const_iterator script_itr = find_run(script_runs_, position);
 
         while (position < end) {
-            assert(script_itr != script_runs_.end());
-            assert(format_itr != format_runs_.end());
+            // assert(script_itr != script_runs_.end());
+            // assert(format_itr != format_runs_.end());
             text_item item;
 
             item.start = position;

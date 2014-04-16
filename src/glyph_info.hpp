@@ -22,7 +22,7 @@
 
 #pragma once
 
-#include "text_format_ptr.hpp"
+#include "text_format.hpp"
 #include "pixel_position.hpp"
 
 // stl

@@ -1,7 +1,6 @@
 #pragma once
 
-// stl
-#include <memory>
+#include "font_set.hpp"
 
 // boost
 #include <boost/optional.hpp>
@@ -9,8 +8,6 @@
 namespace fontserver {
 
 struct text_format {
-    text_format();
-
     std::string face_name;
     std::string fontstack;
 
@@ -18,5 +15,6 @@ struct text_format {
 
     double text_size;
 };
+typedef std::shared_ptr<text_format> text_format_ptr;
 
 }

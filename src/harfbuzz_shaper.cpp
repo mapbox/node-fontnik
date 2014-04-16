@@ -25,6 +25,8 @@
 #include "font_face_set.hpp"
 #include "font_set.hpp"
 
+#include <iostream>
+
 namespace fontserver {
 
 harfbuzz_shaper::harfbuzz_shaper() {};
@@ -42,11 +44,12 @@ void harfbuzz_shaper::shape_text(text_line &line,
     UnicodeString const& text = itemizer.text();
     size_t length = end - start;
     if (!length) return;
+    else std::cout << "Length: " << length << '\n';
 
     // Preallocate memory based on estimated length.
     line.reserve(length);
 
-    std::list<text_item> const& list = itemizer.itemize(start, end);
+    std::list<text_item> const& list = itemizer.itemize();
 
     auto hb_buffer_deleter = [](hb_buffer_t *buffer) {
         hb_buffer_destroy(buffer);
@@ -57,10 +60,16 @@ void harfbuzz_shaper::shape_text(text_line &line,
     hb_buffer_pre_allocate(buffer.get(), length);
 
     for (auto const& text_item : list) {
+        std::string s;
+        unsigned start = text_item.start;
+        itemizer.text().tempSubString(start, text_item.end - start).toUTF8String(s);
+        std::cout << "Text item: text: " << s << " rtl: " << text_item.rtl << " format: " << text_item.format << " script: " << uscript_getName(text_item.script) << "\n";
+
         face_set_ptr face_set = font_manager.get_face_set(text_item.format->fontstack, text_item.format->fontset);
         double size = text_item.format->text_size * scale_factor;
         face_set->set_character_sizes(size);
 
+        /*
         font_face_set::iterator face_itr = face_set->begin(), face_end = face_set->end();
         for (; face_itr != face_end; ++face_itr) {
             face_ptr const& face = *face_itr;
@@ -121,7 +130,10 @@ void harfbuzz_shaper::shape_text(text_line &line,
             // When we reach this point the current font had all glyphs.
             break; 
         }
+        */
     }
+
+    return;
 }
 
 }
