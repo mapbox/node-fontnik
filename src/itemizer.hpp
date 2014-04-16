@@ -31,6 +31,9 @@
 
 // icu
 #include <unicode/unistr.h>
+#include <unicode/uscript.h>
+#include <unicode/ubidi.h>
+#include "scrptrun.hpp"
 
 namespace fontserver {
 

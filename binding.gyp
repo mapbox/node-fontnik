@@ -20,8 +20,8 @@
     {
       'target_name': 'fontserver',
       'sources': [
-        'src/icu/scrptrun.cpp',
         'src/itemizer.cpp',
+        'src/scrptrun.cpp',
         'src/harfbuzz_shaper.cpp',
         'src/font_face.cpp',
         'src/font_face_set.cpp',
