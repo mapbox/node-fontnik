@@ -1,10 +1,27 @@
 {
   'targets': [
     {
+      'target_name': 'action_before_build',
+      'type': 'none',
+      'hard_dependency': 1,
+      'actions': [
+        {
+          'action_name': 'run_protoc_vector_tile',
+          'inputs': [
+            './proto/vector_tile.proto'
+          ],
+          'outputs': [
+            "./src/vector_tile.pb.cc"
+          ],
+          'action': ['protoc','-Iproto/','--cpp_out=./src/','./proto/vector_tile.proto']
+        }
+      ]
+    },
+    {
       'target_name': 'fontserver',
-      'type': 'executable',
       'sources': [
-        'src/main.cpp',
+        'src/fontserver.cpp',
+        'src/tile.cpp',
         'src/harfbuzz_shaper.cpp',
         'src/itemizer.cpp',
         'src/scrptrun.cpp',
@@ -15,11 +32,13 @@
         'src/font_set.cpp',
         'src/util.cpp',
         'src/distmap.c',
-        'src/edtaa4func.c'
+        'src/edtaa4func.c',
+        'src/vector_tile.pb.cc'
       ],
       'include_dirs': [
         '<!@(pkg-config freetype2 --cflags-only-I | sed s/-I//g)',
-        '<!@(pkg-config icu-uc --cflags-only-I | sed s/-I//g)'
+        '<!@(pkg-config icu-uc --cflags-only-I | sed s/-I//g)',
+        '<!@(pkg-config protobuf --cflags-only-I | sed s/-I//g)'
       ],
       'libraries': [
         '-lboost_system',

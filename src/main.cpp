@@ -15,17 +15,15 @@ int main() {
         return 1;
     }
 
-    fontserver::text_format format;
-    format.fontstack = fontstack;
-    format.text_size = 24;
-    fontserver::text_format_ptr ptr = std::make_shared<fontserver::text_format>(format);
+    fontserver::text_format format(fontstack, 24);
+    fontserver::text_format_ptr format_ptr = std::make_shared<fontserver::text_format>(format);
 
     fontserver::text_itemizer itemizer;
-    itemizer.add_text("Hello ", ptr);
-    itemizer.add_text("World", ptr);
-    itemizer.add_text("किகே", ptr);
-    itemizer.add_text("وگرىmixed", ptr);
-    itemizer.add_text("وگرى", ptr);
+    itemizer.add_text("Hello ", format_ptr);
+    itemizer.add_text("World", format_ptr);
+    itemizer.add_text("किகே", format_ptr);
+    itemizer.add_text("وگرىmixed", format_ptr);
+    itemizer.add_text("وگرى", format_ptr);
 
     typedef std::map<uint32_t, fontserver::glyph_info> Glyphs;
     Glyphs glyphs;

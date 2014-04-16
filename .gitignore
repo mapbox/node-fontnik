@@ -1,1 +1,3 @@
 build
+src/*.pb.cc
+src/*.pb.h

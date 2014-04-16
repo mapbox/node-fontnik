@@ -44,7 +44,6 @@ void harfbuzz_shaper::shape_text(text_line &line,
     UnicodeString const& text = itemizer.text();
     size_t length = end - start;
     if (!length) return;
-    else std::cout << "Length: " << length << '\n';
 
     // Preallocate memory based on estimated length.
     line.reserve(length);
@@ -60,16 +59,15 @@ void harfbuzz_shaper::shape_text(text_line &line,
     hb_buffer_pre_allocate(buffer.get(), length);
 
     for (auto const& text_item : list) {
-        std::string s;
         unsigned start = text_item.start;
-        itemizer.text().tempSubString(start, text_item.end - start).toUTF8String(s);
-        std::cout << "Text item: text: " << s << " rtl: " << text_item.rtl << " format: " << text_item.format << " script: " << uscript_getName(text_item.script) << "\n";
 
-        face_set_ptr face_set = font_manager.get_face_set(text_item.format->fontstack, text_item.format->fontset);
+        // face_set_ptr face_set = font_manager.get_face_set(text_item.format->fontstack, text_item.format->fontset);
+        face_set_ptr face_set = font_manager.get_face_set(text_item.format->fontstack);
+        std::cout << "face_set.size(): " << face_set->size() << '\n';
+
         double size = text_item.format->text_size * scale_factor;
         face_set->set_character_sizes(size);
 
-        /*
         font_face_set::iterator face_itr = face_set->begin(), face_end = face_set->end();
         for (; face_itr != face_end; ++face_itr) {
             face_ptr const& face = *face_itr;
@@ -84,6 +82,7 @@ void harfbuzz_shaper::shape_text(text_line &line,
             hb_font_destroy(font);
 
             unsigned num_glyph_infos = hb_buffer_get_length(buffer.get());
+            std::cout << num_glyph_infos << '\n';
 
             hb_glyph_info_t *glyph_infos = hb_buffer_get_glyph_infos(buffer.get(), nullptr);
             hb_glyph_position_t *positions = hb_buffer_get_glyph_positions(buffer.get(), nullptr);
@@ -122,6 +121,7 @@ void harfbuzz_shaper::shape_text(text_line &line,
                 width_map[glyph_infos[i].cluster] += tmp.width;
                 line.add_glyph(tmp, scale_factor);
 
+                std::cout << tmp.glyph_index << ' ';
                 glyphs.emplace(tmp.glyph_index, tmp);
             }
 
@@ -130,7 +130,6 @@ void harfbuzz_shaper::shape_text(text_line &line,
             // When we reach this point the current font had all glyphs.
             break; 
         }
-        */
     }
 
     return;
