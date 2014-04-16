@@ -36,6 +36,7 @@
 #include <stdexcept>
 #include <sstream>
 #include <fstream>
+#include <iostream>
 
 typedef boost::unique_lock<std::mutex> scoped_lock;
 
@@ -103,6 +104,8 @@ bool freetype_engine::register_font(std::string const& file_name) {
         // http://www.freetype.org/freetype2/docs/reference/ft2-base_interface.html#FT_FaceRec
         if (face->family_name && face->style_name) {
             std::string name = std::string(face->family_name) + " " + std::string(face->style_name);
+
+            std::cout << "Loaded " << name << '\n';
 
             // Skip fonts with leading . in the name.
             if (!boost::algorithm::starts_with(name, ".")) {

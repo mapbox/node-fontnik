@@ -148,6 +148,7 @@ void Tile::AsyncShape(uv_work_t* req) {
             baton->error_msg = std::string("could not find face_set for ") + baton->fontstack;
             return;
         }
+        // std::cout << baton->fontstack << ' ' << face_set->size() << '\n';
 
         typedef std::map<uint32_t, fontserver::glyph_info> Glyphs;
         Glyphs glyphs;
@@ -221,7 +222,7 @@ void Tile::AsyncShape(uv_work_t* req) {
                     // faces as they appear.
                     for (auto const& glyph_pos : glyphs) {
                         fontserver::glyph_info const& glyph = glyph_pos.second;
-                        std::cout << glyph.glyph_index << ' ';
+                        // std::cout << glyph.glyph_index << ' ';
             
                         fontserver::face_ptr const& face = std::make_shared<fontserver::font_face>(*glyph.face);
 

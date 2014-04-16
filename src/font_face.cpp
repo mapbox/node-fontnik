@@ -37,10 +37,12 @@ font_face::font_face(FT_Face face)
       char_height_(0.0) {}
 
 font_face::~font_face() {
+    /*
     std::cout << "font_face: Clean up face " << family_name()
         << " " << style_name() << "\n";
 
     FT_Done_Face(face_);
+    */
 }
 
 double font_face::get_char_height() const {
