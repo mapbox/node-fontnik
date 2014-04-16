@@ -20,16 +20,15 @@
     {
       'target_name': 'fontserver',
       'sources': [
+        'src/fontserver.cpp',
+        'src/tile.cpp',
+        'src/harfbuzz_shaper.cpp',
         'src/itemizer.cpp',
         'src/scrptrun.cpp',
-        'src/harfbuzz_shaper.cpp',
         'src/font_face.cpp',
         'src/font_face_set.cpp',
-        'src/tile.cpp',
         'src/font_engine_freetype.cpp',
         'src/text_line.cpp',
-        'src/fontserver.cpp',
-        'src/clipper.cpp',
         'src/font_set.cpp',
         'src/util.cpp',
         'src/distmap.c',
@@ -39,7 +38,6 @@
       'include_dirs': [
         '<!@(pkg-config freetype2 --cflags-only-I | sed s/-I//g)',
         '<!@(pkg-config icu-uc --cflags-only-I | sed s/-I//g)',
-        '<!@(pkg-config harfbuzz-icu --cflags-only-I | sed s/-I//g)',
         '<!@(pkg-config protobuf --cflags-only-I | sed s/-I//g)'
       ],
       'libraries': [

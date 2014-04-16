@@ -17,10 +17,6 @@ protected:
     static v8::Handle<v8::Value> Length(v8::Local<v8::String> property, const v8::AccessorInfo &info);
     static v8::Handle<v8::Value> Serialize(const v8::Arguments& args);
 
-    static v8::Handle<v8::Value> Simplify(const v8::Arguments& args);
-    static void AsyncSimplify(uv_work_t* req);
-    static void SimplifyAfter(uv_work_t* req);
-
     static v8::Handle<v8::Value> Shape(const v8::Arguments& args);
     static void AsyncShape(uv_work_t* req);
     static void ShapeAfter(uv_work_t* req);

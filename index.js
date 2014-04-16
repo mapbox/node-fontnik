@@ -3,8 +3,9 @@ var path = require('path');
 var util = require('util');
 var fontserver = require('./build/Debug/fontserver.node');
 
-// Fontserver fontconfig directories must be set in the conf file prior to
-// require. Allow these to be passed in via FONTSERVER_FONTS env var.
+// Fontserver fontconfig directories must be set in the conf file 
+// prior to require. Allow these to be passed in via FONTSERVER_FONTS
+// env var.
 var env_options = {};
 if (process.env['FONTSERVER_FONTS']) env_options.fonts = process.env['FONTSERVER_FONTS'].split(';');
 
@@ -28,16 +29,8 @@ function convert(zdata, options, callback) {
     function inflated(err, data) {
         if (err) return callback(err);
         tile = new fontserver.Tile(data);
-        // tile.simplify(simplified);
         tile.shape(options.fontstack, shaped);
     }
-
-    /*
-    function simplified(err) {
-        if (err) return callback(err);
-        tile.shape(options.fontstack, shaped);
-    }
-    */
 
     function shaped(err) {
         if (err) return callback(err);

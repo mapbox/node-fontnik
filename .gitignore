@@ -1,9 +1,3 @@
-/build
-/node_modules
-/html
-/tiles
-/tiles-processed
-/cache/*.cache-4
-/src/*.pb.cc
-/src/*.pb.h
-.elasticbeanstalk/
+build
+src/*.pb.cc
+src/*.pb.h

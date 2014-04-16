@@ -267,6 +267,12 @@ face_ptr face_manager<T>::get_face(const std::string &name) {
 }
 
 template <typename T>
+face_set_ptr face_manager<T>::get_face_set() {
+    face_set_ptr face_set = std::make_shared<font_face_set>();
+    return face_set;
+}
+
+template <typename T>
 face_set_ptr face_manager<T>::get_face_set(const std::string &name) {
     face_set_ptr face_set = std::make_shared<font_face_set>();
 

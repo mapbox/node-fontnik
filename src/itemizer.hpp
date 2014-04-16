@@ -29,11 +29,15 @@
 #include <list>
 #include <vector>
 
+// harfbuzz
+#include <harfbuzz/hb.h>
+#include <harfbuzz/hb-ft.h>
+
 // icu
 #include <unicode/unistr.h>
 #include <unicode/uscript.h>
 #include <unicode/ubidi.h>
-#include "scrptrun.hpp"
+#include "scrptrun.h"
 
 namespace fontserver {
 

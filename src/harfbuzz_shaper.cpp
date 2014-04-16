@@ -25,6 +25,8 @@
 #include "font_face_set.hpp"
 #include "font_set.hpp"
 
+#include <iostream>
+
 namespace fontserver {
 
 harfbuzz_shaper::harfbuzz_shaper() {};
@@ -46,7 +48,7 @@ void harfbuzz_shaper::shape_text(text_line &line,
     // Preallocate memory based on estimated length.
     line.reserve(length);
 
-    std::list<text_item> const& list = itemizer.itemize(start, end);
+    std::list<text_item> const& list = itemizer.itemize();
 
     auto hb_buffer_deleter = [](hb_buffer_t *buffer) {
         hb_buffer_destroy(buffer);
@@ -57,7 +59,12 @@ void harfbuzz_shaper::shape_text(text_line &line,
     hb_buffer_pre_allocate(buffer.get(), length);
 
     for (auto const& text_item : list) {
-        face_set_ptr face_set = font_manager.get_face_set(text_item.format->fontstack, text_item.format->fontset);
+        unsigned start = text_item.start;
+
+        // face_set_ptr face_set = font_manager.get_face_set(text_item.format->fontstack, text_item.format->fontset);
+        face_set_ptr face_set = font_manager.get_face_set(text_item.format->fontstack);
+        std::cout << "face_set.size(): " << face_set->size() << '\n';
+
         double size = text_item.format->text_size * scale_factor;
         face_set->set_character_sizes(size);
 
@@ -75,6 +82,7 @@ void harfbuzz_shaper::shape_text(text_line &line,
             hb_font_destroy(font);
 
             unsigned num_glyph_infos = hb_buffer_get_length(buffer.get());
+            std::cout << num_glyph_infos << '\n';
 
             hb_glyph_info_t *glyph_infos = hb_buffer_get_glyph_infos(buffer.get(), nullptr);
             hb_glyph_position_t *positions = hb_buffer_get_glyph_positions(buffer.get(), nullptr);
@@ -113,6 +121,7 @@ void harfbuzz_shaper::shape_text(text_line &line,
                 width_map[glyph_infos[i].cluster] += tmp.width;
                 line.add_glyph(tmp, scale_factor);
 
+                std::cout << tmp.glyph_index << ' ';
                 glyphs.emplace(tmp.glyph_index, tmp);
             }
 
@@ -122,6 +131,8 @@ void harfbuzz_shaper::shape_text(text_line &line,
             break; 
         }
     }
+
+    return;
 }
 
 }

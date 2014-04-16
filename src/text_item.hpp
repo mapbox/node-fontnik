@@ -20,7 +20,9 @@
  *
  *****************************************************************************/
 
-#include "text_format_ptr.hpp"
+#pragma once
+
+#include "text_format.hpp"
 
 // ICU
 #include <unicode/uscript.h>
