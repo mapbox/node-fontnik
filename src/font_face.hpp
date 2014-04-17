@@ -73,6 +73,10 @@ private:
 
 typedef std::shared_ptr<font_face> face_ptr;
 
+inline bool operator==(face_ptr const& lhs, face_ptr const& rhs) {
+    return lhs->get_face() == rhs->get_face();
+}
+
 }
 
 /*

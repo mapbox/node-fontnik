@@ -39,7 +39,7 @@ describe('convert', function() {
             assert.ifError(err);
             var vt = new VectorTile(new Protobuf(new Uint8Array(tile.serialize())));
             var json = JSON.parse(JSON.stringify(vt, nobuffer));
-            // jsonEqual('shape', json);
+            jsonEqual('shape', json);
             done();
         });
     });
@@ -53,7 +53,7 @@ describe('convert', function() {
                 assert.ifError(err);
                 var vt = new VectorTile(new Protobuf(new Uint8Array(tile.serialize())));
                 var json = JSON.parse(JSON.stringify(vt, nobuffer));
-                jsonEqual('shape', json);
+                // jsonEqual('shape', json);
                 if (!--remaining) return done();
             });
         })();

@@ -225,49 +225,49 @@
         "Open Sans Regular": {
           "Mill Valley": [
             {
-              "face": 0,
+              "face": 537724068,
               "glyph": 3,
               "x": 0,
               "y": 0
             },
             {
-              "face": 1,
+              "face": 0,
               "glyph": 48,
               "x": 0,
               "y": 0
             },
             {
-              "face": 2,
+              "face": 0,
               "glyph": 57,
               "x": 0,
               "y": 0
             },
             {
-              "face": 3,
+              "face": 0,
               "glyph": 68,
               "x": 0,
               "y": 0
             },
             {
-              "face": 4,
+              "face": 0,
               "glyph": 72,
               "x": 0,
               "y": 0
             },
             {
-              "face": 5,
+              "face": 0,
               "glyph": 76,
               "x": 0,
               "y": 0
             },
             {
-              "face": 6,
+              "face": 0,
               "glyph": 79,
               "x": 0,
               "y": 0
             },
             {
-              "face": 7,
+              "face": 0,
               "glyph": 92,
               "x": 0,
               "y": 0
@@ -275,73 +275,73 @@
           ],
           "Tamalpais Valley": [
             {
-              "face": 8,
+              "face": 0,
               "glyph": 3,
               "x": 0,
               "y": 0
             },
             {
-              "face": 9,
+              "face": 0,
               "glyph": 48,
               "x": 0,
               "y": 0
             },
             {
-              "face": 10,
+              "face": 0,
               "glyph": 55,
               "x": 0,
               "y": 0
             },
             {
-              "face": 11,
+              "face": 0,
               "glyph": 57,
               "x": 0,
               "y": 0
             },
             {
-              "face": 12,
+              "face": 0,
               "glyph": 68,
               "x": 0,
               "y": 0
             },
             {
-              "face": 13,
+              "face": 0,
               "glyph": 72,
               "x": 0,
               "y": 0
             },
             {
-              "face": 14,
+              "face": 0,
               "glyph": 76,
               "x": 0,
               "y": 0
             },
             {
-              "face": 15,
+              "face": 0,
               "glyph": 79,
               "x": 0,
               "y": 0
             },
             {
-              "face": 16,
+              "face": 0,
               "glyph": 80,
               "x": 0,
               "y": 0
             },
             {
-              "face": 17,
+              "face": 0,
               "glyph": 83,
               "x": 0,
               "y": 0
             },
             {
-              "face": 18,
+              "face": 0,
               "glyph": 86,
               "x": 0,
               "y": 0
             },
             {
-              "face": 19,
+              "face": 0,
               "glyph": 92,
               "x": 0,
               "y": 0
@@ -349,103 +349,103 @@
           ],
           "Muir Beach": [
             {
-              "face": 20,
+              "face": 0,
               "glyph": 3,
               "x": 0,
               "y": 0
             },
             {
-              "face": 21,
+              "face": 0,
               "glyph": 37,
               "x": 0,
               "y": 0
             },
             {
-              "face": 22,
+              "face": 0,
               "glyph": 48,
               "x": 0,
               "y": 0
             },
             {
-              "face": 23,
+              "face": 0,
               "glyph": 55,
               "x": 0,
               "y": 0
             },
             {
-              "face": 24,
+              "face": 0,
               "glyph": 57,
               "x": 0,
               "y": 0
             },
             {
-              "face": 25,
+              "face": 0,
               "glyph": 68,
               "x": 0,
               "y": 0
             },
             {
-              "face": 26,
+              "face": 0,
               "glyph": 70,
               "x": 0,
               "y": 0
             },
             {
-              "face": 27,
+              "face": 0,
               "glyph": 72,
               "x": 0,
               "y": 0
             },
             {
-              "face": 28,
+              "face": 0,
               "glyph": 75,
               "x": 0,
               "y": 0
             },
             {
-              "face": 29,
+              "face": 0,
               "glyph": 76,
               "x": 0,
               "y": 0
             },
             {
-              "face": 30,
+              "face": 0,
               "glyph": 79,
               "x": 0,
               "y": 0
             },
             {
-              "face": 31,
+              "face": 0,
               "glyph": 80,
               "x": 0,
               "y": 0
             },
             {
-              "face": 32,
+              "face": 0,
               "glyph": 83,
               "x": 0,
               "y": 0
             },
             {
-              "face": 33,
+              "face": 0,
               "glyph": 85,
               "x": 0,
               "y": 0
             },
             {
-              "face": 34,
+              "face": 0,
               "glyph": 86,
               "x": 0,
               "y": 0
             },
             {
-              "face": 35,
+              "face": 0,
               "glyph": 88,
               "x": 0,
               "y": 0
             },
             {
-              "face": 36,
+              "face": 0,
               "glyph": 92,
               "x": 0,
               "y": 0
@@ -454,42 +454,6 @@
         }
       },
       "faces": [
-        "Open Sans Regular",
-        "Open Sans Regular",
-        "Open Sans Regular",
-        "Open Sans Regular",
-        "Open Sans Regular",
-        "Open Sans Regular",
-        "Open Sans Regular",
-        "Open Sans Regular",
-        "Open Sans Regular",
-        "Open Sans Regular",
-        "Open Sans Regular",
-        "Open Sans Regular",
-        "Open Sans Regular",
-        "Open Sans Regular",
-        "Open Sans Regular",
-        "Open Sans Regular",
-        "Open Sans Regular",
-        "Open Sans Regular",
-        "Open Sans Regular",
-        "Open Sans Regular",
-        "Open Sans Regular",
-        "Open Sans Regular",
-        "Open Sans Regular",
-        "Open Sans Regular",
-        "Open Sans Regular",
-        "Open Sans Regular",
-        "Open Sans Regular",
-        "Open Sans Regular",
-        "Open Sans Regular",
-        "Open Sans Regular",
-        "Open Sans Regular",
-        "Open Sans Regular",
-        "Open Sans Regular",
-        "Open Sans Regular",
-        "Open Sans Regular",
-        "Open Sans Regular",
         "Open Sans Regular"
       ],
       "_keys": [
@@ -530,139 +494,139 @@
         "Open Sans Regular": {
           "Muir Woods National Monument": [
             {
-              "face": 0,
+              "face": 537724326,
               "glyph": 3,
               "x": 0,
               "y": 0
             },
             {
-              "face": 1,
+              "face": 0,
               "glyph": 37,
               "x": 0,
               "y": 0
             },
             {
-              "face": 2,
+              "face": 0,
               "glyph": 48,
               "x": 0,
               "y": 0
             },
             {
-              "face": 3,
+              "face": 0,
               "glyph": 49,
               "x": 0,
               "y": 0
             },
             {
-              "face": 4,
+              "face": 0,
               "glyph": 55,
               "x": 0,
               "y": 0
             },
             {
-              "face": 5,
+              "face": 0,
               "glyph": 57,
               "x": 0,
               "y": 0
             },
             {
-              "face": 6,
+              "face": 0,
               "glyph": 58,
               "x": 0,
               "y": 0
             },
             {
-              "face": 7,
+              "face": 0,
               "glyph": 68,
               "x": 0,
               "y": 0
             },
             {
-              "face": 8,
+              "face": 0,
               "glyph": 70,
               "x": 0,
               "y": 0
             },
             {
-              "face": 9,
+              "face": 0,
               "glyph": 71,
               "x": 0,
               "y": 0
             },
             {
-              "face": 10,
+              "face": 0,
               "glyph": 72,
               "x": 0,
               "y": 0
             },
             {
-              "face": 11,
+              "face": 0,
               "glyph": 75,
               "x": 0,
               "y": 0
             },
             {
-              "face": 12,
+              "face": 0,
               "glyph": 76,
               "x": 0,
               "y": 0
             },
             {
-              "face": 13,
+              "face": 0,
               "glyph": 79,
               "x": 0,
               "y": 0
             },
             {
-              "face": 14,
+              "face": 0,
               "glyph": 80,
               "x": 0,
               "y": 0
             },
             {
-              "face": 15,
+              "face": 0,
               "glyph": 81,
               "x": 0,
               "y": 0
             },
             {
-              "face": 16,
+              "face": 0,
               "glyph": 82,
               "x": 0,
               "y": 0
             },
             {
-              "face": 17,
+              "face": 0,
               "glyph": 83,
               "x": 0,
               "y": 0
             },
             {
-              "face": 18,
+              "face": 0,
               "glyph": 85,
               "x": 0,
               "y": 0
             },
             {
-              "face": 19,
+              "face": 0,
               "glyph": 86,
               "x": 0,
               "y": 0
             },
             {
-              "face": 20,
+              "face": 0,
               "glyph": 87,
               "x": 0,
               "y": 0
             },
             {
-              "face": 21,
+              "face": 0,
               "glyph": 88,
               "x": 0,
               "y": 0
             },
             {
-              "face": 22,
+              "face": 0,
               "glyph": 92,
               "x": 0,
               "y": 0
@@ -671,28 +635,6 @@
         }
       },
       "faces": [
-        "Open Sans Regular",
-        "Open Sans Regular",
-        "Open Sans Regular",
-        "Open Sans Regular",
-        "Open Sans Regular",
-        "Open Sans Regular",
-        "Open Sans Regular",
-        "Open Sans Regular",
-        "Open Sans Regular",
-        "Open Sans Regular",
-        "Open Sans Regular",
-        "Open Sans Regular",
-        "Open Sans Regular",
-        "Open Sans Regular",
-        "Open Sans Regular",
-        "Open Sans Regular",
-        "Open Sans Regular",
-        "Open Sans Regular",
-        "Open Sans Regular",
-        "Open Sans Regular",
-        "Open Sans Regular",
-        "Open Sans Regular",
         "Open Sans Regular"
       ],
       "_keys": [
@@ -717,7 +659,7 @@
         "Park"
       ],
       "_features": [
-        7622
+        6942
       ]
     },
     "road_label": {
@@ -729,157 +671,157 @@
         "Open Sans Regular": {
           "Panoramic Hwy": [
             {
-              "face": 0,
+              "face": 537724278,
               "glyph": 3,
               "x": 0,
               "y": 0
             },
             {
-              "face": 1,
+              "face": 0,
               "glyph": 37,
               "x": 0,
               "y": 0
             },
             {
-              "face": 2,
+              "face": 0,
               "glyph": 43,
               "x": 0,
               "y": 0
             },
             {
-              "face": 3,
+              "face": 0,
               "glyph": 48,
               "x": 0,
               "y": 0
             },
             {
-              "face": 4,
+              "face": 0,
               "glyph": 49,
               "x": 0,
               "y": 0
             },
             {
-              "face": 5,
+              "face": 0,
               "glyph": 51,
               "x": 0,
               "y": 0
             },
             {
-              "face": 6,
+              "face": 0,
               "glyph": 55,
               "x": 0,
               "y": 0
             },
             {
-              "face": 7,
+              "face": 0,
               "glyph": 57,
               "x": 0,
               "y": 0
             },
             {
-              "face": 8,
+              "face": 0,
               "glyph": 58,
               "x": 0,
               "y": 0
             },
             {
-              "face": 9,
+              "face": 0,
               "glyph": 68,
               "x": 0,
               "y": 0
             },
             {
-              "face": 10,
+              "face": 0,
               "glyph": 70,
               "x": 0,
               "y": 0
             },
             {
-              "face": 11,
+              "face": 0,
               "glyph": 71,
               "x": 0,
               "y": 0
             },
             {
-              "face": 12,
+              "face": 0,
               "glyph": 72,
               "x": 0,
               "y": 0
             },
             {
-              "face": 13,
+              "face": 0,
               "glyph": 75,
               "x": 0,
               "y": 0
             },
             {
-              "face": 14,
+              "face": 0,
               "glyph": 76,
               "x": 0,
               "y": 0
             },
             {
-              "face": 15,
+              "face": 0,
               "glyph": 79,
               "x": 0,
               "y": 0
             },
             {
-              "face": 16,
+              "face": 0,
               "glyph": 80,
               "x": 0,
               "y": 0
             },
             {
-              "face": 17,
+              "face": 0,
               "glyph": 81,
               "x": 0,
               "y": 0
             },
             {
-              "face": 18,
+              "face": 0,
               "glyph": 82,
               "x": 0,
               "y": 0
             },
             {
-              "face": 19,
+              "face": 0,
               "glyph": 83,
               "x": 0,
               "y": 0
             },
             {
-              "face": 20,
+              "face": 0,
               "glyph": 85,
               "x": 0,
               "y": 0
             },
             {
-              "face": 21,
+              "face": 0,
               "glyph": 86,
               "x": 0,
               "y": 0
             },
             {
-              "face": 22,
+              "face": 0,
               "glyph": 87,
               "x": 0,
               "y": 0
             },
             {
-              "face": 23,
+              "face": 0,
               "glyph": 88,
               "x": 0,
               "y": 0
             },
             {
-              "face": 24,
+              "face": 0,
               "glyph": 90,
               "x": 0,
               "y": 0
             },
             {
-              "face": 25,
+              "face": 0,
               "glyph": 92,
               "x": 0,
               "y": 0
@@ -887,163 +829,163 @@
           ],
           "Shoreline Hwy": [
             {
-              "face": 26,
+              "face": 0,
               "glyph": 3,
               "x": 0,
               "y": 0
             },
             {
-              "face": 27,
+              "face": 0,
               "glyph": 37,
               "x": 0,
               "y": 0
             },
             {
-              "face": 28,
+              "face": 0,
               "glyph": 43,
               "x": 0,
               "y": 0
             },
             {
-              "face": 29,
+              "face": 0,
               "glyph": 48,
               "x": 0,
               "y": 0
             },
             {
-              "face": 30,
+              "face": 0,
               "glyph": 49,
               "x": 0,
               "y": 0
             },
             {
-              "face": 31,
+              "face": 0,
               "glyph": 51,
               "x": 0,
               "y": 0
             },
             {
-              "face": 32,
+              "face": 0,
               "glyph": 54,
               "x": 0,
               "y": 0
             },
             {
-              "face": 33,
+              "face": 0,
               "glyph": 55,
               "x": 0,
               "y": 0
             },
             {
-              "face": 34,
+              "face": 0,
               "glyph": 57,
               "x": 0,
               "y": 0
             },
             {
-              "face": 35,
+              "face": 0,
               "glyph": 58,
               "x": 0,
               "y": 0
             },
             {
-              "face": 36,
+              "face": 0,
               "glyph": 68,
               "x": 0,
               "y": 0
             },
             {
-              "face": 37,
+              "face": 0,
               "glyph": 70,
               "x": 0,
               "y": 0
             },
             {
-              "face": 38,
+              "face": 0,
               "glyph": 71,
               "x": 0,
               "y": 0
             },
             {
-              "face": 39,
+              "face": 0,
               "glyph": 72,
               "x": 0,
               "y": 0
             },
             {
-              "face": 40,
+              "face": 0,
               "glyph": 75,
               "x": 0,
               "y": 0
             },
             {
-              "face": 41,
+              "face": 0,
               "glyph": 76,
               "x": 0,
               "y": 0
             },
             {
-              "face": 42,
+              "face": 0,
               "glyph": 79,
               "x": 0,
               "y": 0
             },
             {
-              "face": 43,
+              "face": 0,
               "glyph": 80,
               "x": 0,
               "y": 0
             },
             {
-              "face": 44,
+              "face": 0,
               "glyph": 81,
               "x": 0,
               "y": 0
             },
             {
-              "face": 45,
+              "face": 0,
               "glyph": 82,
               "x": 0,
               "y": 0
             },
             {
-              "face": 46,
+              "face": 0,
               "glyph": 83,
               "x": 0,
               "y": 0
             },
             {
-              "face": 47,
+              "face": 0,
               "glyph": 85,
               "x": 0,
               "y": 0
             },
             {
-              "face": 48,
+              "face": 0,
               "glyph": 86,
               "x": 0,
               "y": 0
             },
             {
-              "face": 49,
+              "face": 0,
               "glyph": 87,
               "x": 0,
               "y": 0
             },
             {
-              "face": 50,
+              "face": 0,
               "glyph": 88,
               "x": 0,
               "y": 0
             },
             {
-              "face": 51,
+              "face": 0,
               "glyph": 90,
               "x": 0,
               "y": 0
             },
             {
-              "face": 52,
+              "face": 0,
               "glyph": 92,
               "x": 0,
               "y": 0
@@ -1052,58 +994,6 @@
         }
       },
       "faces": [
-        "Open Sans Regular",
-        "Open Sans Regular",
-        "Open Sans Regular",
-        "Open Sans Regular",
-        "Open Sans Regular",
-        "Open Sans Regular",
-        "Open Sans Regular",
-        "Open Sans Regular",
-        "Open Sans Regular",
-        "Open Sans Regular",
-        "Open Sans Regular",
-        "Open Sans Regular",
-        "Open Sans Regular",
-        "Open Sans Regular",
-        "Open Sans Regular",
-        "Open Sans Regular",
-        "Open Sans Regular",
-        "Open Sans Regular",
-        "Open Sans Regular",
-        "Open Sans Regular",
-        "Open Sans Regular",
-        "Open Sans Regular",
-        "Open Sans Regular",
-        "Open Sans Regular",
-        "Open Sans Regular",
-        "Open Sans Regular",
-        "Open Sans Regular",
-        "Open Sans Regular",
-        "Open Sans Regular",
-        "Open Sans Regular",
-        "Open Sans Regular",
-        "Open Sans Regular",
-        "Open Sans Regular",
-        "Open Sans Regular",
-        "Open Sans Regular",
-        "Open Sans Regular",
-        "Open Sans Regular",
-        "Open Sans Regular",
-        "Open Sans Regular",
-        "Open Sans Regular",
-        "Open Sans Regular",
-        "Open Sans Regular",
-        "Open Sans Regular",
-        "Open Sans Regular",
-        "Open Sans Regular",
-        "Open Sans Regular",
-        "Open Sans Regular",
-        "Open Sans Regular",
-        "Open Sans Regular",
-        "Open Sans Regular",
-        "Open Sans Regular",
-        "Open Sans Regular",
         "Open Sans Regular"
       ],
       "_keys": [
@@ -1142,13 +1032,13 @@
         12188378
       ],
       "_features": [
-        8400,
-        8561,
-        8657,
-        9106,
-        9290,
-        10047,
-        10348
+        7306,
+        7467,
+        7563,
+        8012,
+        8196,
+        8953,
+        9254
       ]
     }
   },

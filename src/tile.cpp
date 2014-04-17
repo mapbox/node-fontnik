@@ -236,11 +236,9 @@ void Tile::AsyncShape(uv_work_t* req) {
                         fontserver::font_face_set::iterator layer_itr = std::find(layer_faces->begin(), layer_faces->end(), glyph.face);
                         if (layer_itr == layer_faces->end()) {
                             layer_faces->add(face);
-                            layer_itr = layer_faces->end() - 1;
                         }
 
-                        // DODGY?
-                        int layer_face_id = layer_itr - layer_faces->begin();
+                        int layer_face_id = std::distance(layer_itr, layer_faces->begin());
 
                         label->add_faces(layer_face_id);
                         label->add_glyphs(glyph.glyph_index);
