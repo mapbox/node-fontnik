@@ -136,7 +136,7 @@ void Tile::AsyncShape(uv_work_t* req) {
     fset.add_fontstack(baton->fontstack, ',');
 
     fontserver::face_set_ptr face_set = font_manager.get_face_set(fset);
-    std::cout << baton->fontstack << ' ' << face_set->size() << '\n';
+    std::cout << "FONTSTACK " << baton->fontstack << ' ' << face_set->size() << '\n';
     if (!face_set->size()) return;
 
     typedef std::map<uint32_t, fontserver::glyph_info> Glyphs;
@@ -209,6 +209,7 @@ void Tile::AsyncShape(uv_work_t* req) {
 
                 // Add all glyphs for this labels and add new font
                 // faces as they appear.
+                std::cout << text << ' ' << glyphs.size() << " glyphs\n";
                 for (auto const& glyph_pos : glyphs) {
                     fontserver::glyph_info const& glyph = glyph_pos.second;
 
@@ -219,6 +220,9 @@ void Tile::AsyncShape(uv_work_t* req) {
                     fontserver::font_face_set::iterator face_itr = std::find(face_set->begin(), face_set->end(), glyph.face);
                     if (face_itr == face_set->end()) {
                         face_set->add(face);
+                        std::cout << "Face not found: " <<
+                            glyph.face->family_name() << ' ' <<
+                            glyph.face->style_name() << '\n';
                     }
 
                     // Find out whether this font has been used in 
@@ -248,12 +252,14 @@ void Tile::AsyncShape(uv_work_t* req) {
                 itemizer.clear();
                 glyphs.clear();
 
+                /*
                 std::cout << "faces: " << label->faces_size() <<
                     " glyphs: " << label->glyphs_size() <<
                     " x: " << label->x_size() <<
                     " y: " << label->y_size() <<
                     " labels: " << mutable_layer->labels_size() <<
                     '\n';
+                */
             }
         }
 
@@ -270,7 +276,7 @@ void Tile::AsyncShape(uv_work_t* req) {
         // Insert FAKE stacks
         mutable_layer->add_stacks(baton->fontstack);
 
-        std::cout << " layer_faces: " << mutable_layer->faces_size() << '\n';
+        // std::cout << " layer_faces: " << mutable_layer->faces_size() << '\n';
     }
 
     // Insert SDF glyphs + bitmaps

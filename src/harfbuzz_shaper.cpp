@@ -43,6 +43,9 @@ void harfbuzz_shaper::shape_text(text_line &line,
     unsigned end = line.last_char();
     UnicodeString const& text = itemizer.text();
     size_t length = end - start;
+    std::string s;
+    text.toUTF8String(s);
+    std::cout << "HARFBUZZ TIME " << s << ' ' << length << '\n';
     if (!length) return;
 
     // Preallocate memory based on estimated length.
@@ -89,6 +92,9 @@ void harfbuzz_shaper::shape_text(text_line &line,
             bool font_has_all_glyphs = true;
             for (unsigned i = 0; i < num_glyph_infos; ++i) {
                 if (!glyph_infos[i].codepoint) {
+                    std::cout << face->family_name() << ' ' <<
+                        face->style_name() << " is missing glyph" <<
+                        glyph_infos[i].cluster;
                     font_has_all_glyphs = false;
                     break;
                 }
