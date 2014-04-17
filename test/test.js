@@ -44,7 +44,6 @@ describe('convert', function() {
         });
     });
 
-    /*
     it('shape (x10)', function(done) {
         this.timeout(10000);
         var remaining = 10;
@@ -59,6 +58,5 @@ describe('convert', function() {
             });
         })();
     });
-    */
 });
 

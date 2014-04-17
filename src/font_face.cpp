@@ -80,16 +80,10 @@ void font_face::glyph_dimensions(glyph_info &glyph) const {
     FT_UInt char_index = FT_Get_Char_Index(face_, glyph.glyph_index);
     if (!char_index) return;
 
-    if (FT_Load_Glyph(face_, char_index, FT_LOAD_NO_HINTING)) return;
-
-    FT_GlyphSlot slot = face_->glyph;
-    glyph.width = slot->bitmap.width;
-    glyph.left = slot->bitmap_left;
-    glyph.top = slot->bitmap_top;
+    if (FT_Load_Glyph(face_, char_index, FT_LOAD_NO_HINTING | FT_LOAD_RENDER)) return;
 
     FT_Glyph image;
-    if (FT_Get_Glyph(slot, &image)) return;
-
+    if (FT_Get_Glyph(face_->glyph, &image)) return;
     FT_BBox bbox;
     FT_Glyph_Get_CBox(image, FT_GLYPH_BBOX_PIXELS, &bbox);
     FT_Done_Glyph(image);
@@ -97,17 +91,23 @@ void font_face::glyph_dimensions(glyph_info &glyph) const {
     glyph.ymin = bbox.yMin;
     glyph.ymax = bbox.yMax;
     glyph.line_height = face_->size->metrics.height / 64.0;
-    glyph.advance = slot->metrics.horiAdvance / 64.0;
+    glyph.width = face_->glyph->advance.x >> 6;
 
-    int width = glyph.width;
-    int height = glyph.height();
+    /*
+    glyph.width = face_->glyph->bitmap.width;
+    glyph.height = face_->glyph->bitmap.rows;
+    */
+
+    glyph.left = face_->glyph->bitmap_left;
+    glyph.top = face_->glyph->bitmap_top;
+    glyph.advance = face_->glyph->metrics.horiAdvance / 64.0;
 
     // Create a signed distance field (SDF) for the glyph bitmap.
-    if (width > 0) {
-        unsigned int buffered_width = width + 2 * buffer;
-        unsigned int buffered_height = height + 2 * buffer;
+    if (glyph.width > 0) {
+        unsigned int buffered_width = glyph.width + 2 * buffer;
+        unsigned int buffered_height = glyph.height() + 2 * buffer;
 
-        unsigned char *distance = make_distance_map((unsigned char *)slot->bitmap.buffer, width, height, buffer);
+        unsigned char *distance = make_distance_map((unsigned char *)face_->glyph->bitmap.buffer, glyph.width, glyph.height(), buffer);
 
         glyph.bitmap.resize(buffered_width * buffered_height);
         for (unsigned int y = 0; y < buffered_height; y++) {

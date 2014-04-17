@@ -118,12 +118,6 @@ void harfbuzz_shaper::shape_text(text_line &line,
                 line.add_glyph(tmp, scale_factor);
 
                 glyphs.emplace(tmp.glyph_index, tmp);
-
-                std::cout << "char_index: " << tmp.char_index <<
-                    " glyph_index: " << tmp.glyph_index <<
-                    " width: " << tmp.width <<
-                    " height: " << tmp.height() <<
-                    '\n';
             }
 
             line.update_max_char_height(face->get_char_height());
