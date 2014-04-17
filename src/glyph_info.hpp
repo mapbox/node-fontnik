@@ -39,8 +39,6 @@ struct glyph_info {
           face(nullptr),
           char_index(0),
           width(0.0),
-          x(0.0),
-          y(0.0),
           ymin(0.0),
           ymax(0.0),
           line_height(0.0),
@@ -50,12 +48,7 @@ struct glyph_info {
     uint32_t glyph_index;
     face_ptr face;
 
-    // TODO: from fontserver Glyph class
-    uint32_t id;
     std::string bitmap;
-
-    std::string family_name;
-    std::string style_name;
 
     // Position in the string of all characters i.e. before itemizing
     unsigned char_index;
@@ -63,13 +56,9 @@ struct glyph_info {
     uint32_t width;
 
     // From fontserver Glyph class
-    uint32_t height;
     int32_t left;
     int32_t top;
     uint32_t advance;
-
-    double x;
-    double y;
 
     double ymin;
     double ymax;
@@ -79,7 +68,7 @@ struct glyph_info {
     double line_height;
     pixel_position offset;
     text_format_ptr format;
-    // double height() const { return ymax-ymin; }
+    double height() const { return ymax-ymin; }
 };
 
 }

@@ -51,7 +51,7 @@ double font_face::get_char_height() const {
     glyph_info tmp;
     tmp.glyph_index = FT_Get_Char_Index(face_, 'X');
     glyph_dimensions(tmp);
-    char_height_ = tmp.height;
+    char_height_ = tmp.height();
 
     return char_height_;
 }
@@ -83,8 +83,9 @@ void font_face::glyph_dimensions(glyph_info &glyph) const {
     if (FT_Load_Glyph(face_, char_index, FT_LOAD_NO_HINTING)) return;
 
     FT_GlyphSlot slot = face_->glyph;
-    int width = slot->bitmap.width;
-    int height = slot->bitmap.rows;
+    glyph.width = slot->bitmap.width;
+    glyph.left = slot->bitmap_left;
+    glyph.top = slot->bitmap_top;
 
     FT_Glyph image;
     if (FT_Get_Glyph(slot, &image)) return;
@@ -93,15 +94,13 @@ void font_face::glyph_dimensions(glyph_info &glyph) const {
     FT_Glyph_Get_CBox(image, FT_GLYPH_BBOX_PIXELS, &bbox);
     FT_Done_Glyph(image);
 
-    glyph.width = width;
-    glyph.height = height;
-    glyph.left = slot->bitmap_left;
-    glyph.top = slot->bitmap_top;
-
     glyph.ymin = bbox.yMin;
     glyph.ymax = bbox.yMax;
     glyph.line_height = face_->size->metrics.height / 64.0;
     glyph.advance = slot->metrics.horiAdvance / 64.0;
+
+    int width = glyph.width;
+    int height = glyph.height();
 
     // Create a signed distance field (SDF) for the glyph bitmap.
     if (width > 0) {
