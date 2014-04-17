@@ -65,6 +65,8 @@ void harfbuzz_shaper::shape_text(text_line &line,
         unsigned start = text_item.start;
 
         // face_set_ptr face_set = font_manager.get_face_set(text_item.format->fontstack, text_item.format->fontset);
+
+        // TODO: FIX THIS, FONT_FACE_SET CANT INIT ON FONTSTACK STRING
         face_set_ptr face_set = font_manager.get_face_set(text_item.format->fontstack);
 
         double size = text_item.format->text_size * scale_factor;
