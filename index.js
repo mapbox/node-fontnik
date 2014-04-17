@@ -1,19 +1,17 @@
 var zlib = require('zlib');
 var path = require('path');
 var util = require('util');
-var fontserver = require('./build/Debug/fontserver.node');
+var fontserver = require('./build/Release/fontserver.node');
 
-// Fontserver fontconfig directories must be set in the conf file 
-// prior to require. Allow these to be passed in via FONTSERVER_FONTS
-// env var.
+// Fontserver directories must be set in the conf file prior to require.
+// Allow these to be passed in via FONTSERVER_FONTS env var.
 var env_options = {};
 if (process.env['FONTSERVER_FONTS']) env_options.fonts = process.env['FONTSERVER_FONTS'].split(';');
 
 // Fontserver conf setup. Synchronous at require time.
-var faces = conf(env_options);
+conf(env_options);
 
 module.exports = fontserver;
-module.exports.conf = conf;
 module.exports.convert = convert;
 
 // Convert a zlib deflated mapnik vector pbf to a gl pbf.
@@ -47,6 +45,4 @@ function conf(options) {
     options.fonts.forEach(function(d) {
         fontserver.register_fonts(d, {recurse: true});
     });
-
-    return fontserver.faces();
 }

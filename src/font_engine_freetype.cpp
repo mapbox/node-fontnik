@@ -109,6 +109,7 @@ bool freetype_engine::register_font(std::string const& file_name) {
             if (!boost::algorithm::starts_with(name, ".")) {
                 name2file_.insert(std::make_pair(name, std::make_pair(i, file_name)));
                 success = true;
+                std::cout << name << '\n';
             }
         } else {
             std::ostringstream s;

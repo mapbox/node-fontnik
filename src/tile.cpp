@@ -133,7 +133,10 @@ void Tile::AsyncShape(uv_work_t* req) {
     fontserver::text_itemizer itemizer;
 
     fontserver::face_set_ptr face_set = font_manager.get_face_set(baton->fontstack);
-    if (!face_set) return;
+
+    std::cout << baton->fontstack << ' ' << face_set->size() << '\n';
+
+    if (!face_set->size()) return;
 
     typedef std::map<uint32_t, fontserver::glyph_info> Glyphs;
     Glyphs glyphs;
@@ -242,6 +245,14 @@ void Tile::AsyncShape(uv_work_t* req) {
                 }
 
                 itemizer.clear();
+                glyphs.clear();
+
+                std::cout << "faces: " << label->faces_size() <<
+                    " glyphs: " << label->glyphs_size() <<
+                    " x: " << label->x_size() <<
+                    " y: " << label->y_size() <<
+                    " labels: " << mutable_layer->labels_size() <<
+                    '\n';
             }
         }
 
@@ -257,6 +268,8 @@ void Tile::AsyncShape(uv_work_t* req) {
 
         // Insert FAKE stacks
         mutable_layer->add_stacks(baton->fontstack);
+
+        std::cout << " layer_faces: " << mutable_layer->faces_size() << '\n';
     }
 
     // Insert SDF glyphs + bitmaps
@@ -301,6 +314,8 @@ void Tile::AsyncShape(uv_work_t* req) {
                 mutable_glyph->set_bitmap(glyph.second.bitmap);
             }
         }
+
+        std::cout << "face_glyphs: " << mutable_face->glyphs_size() << '\n';
     }
 }
 
