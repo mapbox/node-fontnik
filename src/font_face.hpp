@@ -42,6 +42,8 @@ namespace fontserver {
 
 class font_face {
 public:
+    typedef std::map<uint32_t, glyph_info>::const_iterator iterator;
+
     font_face(FT_Face face);
     ~font_face();
 
@@ -57,14 +59,13 @@ public:
         return face_;
     }
 
-    std::map<uint32_t, glyph_info> get_glyphs() const {
-        return glyphs_;
-    }
-
     double get_char_height() const;
     bool set_character_sizes(double size);
     void glyph_dimensions(glyph_info &glyph) const;
 
+    unsigned size() const { return glyphs_.size(); }
+    iterator begin() { return glyphs_.cbegin(); }
+    iterator end() { return glyphs_.cend(); }
 private:
     FT_Face face_;
     mutable std::map<uint32_t, glyph_info> glyphs_;

@@ -225,7 +225,7 @@
         "Open Sans Regular": {
           "Mill Valley": [
             {
-              "face": 537596623,
+              "face": 0,
               "glyph": 3,
               "x": 6,
               "y": 0
@@ -494,7 +494,7 @@
         "Open Sans Regular": {
           "Muir Woods National Monument": [
             {
-              "face": 537596505,
+              "face": 0,
               "glyph": 3,
               "x": 6,
               "y": 0
@@ -659,7 +659,7 @@
         "Park"
       ],
       "_features": [
-        6942
+        6938
       ]
     },
     "road_label": {
@@ -671,7 +671,7 @@
         "Open Sans Regular": {
           "Panoramic Hwy": [
             {
-              "face": 537596505,
+              "face": 0,
               "glyph": 3,
               "x": 0,
               "y": 0
@@ -1032,13 +1032,13 @@
         12188378
       ],
       "_features": [
-        7306,
-        7467,
-        7563,
-        8012,
-        8196,
-        8953,
-        9254
+        7298,
+        7459,
+        7555,
+        8004,
+        8188,
+        8945,
+        9246
       ]
     }
   },

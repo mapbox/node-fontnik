@@ -236,9 +236,18 @@ void Tile::AsyncShape(uv_work_t* req) {
                         fontserver::font_face_set::iterator layer_itr = std::find(layer_faces->begin(), layer_faces->end(), glyph.face);
                         if (layer_itr == layer_faces->end()) {
                             layer_faces->add(face);
+                            layer_itr = layer_faces->end() - 1;
                         }
 
-                        int layer_face_id = std::distance(layer_itr, layer_faces->begin());
+                        int layer_face_id = layer_itr - layer_faces->begin();
+
+                        /*
+                        std::cout << " face: " << layer_face_id <<
+                            " glyph: " << glyph.glyph_index <<
+                            " x: " << width_map_[glyph.char_index] <<
+                            " y: " << glyph.offset.y <<
+                            '\n';
+                        */
 
                         label->add_faces(layer_face_id);
                         label->add_glyphs(glyph.glyph_index);
@@ -279,12 +288,22 @@ void Tile::AsyncShape(uv_work_t* req) {
             //     char_code = FT_Get_Next_Char(ft_face, char_code, &glyph_index);
             // }
 
-            for (auto const& glyph : face->get_glyphs()) {
+            for (auto const& glyph : *face) {
                 // Omit ASCII glyphs we determined earlier
                 // if (omit.find(id) != omit.end()) {
                 //     continue;
                 // }
 
+                /*
+                std::cout << " Glyph: " << glyph.second.glyph_index <<
+                    " width: " << glyph.second.width <<
+                    " height: " << glyph.second.height() <<
+                    " left: " << glyph.second.left <<
+                    " top: " << glyph.second.top <<
+                    " advance: " << glyph.second.advance <<
+                    '\n';
+                */
+                
                 llmr::vector::glyph *mutable_glyph = mutable_face->add_glyphs();
                 mutable_glyph->set_id(glyph.second.glyph_index);
                 mutable_glyph->set_width(glyph.second.width);

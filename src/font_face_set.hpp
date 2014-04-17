@@ -41,6 +41,7 @@ namespace fontserver {
 class font_face_set {
 public:
     typedef std::vector<face_ptr>::const_iterator iterator;
+
     font_face_set(void) : faces_() {}
 
     void add(face_ptr face);
