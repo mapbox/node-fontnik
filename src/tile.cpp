@@ -132,10 +132,11 @@ void Tile::AsyncShape(uv_work_t* req) {
     fontserver::face_manager_freetype font_manager(font_engine_);
     fontserver::text_itemizer itemizer;
 
-    fontserver::face_set_ptr face_set = font_manager.get_face_set(baton->fontstack);
+    fontserver::font_set fset(baton->fontstack);
+    fset.add_fontstack(baton->fontstack, ',');
 
+    fontserver::face_set_ptr face_set = font_manager.get_face_set(fset);
     std::cout << baton->fontstack << ' ' << face_set->size() << '\n';
-
     if (!face_set->size()) return;
 
     typedef std::map<uint32_t, fontserver::glyph_info> Glyphs;
