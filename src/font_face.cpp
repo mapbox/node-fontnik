@@ -75,7 +75,7 @@ void font_face::glyph_dimensions(glyph_info &glyph) const {
 
     // Transform with identity matrix and null vector.
     // TODO: Is this necessary?
-    FT_Set_Transform(face_, 0, 0);
+    // FT_Set_Transform(face_, 0, 0);
 
     if (FT_Load_Glyph(face_, glyph.glyph_index, FT_LOAD_NO_HINTING | FT_LOAD_RENDER)) return;
 
@@ -90,19 +90,29 @@ void font_face::glyph_dimensions(glyph_info &glyph) const {
     glyph.line_height = face_->size->metrics.height / 64.0;
     // glyph.width = face_->glyph->advance.x / 64.0;
 
-    glyph.width = face_->glyph->bitmap.width;
-    glyph.height = face_->glyph->bitmap.rows;
+    /*
+    std::cout << "advance.x / 64.0: " << face_->glyph->advance.x / 64.0 <<
+        " advance.x >> 6: " << (face_->glyph->advance.x >> 6) <<
+        " bitmap.width: " << face_->glyph->bitmap.width <<
+        '\n';
+    */
 
-    glyph.left = face_->glyph->bitmap_left;
-    glyph.top = face_->glyph->bitmap_top;
-    glyph.advance = face_->glyph->metrics.horiAdvance / 64.0;
+    FT_GlyphSlot slot = face_->glyph;
+    int width = slot->bitmap.width;
+    int height = slot->bitmap.rows;
+
+    glyph.width = width;
+    glyph.height = height;
+    glyph.left = slot->bitmap_left;
+    glyph.top = slot->bitmap_top;
+    glyph.advance = slot->metrics.horiAdvance / 64.0;
 
     // Create a signed distance field (SDF) for the glyph bitmap.
-    if (glyph.width > 0) {
-        unsigned int buffered_width = glyph.width + 2 * buffer;
-        unsigned int buffered_height = glyph.height + 2 * buffer;
+    if (width > 0) {
+        unsigned int buffered_width = width + 2 * buffer;
+        unsigned int buffered_height = height + 2 * buffer;
 
-        unsigned char *distance = make_distance_map((unsigned char *)face_->glyph->bitmap.buffer, glyph.width, glyph.height, buffer);
+        unsigned char *distance = make_distance_map((unsigned char *)slot->bitmap.buffer, width, height, buffer);
 
         glyph.bitmap.resize(buffered_width * buffered_height);
         for (unsigned int y = 0; y < buffered_height; y++) {
