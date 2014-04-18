@@ -33,7 +33,7 @@ text_line::text_line(unsigned first_char, unsigned last_char)
       last_char_(last_char),
       first_line_(false) {}
 
-void text_line::add_glyph(fontserver::glyph_info const& glyph, double scale_factor_) {
+void text_line::add_glyph(glyph_info const& glyph, double scale_factor_) {
     line_height_ = std::max(line_height_, glyph.line_height);
     if (glyphs_.empty()) {
         width_ = glyph.width;

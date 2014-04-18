@@ -139,9 +139,6 @@ void Tile::AsyncShape(uv_work_t* req) {
     // std::cout << "FONTSTACK " << baton->fontstack << ' ' << face_set->size() << '\n';
     if (!face_set->size()) return;
 
-    typedef std::map<uint32_t, fontserver::glyph_info> Glyphs;
-    Glyphs glyphs;
-
     llmr::vector::tile& tile = baton->tile->tile;
 
     // for every label
@@ -196,7 +193,6 @@ void Tile::AsyncShape(uv_work_t* req) {
                 fontserver::harfbuzz_shaper shaper;
                 shaper.shape_text(line,
                                   itemizer,
-                                  glyphs,
                                   width_map_,
                                   font_manager,
                                   scale_factor);
@@ -209,12 +205,10 @@ void Tile::AsyncShape(uv_work_t* req) {
 
                 // Add all glyphs for this labels and add new font
                 // faces as they appear.
-                for (auto const& glyph_pos : glyphs) {
-                    fontserver::glyph_info const& glyph = glyph_pos.second;
-
+                for (auto const& glyph : line) {
                     if (!glyph.face) {
                         std::cout << text << ' ' << 
-                            glyphs.size() << " glyphs\n" << 
+                            line.size() << " glyphs\n" << 
                             " codepoint: " << glyph.glyph_index <<
                             " char_index: " << glyph.char_index <<
                             " face_ptr: " << glyph.face <<
@@ -259,7 +253,6 @@ void Tile::AsyncShape(uv_work_t* req) {
                 }
 
                 itemizer.clear();
-                glyphs.clear();
 
                 /*
                 std::cout << "faces: " << label->faces_size() <<
