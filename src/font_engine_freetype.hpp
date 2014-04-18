@@ -93,7 +93,6 @@ public:
     face_set_ptr get_face_set();
     face_set_ptr get_face_set(std::string const& name);
     face_set_ptr get_face_set(font_set const& fset);
-    face_set_ptr get_face_set(std::string const& name, boost::optional<font_set> fset);
 
 private:
     font_engine_type &engine_;

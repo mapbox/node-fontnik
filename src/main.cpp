@@ -8,9 +8,10 @@ int main() {
     std::map<unsigned, double> width_map_;
     fontserver::freetype_engine font_engine_;
     fontserver::face_manager_freetype font_manager(font_engine_);
-    fontserver::face_set_ptr face_set = font_manager.get_face_set(fontstack);
+    fontserver::font_set fset(fontstack);
+    fontserver::face_set_ptr face_set = font_manager.get_face_set(fset);
 
-    if (!face_set) {
+    if (!face_set.size()) {
         std::cout << "could not find face_set";
         return 1;
     }

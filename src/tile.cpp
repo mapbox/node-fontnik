@@ -136,7 +136,7 @@ void Tile::AsyncShape(uv_work_t* req) {
     fset.add_fontstack(baton->fontstack, ',');
 
     fontserver::face_set_ptr face_set = font_manager.get_face_set(fset);
-    std::cout << "FONTSTACK " << baton->fontstack << ' ' << face_set->size() << '\n';
+    // std::cout << "FONTSTACK " << baton->fontstack << ' ' << face_set->size() << '\n';
     if (!face_set->size()) return;
 
     typedef std::map<uint32_t, fontserver::glyph_info> Glyphs;
@@ -209,9 +209,18 @@ void Tile::AsyncShape(uv_work_t* req) {
 
                 // Add all glyphs for this labels and add new font
                 // faces as they appear.
-                std::cout << text << ' ' << glyphs.size() << " glyphs\n";
                 for (auto const& glyph_pos : glyphs) {
                     fontserver::glyph_info const& glyph = glyph_pos.second;
+
+                    if (!glyph.face) {
+                        std::cout << text << ' ' << 
+                            glyphs.size() << " glyphs\n" << 
+                            " codepoint: " << glyph.glyph_index <<
+                            " char_index: " << glyph.char_index <<
+                            " face_ptr: " << glyph.face <<
+                            '\n';
+                        continue;
+                    }
 
                     fontserver::face_ptr const& face = std::make_shared<fontserver::font_face>(*glyph.face);
 
@@ -321,8 +330,6 @@ void Tile::AsyncShape(uv_work_t* req) {
                 mutable_glyph->set_bitmap(glyph.second.bitmap);
             }
         }
-
-        std::cout << "face_glyphs: " << mutable_face->glyphs_size() << '\n';
     }
 }
 

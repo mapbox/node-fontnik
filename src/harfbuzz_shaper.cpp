@@ -43,9 +43,6 @@ void harfbuzz_shaper::shape_text(text_line &line,
     unsigned end = line.last_char();
     UnicodeString const& text = itemizer.text();
     size_t length = end - start;
-    std::string s;
-    text.toUTF8String(s);
-    std::cout << "HARFBUZZ TIME " << s << ' ' << length << '\n';
     if (!length) return;
 
     // Preallocate memory based on estimated length.
@@ -64,10 +61,9 @@ void harfbuzz_shaper::shape_text(text_line &line,
     for (auto const& text_item : list) {
         unsigned start = text_item.start;
 
-        // face_set_ptr face_set = font_manager.get_face_set(text_item.format->fontstack, text_item.format->fontset);
-
-        // TODO: FIX THIS, FONT_FACE_SET CANT INIT ON FONTSTACK STRING
-        face_set_ptr face_set = font_manager.get_face_set(text_item.format->fontstack);
+        // TODO: can this face set be passed with the text_item
+        // instead of being recreated each time?
+        face_set_ptr face_set = font_manager.get_face_set(text_item.format->fontset);
 
         double size = text_item.format->text_size * scale_factor;
         face_set->set_character_sizes(size);
@@ -110,11 +106,15 @@ void harfbuzz_shaper::shape_text(text_line &line,
 
             for (unsigned i = 0; i < num_glyph_infos; ++i) {
                 glyph_info tmp;
-                tmp.char_index = glyph_infos[i].cluster;
                 tmp.glyph_index = glyph_infos[i].codepoint;
+
+                // font_face glyphs_ cache will overwrite tmp if
+                // codepoint is found in cache, so call this first
+                face->glyph_dimensions(tmp);
+
+                tmp.char_index = glyph_infos[i].cluster;
                 tmp.face = face;
                 tmp.format = text_item.format;
-                face->glyph_dimensions(tmp);
 
                 // Overwrite default width with better value from HarfBuzz.
                 tmp.width = positions[i].x_advance / 64.0;

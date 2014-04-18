@@ -294,21 +294,14 @@ face_set_ptr face_manager<T>::get_face_set(const font_set &fset) {
         if (face) {
             face_set->add(face);
         } else {
+          /*
           std::cerr << "Failed to find face '" << *name
               << "' in font set '" << fset.get_name() << "'\n";
+              */
         }
     }
 
     return face_set;
-}
-
-template <typename T>
-face_set_ptr face_manager<T>::get_face_set(const std::string &name, boost::optional<font_set> fset) {
-    if (fset && fset->size() > 0) {
-        return get_face_set(*fset);
-    } else {
-        return get_face_set(name);
-    }
 }
 
 std::mutex freetype_engine::mutex_;
