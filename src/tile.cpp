@@ -322,7 +322,7 @@ void Tile::AsyncShape(uv_work_t* req) {
             llmr::vector::glyph *mutable_glyph = mutable_face->add_glyphs();
             mutable_glyph->set_id(glyph.second.glyph_index);
             mutable_glyph->set_width(glyph.second.width);
-            mutable_glyph->set_height(glyph.second.height());
+            mutable_glyph->set_height(glyph.second.height);
             mutable_glyph->set_left(glyph.second.left);
             mutable_glyph->set_top(glyph.second.top);
             mutable_glyph->set_advance(glyph.second.advance);

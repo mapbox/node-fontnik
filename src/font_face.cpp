@@ -51,7 +51,7 @@ double font_face::get_char_height() const {
     glyph_info tmp;
     tmp.glyph_index = FT_Get_Char_Index(face_, 'X');
     glyph_dimensions(tmp);
-    char_height_ = tmp.height();
+    char_height_ = tmp.height;
 
     return char_height_;
 }
@@ -77,10 +77,7 @@ void font_face::glyph_dimensions(glyph_info &glyph) const {
     // TODO: Is this necessary?
     FT_Set_Transform(face_, 0, 0);
 
-    FT_UInt char_index = FT_Get_Char_Index(face_, glyph.glyph_index);
-    if (!char_index) return;
-
-    if (FT_Load_Glyph(face_, char_index, FT_LOAD_NO_HINTING | FT_LOAD_RENDER)) return;
+    if (FT_Load_Glyph(face_, glyph.glyph_index, FT_LOAD_NO_HINTING | FT_LOAD_RENDER)) return;
 
     FT_Glyph image;
     if (FT_Get_Glyph(face_->glyph, &image)) return;
@@ -91,12 +88,10 @@ void font_face::glyph_dimensions(glyph_info &glyph) const {
     glyph.ymin = bbox.yMin;
     glyph.ymax = bbox.yMax;
     glyph.line_height = face_->size->metrics.height / 64.0;
-    glyph.width = face_->glyph->advance.x >> 6;
+    // glyph.width = face_->glyph->advance.x / 64.0;
 
-    /*
     glyph.width = face_->glyph->bitmap.width;
     glyph.height = face_->glyph->bitmap.rows;
-    */
 
     glyph.left = face_->glyph->bitmap_left;
     glyph.top = face_->glyph->bitmap_top;
@@ -105,9 +100,9 @@ void font_face::glyph_dimensions(glyph_info &glyph) const {
     // Create a signed distance field (SDF) for the glyph bitmap.
     if (glyph.width > 0) {
         unsigned int buffered_width = glyph.width + 2 * buffer;
-        unsigned int buffered_height = glyph.height() + 2 * buffer;
+        unsigned int buffered_height = glyph.height + 2 * buffer;
 
-        unsigned char *distance = make_distance_map((unsigned char *)face_->glyph->bitmap.buffer, glyph.width, glyph.height(), buffer);
+        unsigned char *distance = make_distance_map((unsigned char *)face_->glyph->bitmap.buffer, glyph.width, glyph.height, buffer);
 
         glyph.bitmap.resize(buffered_width * buffered_height);
         for (unsigned int y = 0; y < buffered_height; y++) {

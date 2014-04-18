@@ -104,6 +104,7 @@ void harfbuzz_shaper::shape_text(text_line &line,
                 continue;
             }
 
+            double current_line_length = 0;
             for (unsigned i = 0; i < num_glyph_infos; ++i) {
                 glyph_info tmp;
                 tmp.glyph_index = glyph_infos[i].codepoint;
@@ -118,11 +119,16 @@ void harfbuzz_shaper::shape_text(text_line &line,
 
                 // Overwrite default width with better value from HarfBuzz.
                 tmp.width = positions[i].x_advance / 64.0;
-
                 tmp.offset.set(positions[i].x_offset / 64.0,
                                positions[i].y_offset / 64.0);
 
-                width_map[tmp.char_index] += tmp.width;
+                // TODO: character_spacing (clusters)
+                std::map<unsigned, double>::const_iterator width_itr = width_map.find(tmp.char_index);
+                if (width_itr == width_map.end()) {
+                    width_map[tmp.char_index] = current_line_length;
+                }
+                current_line_length += tmp.width;
+
                 line.add_glyph(tmp, scale_factor);
 
                 glyphs.emplace(tmp.glyph_index, tmp);
