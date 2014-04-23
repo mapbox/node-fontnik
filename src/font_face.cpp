@@ -73,10 +73,6 @@ void font_face::glyph_dimensions(glyph_info &glyph) const {
     // TODO: remove hardcoded buffer size?
     int buffer = 3;
 
-    // Transform with identity matrix and null vector.
-    // TODO: Is this necessary?
-    // FT_Set_Transform(face_, 0, 0);
-
     if (FT_Load_Glyph(face_, glyph.glyph_index, FT_LOAD_NO_HINTING | FT_LOAD_RENDER)) return;
 
     FT_Glyph image;
