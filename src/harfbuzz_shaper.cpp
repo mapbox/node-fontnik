@@ -119,14 +119,6 @@ void harfbuzz_shaper::shape_text(text_line &line,
                 // Overwrite default width with better value from HarfBuzz.
                 tmp.width = positions[i].x_advance >> 6;
 
-                /*
-                std::cout << "x_advance / 64.0: " <<
-                    positions[i].x_advance / 64.0 <<
-                    " x_advance >> 6: " <<
-                    (positions[i].x_advance >> 6) <<
-                    '\n';
-                */
-
                 tmp.offset.set(positions[i].x_offset / 64.0,
                                positions[i].y_offset / 64.0);
 

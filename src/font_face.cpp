@@ -81,15 +81,11 @@ void font_face::glyph_dimensions(glyph_info &glyph) const {
     FT_BBox bbox;
     FT_Glyph_Get_CBox(ft_glyph, FT_GLYPH_BBOX_PIXELS, &bbox);
 
-    // glyph.xmin = bbox.xMin;
-    // glyph.xmax = bbox.xMax;
-
     glyph.ymin = bbox.yMin;
     glyph.ymax = bbox.yMax;
 
-    // glyph.width = face_->glyph->advance.x / 64.0;
-    // glyph.advance = ft_glyph->metrics.horiAdvance / 64.0;
     glyph.line_height = face_->size->metrics.height / 64.0;
+    glyph.advance = face_->glyph->metrics.horiAdvance / 64.0;
 
     FT_Glyph_To_Bitmap(&ft_glyph, FT_RENDER_MODE_NORMAL, 0, 1);
 
@@ -100,7 +96,6 @@ void font_face::glyph_dimensions(glyph_info &glyph) const {
     glyph.height = height;
     glyph.left = ((FT_BitmapGlyph)ft_glyph)->left;
     glyph.top = ((FT_BitmapGlyph)ft_glyph)->top;
-    glyph.advance = ft_glyph->advance.x / 64.0;
 
     // Create a signed distance field (SDF) for the glyph bitmap.
     if (width > 0) {
