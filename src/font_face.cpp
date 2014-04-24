@@ -73,42 +73,41 @@ void font_face::glyph_dimensions(glyph_info &glyph) const {
     // TODO: remove hardcoded buffer size?
     int buffer = 3;
 
-    if (FT_Load_Glyph(face_, glyph.glyph_index, FT_LOAD_NO_HINTING | FT_LOAD_RENDER)) return;
+    if (FT_Load_Glyph(face_, glyph.glyph_index, FT_LOAD_NO_HINTING)) return;
 
-    FT_Glyph image;
-    if (FT_Get_Glyph(face_->glyph, &image)) return;
+    FT_Glyph ft_glyph;
+    if (FT_Get_Glyph(face_->glyph, &ft_glyph)) return;
+
     FT_BBox bbox;
-    FT_Glyph_Get_CBox(image, FT_GLYPH_BBOX_PIXELS, &bbox);
-    FT_Done_Glyph(image);
+    FT_Glyph_Get_CBox(ft_glyph, FT_GLYPH_BBOX_PIXELS, &bbox);
+
+    // glyph.xmin = bbox.xMin;
+    // glyph.xmax = bbox.xMax;
 
     glyph.ymin = bbox.yMin;
     glyph.ymax = bbox.yMax;
-    glyph.line_height = face_->size->metrics.height / 64.0;
+
     // glyph.width = face_->glyph->advance.x / 64.0;
+    // glyph.advance = ft_glyph->metrics.horiAdvance / 64.0;
+    glyph.line_height = face_->size->metrics.height / 64.0;
 
-    /*
-    std::cout << "advance.x / 64.0: " << face_->glyph->advance.x / 64.0 <<
-        " advance.x >> 6: " << (face_->glyph->advance.x >> 6) <<
-        " bitmap.width: " << face_->glyph->bitmap.width <<
-        '\n';
-    */
+    FT_Glyph_To_Bitmap(&ft_glyph, FT_RENDER_MODE_NORMAL, 0, 1);
 
-    FT_GlyphSlot slot = face_->glyph;
-    int width = slot->bitmap.width;
-    int height = slot->bitmap.rows;
+    int width = ((FT_BitmapGlyph)ft_glyph)->bitmap.width;
+    int height = ((FT_BitmapGlyph)ft_glyph)->bitmap.rows;
 
     glyph.width = width;
     glyph.height = height;
-    glyph.left = slot->bitmap_left;
-    glyph.top = slot->bitmap_top;
-    glyph.advance = slot->metrics.horiAdvance / 64.0;
+    glyph.left = ((FT_BitmapGlyph)ft_glyph)->left;
+    glyph.top = ((FT_BitmapGlyph)ft_glyph)->top;
+    glyph.advance = ft_glyph->advance.x / 64.0;
 
     // Create a signed distance field (SDF) for the glyph bitmap.
     if (width > 0) {
         unsigned int buffered_width = width + 2 * buffer;
         unsigned int buffered_height = height + 2 * buffer;
 
-        unsigned char *distance = make_distance_map((unsigned char *)slot->bitmap.buffer, width, height, buffer);
+        unsigned char *distance = make_distance_map((unsigned char *)((FT_BitmapGlyph)ft_glyph)->bitmap.buffer, width, height, buffer);
 
         glyph.bitmap.resize(buffered_width * buffered_height);
         for (unsigned int y = 0; y < buffered_height; y++) {
@@ -116,6 +115,8 @@ void font_face::glyph_dimensions(glyph_info &glyph) const {
         }
         free(distance);
     }
+
+    FT_Done_Glyph(ft_glyph);
 
     glyphs_.insert(std::pair<uint32_t, glyph_info>(glyph.glyph_index, glyph));
 }
