@@ -63,7 +63,7 @@ bool font_face::set_character_sizes(double size) {
 
 void font_face::glyph_dimensions(glyph_info &glyph) const {
     // Check if char is already in cache.
-    std::map<uint32_t, glyph_info>::const_iterator itr;
+    iterator itr;
     itr = glyphs_.find(glyph.glyph_index);
     if (itr != glyphs_.end()) {
         glyph = itr->second;

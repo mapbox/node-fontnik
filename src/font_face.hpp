@@ -25,7 +25,7 @@
 #include "glyph_info.hpp"
 
 // stl
-#include <map>
+#include <unordered_map>
 #include <memory>
 #include <string>
 
@@ -42,7 +42,7 @@ namespace fontserver {
 
 class font_face {
 public:
-    typedef std::map<uint32_t, glyph_info>::const_iterator iterator;
+    typedef std::unordered_map<uint32_t, glyph_info>::const_iterator iterator;
 
     font_face(FT_Face face);
     ~font_face();
@@ -68,7 +68,7 @@ public:
     iterator end() { return glyphs_.cend(); }
 private:
     FT_Face face_;
-    mutable std::map<uint32_t, glyph_info> glyphs_;
+    mutable std::unordered_map<uint32_t, glyph_info> glyphs_;
     mutable double char_height_;
 };
 
