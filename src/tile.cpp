@@ -136,7 +136,6 @@ void Tile::AsyncShape(uv_work_t* req) {
     fset.add_fontstack(baton->fontstack, ',');
 
     fontserver::face_set_ptr face_set = font_manager.get_face_set(fset);
-    // std::cout << "FONTSTACK " << baton->fontstack << ' ' << face_set->size() << '\n';
     if (!face_set->size()) return;
 
     llmr::vector::tile& tile = baton->tile->tile;
@@ -165,6 +164,10 @@ void Tile::AsyncShape(uv_work_t* req) {
         llmr::vector::layer* mutable_layer = tile.mutable_layers(i);
         fontserver::face_set_ptr layer_faces = font_manager.get_face_set();
 
+        fontserver::text_format format(baton->fontstack, 24);
+        fontserver::text_format_ptr format_ptr = 
+            std::make_shared<fontserver::text_format>(format);
+
         // Process strings per layer.
         for (auto const& key : strings) {
             const llmr::vector::value& value = layer.values(key);
@@ -180,10 +183,6 @@ void Tile::AsyncShape(uv_work_t* req) {
                 UnicodeString const& str = text.data();
 
                 fontserver::text_line line(0, str.length() - 1);
-
-                fontserver::text_format format(baton->fontstack, 24);
-                fontserver::text_format_ptr format_ptr = 
-                    std::make_shared<fontserver::text_format>(format);
 
                 itemizer.add_text(str, format_ptr);
 
