@@ -216,13 +216,13 @@ void Tile::AsyncShape(uv_work_t* req) {
                         continue;
                     }
 
-                    fontserver::face_ptr const& face = std::make_shared<fontserver::font_face>(*glyph.face);
+                    // fontserver::face_ptr const& face = std::make_shared<fontserver::font_face>(*glyph.face);
 
                     // Try to find whether this font has already been
                     // used in this tile.
                     fontserver::font_face_set::iterator face_itr = std::find(face_set->begin(), face_set->end(), glyph.face);
                     if (face_itr == face_set->end()) {
-                        face_set->add(face);
+                        face_set->add(glyph.face);
                         std::cout << "Face not found: " <<
                             glyph.face->family_name() << ' ' <<
                             glyph.face->style_name() << '\n';
@@ -232,7 +232,7 @@ void Tile::AsyncShape(uv_work_t* req) {
                     // this tile before and get its position.
                     fontserver::font_face_set::iterator layer_itr = std::find(layer_faces->begin(), layer_faces->end(), glyph.face);
                     if (layer_itr == layer_faces->end()) {
-                        layer_faces->add(face);
+                        layer_faces->add(glyph.face);
                         layer_itr = layer_faces->end() - 1;
                     }
 
