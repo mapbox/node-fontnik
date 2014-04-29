@@ -193,7 +193,8 @@ void Tile::AsyncShape(uv_work_t* req) {
                 shaper.shape_text(line,
                                   itemizer,
                                   width_map_,
-                                  font_manager,
+                                  face_set,
+                                  // font_manager,
                                   scale_factor);
 
                 llmr::vector::label *label = mutable_layer->add_labels();

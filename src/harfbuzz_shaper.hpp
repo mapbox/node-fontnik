@@ -49,7 +49,8 @@ public:
     static void shape_text(text_line &line,
                            text_itemizer &itemizer,
                            std::map<unsigned, double> &width_map,
-                           face_manager_freetype &font_manager,
+                           face_set_ptr &face_set,
+                           // face_manager_freetype &font_manager,
                            double scale_factor);
 };
 

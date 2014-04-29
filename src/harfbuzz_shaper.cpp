@@ -36,7 +36,8 @@ harfbuzz_shaper::~harfbuzz_shaper() {};
 void harfbuzz_shaper::shape_text(text_line &line,
                                  text_itemizer &itemizer,
                                  std::map<unsigned, double> &width_map,
-                                 face_manager_freetype &font_manager,
+                                 face_set_ptr &face_set,
+                                 // face_manager_freetype &font_manager,
                                  double scale_factor) {
     unsigned start = line.first_char();
     unsigned end = line.last_char();
@@ -62,7 +63,7 @@ void harfbuzz_shaper::shape_text(text_line &line,
 
         // TODO: can this face set be passed with the text_item
         // instead of being recreated each time?
-        face_set_ptr face_set = font_manager.get_face_set(text_item.format->fontset);
+        // face_set_ptr face_set = font_manager.get_face_set(text_item.format->fontset);
 
         double size = text_item.format->text_size * scale_factor;
         face_set->set_character_sizes(size);
