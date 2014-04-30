@@ -196,6 +196,19 @@ face_ptr freetype_engine::create_face(std::string const& family_name) {
 
     if (itr != name2file_.end()) {
         FT_Face face;
+        glyphs_ptr glyphs;
+
+        // Find face shared glyphs cache or create it if it doesn't exist yet.
+        std::map<std::string, glyphs_cache_type>::const_iterator glyphs_cache_itr = glyphs_cache_.find(itr->second.second);
+        if (glyphs_cache_itr != glyphs_cache_.end()) {
+            glyphs = std::make_shared<glyphs_cache_type>(glyphs_cache_itr->second);
+        } else {
+            glyphs_cache_type cache_;
+            std::pair<std::map<std::string, glyphs_cache_type>::iterator, bool> glyphs_result = glyphs_cache_.insert(std::make_pair(itr->second.second, cache_));
+            glyphs = std::make_shared<glyphs_cache_type>(glyphs_result.first->second);
+            std::cout << "Created shared glyphs cache for " <<
+                itr->second.second << '\n';
+        }
 
         std::map<std::string, std::string>::const_iterator mem_font_itr = memory_fonts_.find(itr->second.second);
 
@@ -308,6 +321,7 @@ std::mutex freetype_engine::mutex_;
 
 std::map<std::string, std::pair<int, std::string>> freetype_engine::name2file_;
 std::map<std::string, std::string> freetype_engine::memory_fonts_;
+std::map<std::string, glyphs_cache_type> freetype_engine::glyphs_cache_;
 
 template class face_manager<freetype_engine>;
 
