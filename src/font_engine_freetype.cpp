@@ -195,6 +195,8 @@ face_ptr freetype_engine::create_face(std::string const& family_name) {
     itr = name2file_.find(family_name);
 
     if (itr != name2file_.end()) {
+        scoped_lock lock(mutex_);
+
         FT_Face face;
         glyph_cache_ptr glyphs;
 
@@ -204,13 +206,14 @@ face_ptr freetype_engine::create_face(std::string const& family_name) {
 
         if (glyph_cache_map_itr != glyph_cache_map_.end()) {
             glyphs = std::make_shared<glyph_cache_type>(glyph_cache_map_itr->second);
+            std::cout << "Found shared glyph cache for " <<
+                itr->second.second << " with " << 
+                glyph_cache_map_itr->second.size() << " glyphs.\n";
         } else {
             std::pair<std::map<std::string, glyph_cache_type>::iterator, bool> glyphs_result 
                 = glyph_cache_map_.insert(std::make_pair(itr->second.second, (* new glyph_cache_type)));
 
             glyphs = std::make_shared<glyph_cache_type>(glyphs_result.first->second);
-            std::cout << "Created shared glyphs cache for " <<
-                itr->second.second << '\n';
         }
 
         std::map<std::string, std::string>::const_iterator mem_font_itr 
@@ -224,11 +227,9 @@ face_ptr freetype_engine::create_face(std::string const& family_name) {
                                                 itr->second.first, // face index
                                                 &face);
 
-            if (!error) return std::make_shared<font_face>(face);
+            if (!error) return std::make_shared<font_face>(face, glyphs);
         } else {
             // Load font into memory
-            scoped_lock lock(mutex_);
-
             std::ifstream is(itr->second.second.c_str(), std::ios::binary);
 
             std::string buffer((std::istreambuf_iterator<char>(is)),
@@ -244,10 +245,12 @@ face_ptr freetype_engine::create_face(std::string const& family_name) {
                                                 &face);
 
             if (!error) {
-                return std::make_shared<font_face>(face);
+                return std::make_shared<font_face>(face, glyphs);
             } else {
                 // Can't load font, erase it.
                 memory_fonts_.erase(result.first);
+
+                // TODO: erase from glyphs_cache_map_
             }
         }
     }

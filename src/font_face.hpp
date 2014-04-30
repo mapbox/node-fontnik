@@ -48,7 +48,7 @@ public:
     typedef glyph_cache_type::const_iterator iterator;
 
     font_face(FT_Face face);
-    font_face(FT_Face face, glyph_cache_ptr);
+    font_face(FT_Face face, glyph_cache_ptr glyphs);
     ~font_face();
 
     std::string family_name() const {
@@ -72,7 +72,7 @@ public:
     iterator end() { return glyphs_->cend(); }
 private:
     FT_Face face_;
-    glyph_cache_ptr glyphs_;
+    glyph_cache_type *glyphs_;
     mutable double char_height_;
 };
 

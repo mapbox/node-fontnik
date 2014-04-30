@@ -38,7 +38,7 @@ font_face::font_face(FT_Face face)
 
 font_face::font_face(FT_Face face, glyph_cache_ptr glyphs)
     : face_(face),
-      glyphs_(glyphs),
+      glyphs_(glyphs.get()),
       char_height_(0.0) {}
 
 font_face::~font_face() {
@@ -119,6 +119,11 @@ void font_face::glyph_dimensions(glyph_info &glyph) const {
     FT_Done_Glyph(ft_glyph);
 
     glyphs_->insert(std::pair<uint32_t, glyph_info>(glyph.glyph_index, glyph));
+
+    /*
+    std::cout << "Added " << glyph.glyph_index
+        << " to shared glyph cache.\n";
+    */
 }
 
 /*
