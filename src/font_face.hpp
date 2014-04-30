@@ -40,15 +40,15 @@ extern "C"
 
 namespace fontserver {
 
-typedef std::unordered_map<uint32_t, glyph_info> glyphs_cache_type;
-typedef std::shared_ptr<glyphs_cache_type> glyphs_ptr;
+typedef std::unordered_map<uint32_t, glyph_info> glyph_cache_type;
+typedef std::shared_ptr<glyph_cache_type> glyph_cache_ptr;
 
 class font_face {
 public:
-    typedef glyphs_cache_type::const_iterator iterator;
+    typedef glyph_cache_type::const_iterator iterator;
 
     font_face(FT_Face face);
-    font_face(FT_Face face, glyphs_ptr);
+    font_face(FT_Face face, glyph_cache_ptr);
     ~font_face();
 
     std::string family_name() const {
@@ -72,7 +72,7 @@ public:
     iterator end() { return glyphs_->cend(); }
 private:
     FT_Face face_;
-    glyphs_ptr glyphs_;
+    glyph_cache_ptr glyphs_;
     mutable double char_height_;
 };
 

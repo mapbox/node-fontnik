@@ -48,8 +48,8 @@ struct FT_LibraryRec_;
 
 namespace fontserver {
 
-typedef std::unordered_map<uint32_t, glyph_info> glyphs_cache_type;
-typedef std::shared_ptr<glyphs_cache_type> glyphs_ptr;
+typedef std::unordered_map<uint32_t, glyph_info> glyph_cache_type;
+typedef std::shared_ptr<glyph_cache_type> glyph_cache_ptr;
 
 class font_face;
 typedef std::shared_ptr<font_face> face_ptr;
@@ -82,7 +82,7 @@ private:
     static std::mutex mutex_;
     static std::map<std::string, std::pair<int, std::string>> name2file_;
     static std::map<std::string, std::string> memory_fonts_;
-    static std::map<std::string, glyphs_cache_type> glyphs_cache_;
+    static std::map<std::string, glyph_cache_type> glyph_cache_map_;
 };
 
 template <typename T>

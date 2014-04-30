@@ -33,10 +33,10 @@ namespace fontserver {
 
 font_face::font_face(FT_Face face)
     : face_(face),
-      glyphs_(new glyphs_cache_type),
+      glyphs_(new glyph_cache_type),
       char_height_(0.0) {}
 
-font_face::font_face(FT_Face face, glyphs_ptr glyphs)
+font_face::font_face(FT_Face face, glyph_cache_ptr glyphs)
     : face_(face),
       glyphs_(glyphs),
       char_height_(0.0) {}
