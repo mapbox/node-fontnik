@@ -22,6 +22,7 @@
 
 #pragma once
 
+#include "glyph_info.hpp"
 #include "font_set.hpp"
 
 // boost
@@ -30,6 +31,7 @@
 
 // stl
 #include <map>
+#include <unordered_map>
 #include <memory>
 #include <thread>
 #include <vector>
@@ -45,6 +47,9 @@ extern "C"
 struct FT_LibraryRec_;
 
 namespace fontserver {
+
+typedef std::unordered_map<uint32_t, glyph_info> glyphs_cache_type;
+typedef std::shared_ptr<glyphs_cache_type> glyphs_ptr;
 
 class font_face;
 typedef std::shared_ptr<font_face> face_ptr;
@@ -77,6 +82,7 @@ private:
     static std::mutex mutex_;
     static std::map<std::string, std::pair<int, std::string>> name2file_;
     static std::map<std::string, std::string> memory_fonts_;
+    static std::map<std::string, glyphs_cache_type> glyphs_cache_;
 };
 
 template <typename T>

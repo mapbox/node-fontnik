@@ -33,7 +33,12 @@ namespace fontserver {
 
 font_face::font_face(FT_Face face)
     : face_(face),
-      glyphs_(),
+      glyphs_(new glyphs_cache_type),
+      char_height_(0.0) {}
+
+font_face::font_face(FT_Face face, glyphs_ptr glyphs)
+    : face_(face),
+      glyphs_(glyphs),
       char_height_(0.0) {}
 
 font_face::~font_face() {
@@ -64,8 +69,8 @@ bool font_face::set_character_sizes(double size) {
 void font_face::glyph_dimensions(glyph_info &glyph) const {
     // Check if char is already in cache.
     iterator itr;
-    itr = glyphs_.find(glyph.glyph_index);
-    if (itr != glyphs_.end()) {
+    itr = glyphs_->find(glyph.glyph_index);
+    if (itr != glyphs_->end()) {
         glyph = itr->second;
         return;
     }
@@ -113,7 +118,7 @@ void font_face::glyph_dimensions(glyph_info &glyph) const {
 
     FT_Done_Glyph(ft_glyph);
 
-    glyphs_.insert(std::pair<uint32_t, glyph_info>(glyph.glyph_index, glyph));
+    glyphs_->insert(std::pair<uint32_t, glyph_info>(glyph.glyph_index, glyph));
 }
 
 /*

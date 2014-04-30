@@ -20,6 +20,7 @@
     {
       'target_name': 'fontserver',
       'sources': [
+        'src/font_engine_freetype.cpp',
         'src/harfbuzz_shaper.cpp',
         'src/tile.cpp',
         'src/fontserver.cpp',
@@ -27,7 +28,6 @@
         'src/scrptrun.cpp',
         'src/font_face.cpp',
         'src/font_face_set.cpp',
-        'src/font_engine_freetype.cpp',
         'src/text_line.cpp',
         'src/font_set.cpp',
         'src/util.cpp',
