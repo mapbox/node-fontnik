@@ -23,9 +23,9 @@
 #pragma once
 
 #include "glyph_info.hpp"
+#include "guarded_map.hpp"
 
 // stl
-#include <unordered_map>
 #include <memory>
 #include <string>
 
@@ -40,7 +40,7 @@ extern "C"
 
 namespace fontserver {
 
-typedef std::unordered_map<uint32_t, glyph_info> glyph_cache_type;
+typedef guarded_map<uint32_t, glyph_info> glyph_cache_type;
 typedef std::shared_ptr<glyph_cache_type> glyph_cache_ptr;
 
 class font_face {
@@ -72,7 +72,7 @@ public:
     iterator end() { return glyphs_->cend(); }
 private:
     FT_Face face_;
-    glyph_cache_type *glyphs_;
+    glyph_cache_ptr glyphs_;
     mutable double char_height_;
 };
 

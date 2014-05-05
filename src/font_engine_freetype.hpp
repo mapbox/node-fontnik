@@ -24,6 +24,7 @@
 
 #include "glyph_info.hpp"
 #include "font_set.hpp"
+#include "guarded_map.hpp"
 
 // boost
 #include <boost/ptr_container/ptr_vector.hpp>
@@ -31,7 +32,6 @@
 
 // stl
 #include <map>
-#include <unordered_map>
 #include <memory>
 #include <thread>
 #include <vector>
@@ -48,7 +48,7 @@ struct FT_LibraryRec_;
 
 namespace fontserver {
 
-typedef std::unordered_map<uint32_t, glyph_info> glyph_cache_type;
+typedef guarded_map<uint32_t, glyph_info> glyph_cache_type;
 typedef std::shared_ptr<glyph_cache_type> glyph_cache_ptr;
 
 class font_face;
@@ -82,7 +82,7 @@ private:
     static std::mutex mutex_;
     static std::map<std::string, std::pair<int, std::string>> name2file_;
     static std::map<std::string, std::string> memory_fonts_;
-    static std::map<std::string, glyph_cache_type> glyph_cache_map_;
+    static std::map<const std::string, glyph_cache_ptr> glyph_cache_map_;
 };
 
 template <typename T>

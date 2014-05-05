@@ -238,14 +238,6 @@ void Tile::AsyncShape(uv_work_t* req) {
 
                     int layer_face_id = layer_itr - layer_faces->begin();
 
-                    /*
-                    std::cout << " face: " << layer_face_id <<
-                        " glyph: " << glyph.glyph_index <<
-                        " x: " << width_map_[glyph.char_index] <<
-                        " y: " << glyph.offset.y <<
-                        '\n';
-                    */
-
                     label->add_faces(layer_face_id);
                     label->add_glyphs(glyph.glyph_index);
                     label->add_x(width_map_[glyph.char_index]);
@@ -253,15 +245,6 @@ void Tile::AsyncShape(uv_work_t* req) {
                 }
 
                 itemizer.clear();
-
-                /*
-                std::cout << "faces: " << label->faces_size() <<
-                    " glyphs: " << label->glyphs_size() <<
-                    " x: " << label->x_size() <<
-                    " y: " << label->y_size() <<
-                    " labels: " << mutable_layer->labels_size() <<
-                    '\n';
-                */
             }
         }
 
