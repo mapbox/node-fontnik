@@ -1,10 +1,8 @@
 #pragma once
 
+// stl
 #include <memory>
 #include <map>
-
-// libuv
-#include <uv.h>
 
 template <class K, class V, class Compare = std::less<K>,
           class Allocator = std::allocator<std::pair<const K, V> > >
@@ -12,6 +10,7 @@ template <class K, class V, class Compare = std::less<K>,
 class guarded_map {
   private:
     typedef std::map<K, V, Compare, Allocator> map_type;
+    typedef std::lock_guard<std::mutex> lock_guard;
 
     map_type map;
     std::mutex mutex;
@@ -20,37 +19,37 @@ class guarded_map {
     typedef typename map_type::const_iterator const_iterator;
 
     bool empty() {
-      std::lock_guard<std::mutex> lock(this->mutex);
+      lock_guard guard(this->mutex);
       return this->map.empty();
     }
 
     const_iterator cbegin() {
-      std::lock_guard<std::mutex> lock(this->mutex);
+      lock_guard guard(this->mutex);
       return this->map.cbegin();
     }
 
     const_iterator cend() {
-      std::lock_guard<std::mutex> lock(this->mutex);
+      lock_guard guard(this->mutex);
       return this->map.cend();
     }
 
     std::pair<const_iterator, bool> emplace(K key, V value) {
-      std::lock_guard<std::mutex> lock(this->mutex);
+      lock_guard guard(this->mutex);
       return this->map.emplace(key, value);
     }
 
     const_iterator find(K key) {
-      std::lock_guard<std::mutex> lock(this->mutex);
+      lock_guard guard(this->mutex);
       return this->map.find(key);
     }
 
     std::pair<const_iterator, bool> insert(K key, V value) {
-      std::lock_guard<std::mutex> lock(this->mutex);
+      lock_guard guard(this->mutex);
       return this->map.emplace(key, value);
     }
 
     size_t size() {
-      std::lock_guard<std::mutex> lock(this->mutex);
+      lock_guard guard(this->mutex);
       return this->map.size();
     }
 };
