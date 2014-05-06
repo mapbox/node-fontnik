@@ -9,7 +9,7 @@ PKGURL="http://www.freedesktop.org/software/harfbuzz/release/harfbuzz-0.9.24.tar
 PKGBASE=$(basename $PKGURL)
 
 mkdir -p /tmp/${NAME}
-wget ${PKGURL} -O - | tar -vxy --strip-components=1 -C /tmp/${NAME}
+wget ${PKGURL} -O - | tar -vxj --strip-components=1 -C /tmp/${NAME}
 cd /tmp/${NAME}
 
 export PATH="/usr/local/bin:$PATH"
