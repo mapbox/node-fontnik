@@ -1,10 +1,11 @@
-#!/usr/bin/env bash
+#!/bin/bash
+
 set -e
 
 build_dir="$(pwd)"
 
-NAME="icu"
-PKGURL="http://download.icu-project.org/files/icu4c/53.1/icu4c-53_1-src.tgz"
+NAME="harfbuzz"
+PKGURL="http://www.freedesktop.org/software/harfbuzz/release/harfbuzz-0.9.24.tar.bz2"
 PKGBASE=$(basename $PKGURL)
 
 mkdir -p /tmp/${NAME}
@@ -16,16 +17,17 @@ export CXXFLAGS="$CXXFLAGS -fPIC"
 
 ./configure \
 --prefix=${BUILD} \
---enable-draft \
 --enable-static \
---with-data-packaging=archive \
 --disable-shared \
---disable-tests \
---disable-extras \
---disable-layout \
---disable-icuio \
---disable-samples \
---disable-dyload
+--disable-dependency-tracking \
+--with-icu \
+--with-cairo=no \
+--with-glib=no \
+--with-gobject=no \
+--with-graphite2=no \
+--with-freetype \
+--with-uniscribe=no \
+--with-coretext=no
 
 make
 make install

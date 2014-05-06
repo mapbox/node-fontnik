@@ -16,6 +16,7 @@ before_install:
  - sudo ./deps/build_icu.sh
  - sudo ./deps/build_protobuf.sh
  - sudo ./deps/build_freetype.sh
+ - sudo ./deps/build_harfbuzz.sh
 
 script:
  - npm install

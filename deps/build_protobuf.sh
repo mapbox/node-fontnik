@@ -4,13 +4,27 @@ set -e
 
 build_dir="$(pwd)"
 
+NAME="protobuf"
+PKGURL="https://protobuf.googlecode.com/files/protobuf-2.5.0.tar.gz"
+PKGBASE=$(basename $PKGURL)
+
+mkdir -p /tmp/${NAME}
+wget ${PKGURL} -O - | tar -vxz --strip-components=1 -C /tmp/${NAME}
+cd /tmp/{$NAME}
+
 export PATH="/usr/local/bin:$PATH"
 export CXXFLAGS="$CXXFLAGS -fPIC"
 
-wget https://protobuf.googlecode.com/files/protobuf-2.5.0.tar.gz -O /tmp/protobuf-2.5.0.tar.gz
-tar xf /tmp/protobuf-2.5.0.tar.gz -C /tmp
-cd /tmp/protobuf-2.5.0
-./configure --enable-static --disable-shared --disable-dependency-tracking --prefix=${BUILD}
+./configure \
+--prefix=${BUILD} \
+--enable-static \
+--disable-shared \
+--disable-dependency-tracking
+
 make
 make install
+
+# clear out shared libs
+rm -f ${BUILD}/lib/{*.so,*.dylib}
+
 cd $build_dir

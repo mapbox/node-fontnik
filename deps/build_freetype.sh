@@ -3,8 +3,8 @@ set -e
 
 build_dir="$(pwd)"
 
-NAME="icu"
-PKGURL="http://download.icu-project.org/files/icu4c/53.1/icu4c-53_1-src.tgz"
+NAME="freetype"
+PKGURL="http://download.savannah.gnu.org/releases/freetype/freetype-2.5.3.tar.bz2"
 PKGBASE=$(basename $PKGURL)
 
 mkdir -p /tmp/${NAME}
@@ -13,19 +13,20 @@ cd /tmp/{$NAME}
 
 export PATH="/usr/local/bin:$PATH"
 export CXXFLAGS="$CXXFLAGS -fPIC"
-
+# NOTE: --with-zlib=yes means external, non-bundled zip will be used
 ./configure \
 --prefix=${BUILD} \
---enable-draft \
 --enable-static \
---with-data-packaging=archive \
 --disable-shared \
---disable-tests \
---disable-extras \
---disable-layout \
---disable-icuio \
---disable-samples \
---disable-dyload
+--with-zlib=yes \
+--with-bzip2=no \
+--with-harfbuzz=no \
+--with-png=no \
+--with-quickdraw-toolbox=no \
+--with-quickdraw-carbon=no \
+--with-ats=no \
+--with-fsref=no \
+--with-fsspec=no \
 
 make
 make install
@@ -34,3 +35,4 @@ make install
 rm -f ${BUILD}/lib/{*.so,*.dylib}
 
 cd $build_dir
+
