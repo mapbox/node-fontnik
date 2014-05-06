@@ -14,10 +14,10 @@ before_install:
  - sudo apt-get update
  - sudo apt-get install -y gcc-4.7 gcc g++
  - mkdir -p $BUILD
-# - sudo ./deps/build_icu.sh
+ - ./deps/build_icu.sh
  - ./deps/build_protobuf.sh
-# - sudo ./deps/build_freetype.sh
-# - sudo ./deps/build_harfbuzz.sh
+ - ./deps/build_freetype.sh
+ - ./deps/build_harfbuzz.sh
  - echo "PKG_CONFIG_PATH is set to $PKG_CONFIG_PATH"
  - ls /tmp/fontserver-build/lib/pkgconfig
 
