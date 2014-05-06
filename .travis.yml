@@ -15,6 +15,7 @@ before_install:
  - mkdir -p $BUILD
  - sudo ./deps/build_icu.sh
  - sudo ./deps/build_protobuf.sh
+ - sudo ./deps/build_freetype.sh
 
 script:
  - npm install
