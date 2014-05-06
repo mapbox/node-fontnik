@@ -18,6 +18,8 @@ before_install:
  - sudo ./deps/build_protobuf.sh
  - sudo ./deps/build_freetype.sh
  - sudo ./deps/build_harfbuzz.sh
+ - echo "PKG_CONFIG_PATH is set to $PKG_CONFIG_PATH"
+ - ls /tmp/fontserver-build/lib/pkgconfig
 
 script:
  - npm install
