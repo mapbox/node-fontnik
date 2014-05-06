@@ -6,6 +6,7 @@ node_js:
 env:
   global:
   - BUILD: '/tmp/fontserver-build'
+  - PKG_CONFIG_PATH: '/tmp/fontserver-build/lib/pkgconfig'
 
 
 before_install:
