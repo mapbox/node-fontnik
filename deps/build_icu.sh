@@ -9,7 +9,7 @@ PKGBASE=$(basename $PKGURL)
 
 mkdir -p /tmp/${NAME}
 wget ${PKGURL} -O - | tar -vxz --strip-components=1 -C /tmp/${NAME}
-cd /tmp/{$NAME}
+cd /tmp/${NAME}
 
 export PATH="/usr/local/bin:$PATH"
 export CXXFLAGS="$CXXFLAGS -fPIC"
