@@ -1,5 +1,6 @@
 #pragma once
 
+#include <memory>
 #include "font_set.hpp"
 
 namespace fontserver {
