@@ -20,7 +20,10 @@ before_install:
  - echo "PKG_CONFIG_PATH is set to $PKG_CONFIG_PATH"
  - ls /tmp/fontserver-build/lib/pkgconfig
 
-script:
+install:
+ - echo $CXX
  - npm install
+
+script:
  - npm test
 
