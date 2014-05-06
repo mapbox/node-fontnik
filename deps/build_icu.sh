@@ -31,7 +31,6 @@ make
 make install
 
 sudo cp /tmp/${NAME}/source/config/*.pc ${BUILD}/lib/pkgconfig
-sudo cp /tmp/${NAME}/source/config/*.pc /usr/lib/pkgconfig
 
 # clear out shared libs
 rm -f ${BUILD}/lib/{*.so,*.dylib}

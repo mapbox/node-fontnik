@@ -18,6 +18,7 @@ before_install:
  - ./deps/build_protobuf.sh
  - ./deps/build_freetype.sh
  - ./deps/build_harfbuzz.sh
+ - export PATH="$BUILD/bin:$PATH"
  - echo "PKG_CONFIG_PATH is set to $PKG_CONFIG_PATH"
  - ls /tmp/fontserver-build/lib/pkgconfig
 

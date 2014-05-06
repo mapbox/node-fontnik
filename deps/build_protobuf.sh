@@ -2,8 +2,6 @@
 
 set -e
 
-echo "BUILD is set to ${BUILD}"
-
 build_dir="$(pwd)"
 
 NAME="protobuf"
