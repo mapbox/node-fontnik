@@ -30,6 +30,8 @@ export CXXFLAGS="$CXXFLAGS -fPIC"
 make
 make install
 
+sudo cp /tmp/${NAME}/source/config/*.pc ${BUILD}/lib/pkgconfig
+
 # clear out shared libs
 rm -f ${BUILD}/lib/{*.so,*.dylib}
 
