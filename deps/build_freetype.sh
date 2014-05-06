@@ -8,7 +8,7 @@ PKGURL="http://download.savannah.gnu.org/releases/freetype/freetype-2.5.3.tar.bz
 PKGBASE=$(basename $PKGURL)
 
 mkdir -p /tmp/${NAME}
-wget ${PKGURL} -O - | tar -vxz --strip-components=1 -C /tmp/${NAME}
+wget ${PKGURL} -O - | tar -vxy --strip-components=1 -C /tmp/${NAME}
 cd /tmp/${NAME}
 
 export PATH="/usr/local/bin:$PATH"
