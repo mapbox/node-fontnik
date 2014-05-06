@@ -45,6 +45,7 @@
         '-lboost_filesystem',
         '<!@(pkg-config freetype2 --libs)',
         '<!@(pkg-config icu-uc --libs)',
+        '<!@(pkg-config harfbuzz-icu --libs)',
         '<!@(pkg-config protobuf --libs)'
       ],
       'xcode_settings': {
