@@ -20,10 +20,10 @@
     {
       'target_name': 'fontserver',
       'sources': [
+        'src/tile.cpp',
         'src/font_face.cpp',
         'src/font_engine_freetype.cpp',
         'src/harfbuzz_shaper.cpp',
-        'src/tile.cpp',
         'src/fontserver.cpp',
         'src/itemizer.cpp',
         'src/scrptrun.cpp',
