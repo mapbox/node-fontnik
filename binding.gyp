@@ -43,19 +43,18 @@
       'libraries': [
         '-lboost_system',
         '-lboost_filesystem',
-        '<!@(pkg-config freetype2 --libs)',
-        '<!@(pkg-config icu-uc --libs)',
-        '<!@(pkg-config harfbuzz-icu --libs)',
-        '<!@(pkg-config protobuf --libs)'
+        '<!@(pkg-config freetype2 --libs --static)',
+        '<!@(pkg-config protobuf --libs --static)',
+        '<!@(pkg-config harfbuzz-icu --libs --static)',
       ],
       'xcode_settings': {
           'MACOSX_DEPLOYMENT_TARGET': '10.8',
-          'OTHER_CPLUSPLUSFLAGS': ['-std=c++11', '-stdlib=libc++', '-Wno-unused-variable'],
+          'OTHER_CPLUSPLUSFLAGS': ['-Wshadow','-std=c++11', '-stdlib=libc++', '-Wno-unused-variable'],
           'GCC_ENABLE_CPP_RTTI': 'YES',
           'GCC_ENABLE_CPP_EXCEPTIONS': 'YES'
       },
       'cflags_cc!': ['-fno-rtti', '-fno-exceptions'],
-      'cflags_cc' : ['-std=c++11'],
+      'cflags_cc' : ['-std=c++11','-Wshadow'],
       'cflags_c' : ['-std=c99'],
     }
   ]
