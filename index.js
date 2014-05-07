@@ -1,7 +1,7 @@
 var zlib = require('zlib');
 var path = require('path');
 var util = require('util');
-var fontserver = require('./build/Release/fontserver.node');
+var fontserver = require('./lib/fontserver.node');
 
 // Fontserver directories must be set in the conf file prior to require.
 // Allow these to be passed in via FONTSERVER_FONTS env var.
