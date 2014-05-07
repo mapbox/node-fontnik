@@ -1,6 +1,7 @@
 #include "tile.hpp"
 #include "font_face_set.hpp"
 #include "harfbuzz_shaper.hpp"
+#include "tile_face.hpp"
 
 // node
 #include <node_buffer.h>
@@ -138,6 +139,9 @@ void Tile::AsyncShape(uv_work_t* req) {
     fontserver::face_set_ptr face_set = font_manager.get_face_set(fset);
     if (!face_set->size()) return;
 
+    std::map<fontserver::face_ptr, fontserver::tile_face *> face_map;
+    std::vector<fontserver::tile_face *> tile_faces;
+
     llmr::vector::tile& tile = baton->tile->tile;
 
     // for every label
@@ -162,7 +166,6 @@ void Tile::AsyncShape(uv_work_t* req) {
         }
 
         llmr::vector::layer* mutable_layer = tile.mutable_layers(i);
-        fontserver::face_set_ptr layer_faces = font_manager.get_face_set();
 
         fontserver::text_format format(baton->fontstack, 24);
         fontserver::text_format_ptr format_ptr = 
@@ -216,29 +219,35 @@ void Tile::AsyncShape(uv_work_t* req) {
                         continue;
                     }
 
-                    // fontserver::face_ptr const& face = std::make_shared<fontserver::font_face>(*glyph.face);
-
                     // Try to find whether this font has already been
                     // used in this tile.
-                    fontserver::font_face_set::iterator face_itr = std::find(face_set->begin(), face_set->end(), glyph.face);
-                    if (face_itr == face_set->end()) {
-                        face_set->add(glyph.face);
-                        std::cout << "Face not found: " <<
-                            glyph.face->family_name() << ' ' <<
-                            glyph.face->style_name() << '\n';
+                    std::map<fontserver::face_ptr, fontserver::tile_face *>::iterator face_map_itr = face_map.find(glyph.face);
+                    if (face_map_itr == face_map.end()) {
+                        fontserver::tile_face *face = 
+                            new fontserver::tile_face(glyph.face);
+                        std::pair<fontserver::face_ptr, fontserver::tile_face *> keyed(glyph.face, face);
+                        face_map_itr = face_map.insert(keyed).first;
+
+                        // Add to shared face cache if not found.
+                        fontserver::font_face_set::iterator face_itr = std::find(face_set->begin(), face_set->end(), glyph.face);
+                        if (face_itr == face_set->end()) {
+                            face_set->add(glyph.face);
+                        }
                     }
+
+                    fontserver::tile_face *face = face_map_itr->second;
 
                     // Find out whether this font has been used in 
                     // this tile before and get its position.
-                    fontserver::font_face_set::iterator layer_itr = std::find(layer_faces->begin(), layer_faces->end(), glyph.face);
-                    if (layer_itr == layer_faces->end()) {
-                        layer_faces->add(glyph.face);
-                        layer_itr = layer_faces->end() - 1;
+                    std::vector<fontserver::tile_face *>::iterator tile_itr = std::find(tile_faces.begin(), tile_faces.end(), face);
+                    if (tile_itr == tile_faces.end()) {
+                        tile_faces.push_back(face);
+                        tile_itr = tile_faces.end() - 1;
                     }
 
-                    int layer_face_id = layer_itr - layer_faces->begin();
+                    int tile_face_id = tile_itr - tile_faces.begin();
 
-                    label->add_faces(layer_face_id);
+                    label->add_faces(tile_face_id);
                     label->add_glyphs(glyph.glyph_index);
                     label->add_x(width_map_[glyph.char_index]);
                     label->add_y(glyph.offset.y);
@@ -250,8 +259,8 @@ void Tile::AsyncShape(uv_work_t* req) {
 
         // Add a textual representation of the font so that we can figure out
         // later what font we need to use.
-        for (auto const& face : *layer_faces) {
-            std::string name = face->family_name() + " " + face->style_name();
+        for (auto const& face : tile_faces) {
+            std::string name = face->family + " " + face->style;
             mutable_layer->add_faces(name);
             // We don't delete the TileFace objects here because
             // they are 'owned' by the global faces map and deleted
@@ -260,15 +269,13 @@ void Tile::AsyncShape(uv_work_t* req) {
 
         // Insert FAKE stacks
         mutable_layer->add_stacks(baton->fontstack);
-
-        // std::cout << " layer_faces: " << mutable_layer->faces_size() << '\n';
     }
 
     // Insert SDF glyphs + bitmaps
-    for (auto const& face : *face_set) {
+    for (auto const& face : tile_faces) {
         llmr::vector::face *mutable_face = tile.add_faces();
-        mutable_face->set_family(face->family_name());
-        mutable_face->set_style(face->style_name());
+        mutable_face->set_family(face->family);
+        mutable_face->set_style(face->style);
 
         // Determine ASCII glyphs
         // std::set<uint32_t> omit;
@@ -279,31 +286,23 @@ void Tile::AsyncShape(uv_work_t* req) {
         //     char_code = FT_Get_Next_Char(ft_face, char_code, &glyph_index);
         // }
 
-        for (auto const& glyph : *face) {
+        for (auto const& glyph_pair : face->glyphs) {
             // Omit ASCII glyphs we determined earlier
             // if (omit.find(id) != omit.end()) {
             //     continue;
             // }
 
-            /*
-            std::cout << " Glyph: " << glyph.second.glyph_index <<
-                " width: " << glyph.second.width <<
-                " height: " << glyph.second.height() <<
-                " left: " << glyph.second.left <<
-                " top: " << glyph.second.top <<
-                " advance: " << glyph.second.advance <<
-                '\n';
-            */
-            
+            fontserver::glyph_info glyph = glyph_pair.second;
+
             llmr::vector::glyph *mutable_glyph = mutable_face->add_glyphs();
-            mutable_glyph->set_id(glyph.second.glyph_index);
-            mutable_glyph->set_width(glyph.second.width);
-            mutable_glyph->set_height(glyph.second.height);
-            mutable_glyph->set_left(glyph.second.left);
-            mutable_glyph->set_top(glyph.second.top);
-            mutable_glyph->set_advance(glyph.second.advance);
-            if (glyph.second.width > 0) {
-                mutable_glyph->set_bitmap(glyph.second.bitmap);
+            mutable_glyph->set_id(glyph.glyph_index);
+            mutable_glyph->set_width(glyph.width);
+            mutable_glyph->set_height(glyph.height);
+            mutable_glyph->set_left(glyph.left);
+            mutable_glyph->set_top(glyph.top);
+            mutable_glyph->set_advance(glyph.advance);
+            if (glyph.width > 0) {
+                mutable_glyph->set_bitmap(glyph.bitmap);
             }
         }
     }
