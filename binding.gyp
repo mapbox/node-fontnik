@@ -11,9 +11,9 @@
             './proto/vector_tile.proto'
           ],
           'outputs': [
-            "./src/vector_tile.pb.cc"
+            "<(SHARED_INTERMEDIATE_DIR)/vector_tile.pb.cc"
           ],
-          'action': ['protoc','-Iproto/','--cpp_out=./src/','./proto/vector_tile.proto']
+          'action': ['protoc','-Iproto/','--cpp_out=<(SHARED_INTERMEDIATE_DIR)/','./proto/vector_tile.proto']
         }
       ]
     },
@@ -34,9 +34,11 @@
         'src/util.cpp',
         'src/distmap.c',
         'src/edtaa4func.c',
-        'src/vector_tile.pb.cc'
+        '<(SHARED_INTERMEDIATE_DIR)/vector_tile.pb.cc'
       ],
       'include_dirs': [
+        'src/',
+        '<(SHARED_INTERMEDIATE_DIR)/',
         '<!@(pkg-config freetype2 --cflags-only-I | sed s/-I//g)',
         '<!@(pkg-config icu-uc --cflags-only-I | sed s/-I//g)',
         '<!@(pkg-config protobuf --cflags-only-I | sed s/-I//g)'
