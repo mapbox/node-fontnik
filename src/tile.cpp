@@ -247,6 +247,9 @@ void Tile::AsyncShape(uv_work_t* req) {
 
                     int tile_face_id = tile_itr - tile_faces.begin();
 
+                    // Add glyph to tile_face.
+                    face->add_glyph(glyph);
+
                     label->add_faces(tile_face_id);
                     label->add_glyphs(glyph.glyph_index);
                     label->add_x(width_map_[glyph.char_index]);
@@ -286,13 +289,11 @@ void Tile::AsyncShape(uv_work_t* req) {
         //     char_code = FT_Get_Next_Char(ft_face, char_code, &glyph_index);
         // }
 
-        for (auto const& glyph_pair : face->glyphs) {
+        for (auto const& glyph : face->glyphs) {
             // Omit ASCII glyphs we determined earlier
             // if (omit.find(id) != omit.end()) {
             //     continue;
             // }
-
-            fontserver::glyph_info glyph = glyph_pair.second;
 
             llmr::vector::glyph *mutable_glyph = mutable_face->add_glyphs();
             mutable_glyph->set_id(glyph.glyph_index);
