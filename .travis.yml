@@ -11,11 +11,11 @@ env:
   - secure: 'mGyR6Q0WPXw3ze1rLuX0ArCh1GMSsPax8njnZD/xKnXsZMjgWA/+o7RI9UtqDrO187i99c0OLjTFWFQHWatcB2t2JRFRQEB/lt5Mpb8LENSNWr3/RKQQv806gsM6sxtoYUQkeO//6IKf0ATjp1ot7lNqy5o83z2XehvGoMZytJg='
 
 before_install:
- - ./deps/travis-build.sh
  - export platform=$(uname -s | sed "y/ABCDEFGHIJKLMNOPQRSTUVWXYZ/abcdefghijklmnopqrstuvwxyz/")
  - export CXX=g++-4.8
  - export CC=gcc-4.8
  - export PATH="$BUILD/bin:$PATH"
+ - ./deps/travis-build.sh
  - echo "PKG_CONFIG_PATH is set to $PKG_CONFIG_PATH"
  - ls /tmp/fontserver-build/lib/pkgconfig
 
