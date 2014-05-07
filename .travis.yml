@@ -12,6 +12,13 @@ env:
 
 before_install:
  - ./deps/travis-build.sh
+ - export platform=$(uname -s | sed "y/ABCDEFGHIJKLMNOPQRSTUVWXYZ/abcdefghijklmnopqrstuvwxyz/")
+ - export CXX=g++-4.8
+ - export CC=gcc-4.8
+ - export PATH="$BUILD/bin:$PATH"
+ - echo "PKG_CONFIG_PATH is set to $PKG_CONFIG_PATH"
+ - ls /tmp/fontserver-build/lib/pkgconfig
+
 
 install:
  - npm install --build-from-source
