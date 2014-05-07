@@ -307,6 +307,9 @@ void Tile::AsyncShape(uv_work_t* req) {
             }
         }
     }
+
+    // Glyph-only tiles
+    tile.clear_layers();
 }
 
 void Tile::ShapeAfter(uv_work_t* req) {
