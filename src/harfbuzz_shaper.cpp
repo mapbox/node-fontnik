@@ -117,8 +117,9 @@ void harfbuzz_shaper::shape_text(text_line &line,
                 tmp.face = face;
                 tmp.format = text_item.format;
 
-                // Overwrite default width with better value from HarfBuzz.
-                tmp.width = positions[i].x_advance >> 6;
+                // Overwrite default advance with better value
+                // from HarfBuzz.
+                tmp.advance = positions[i].x_advance >> 6;
 
                 tmp.offset.set(positions[i].x_offset / 64.0,
                                positions[i].y_offset / 64.0);
@@ -128,7 +129,7 @@ void harfbuzz_shaper::shape_text(text_line &line,
                 if (width_itr == width_map.end()) {
                     width_map[tmp.char_index] = current_line_length;
                 }
-                current_line_length += tmp.width;
+                current_line_length += tmp.advance;
 
                 line.add_glyph(tmp, scale_factor);
             }
