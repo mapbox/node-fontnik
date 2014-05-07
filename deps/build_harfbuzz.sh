@@ -12,9 +12,10 @@ mkdir -p /tmp/${NAME}
 wget ${PKGURL} -O - | tar -vxj --strip-components=1 -C /tmp/${NAME}
 cd /tmp/${NAME}
 
-export PATH="/usr/local/bin:$PATH"
-export CXXFLAGS="$CXXFLAGS -fPIC"
-export CFLAGS="$CFLAGS -fPIC"
+export PATH="${BUILD}/bin:/usr/local/bin$PATH"
+export CXXFLAGS="$CXXFLAGS -fPIC -I${BUILD}/include"
+export CFLAGS="$CFLAGS -fPIC -I${BUILD}/include"
+export LDFLAGS="$LDFLAGS -L${BUILD}/lib"
 
 ./configure \
 --prefix=${BUILD} \
