@@ -12,13 +12,13 @@ public:
     }
     ~tile_face();
 
-    inline void add_glyph(uint32_t glyph_index, glyph_info glyph) {
-        glyphs.emplace(glyph_index, glyph);
+    inline void add_glyph(glyph_info glyph) {
+        glyphs.push_back(glyph);
     }
 
     std::string family;
     std::string style;
-    std::map<uint32_t, glyph_info> glyphs;
+    std::vector<glyph_info> glyphs;
 
 private:
     face_ptr face_;
