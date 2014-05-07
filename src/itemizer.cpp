@@ -105,15 +105,15 @@ void text_itemizer::itemize_direction(unsigned start, unsigned end) {
             int32_t count = ubidi_countRuns(bidi, &error);
             if(U_SUCCESS(error)) {
                 for(int i = 0; i < count; ++i) {
-                    int32_t length;
+                    int32_t vis_length;
                     int32_t run_start;
 
-                    direction = ubidi_getVisualRun(bidi, i, &run_start, &length);
+                    direction = ubidi_getVisualRun(bidi, i, &run_start, &vis_length);
 
                     // Add offset to compensate offset in setPara.
                     run_start += start;
 
-                    direction_runs_.emplace_back(direction, run_start, run_start+length);
+                    direction_runs_.emplace_back(direction, run_start, run_start+vis_length);
                 }
             }
         }
