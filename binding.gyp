@@ -19,6 +19,7 @@
     },
     {
       'target_name': 'fontserver',
+      'dependencies': [ 'action_before_build' ],
       'sources': [
         'src/font_face.cpp',
         'src/font_engine_freetype.cpp',
