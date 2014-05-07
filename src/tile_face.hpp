@@ -1,6 +1,7 @@
 #pragma once
 
 #include "font_face.hpp"
+#include <set>
 
 namespace fontserver {
 

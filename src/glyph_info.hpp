@@ -50,10 +50,6 @@ struct glyph_info {
           offset(),
           format() {}
 
-    inline bool operator<(glyph_info const& rhs) {
-        return this->glyph_index < rhs.glyph_index;
-    }
-
     uint32_t glyph_index;
     face_ptr face;
 
@@ -80,5 +76,9 @@ struct glyph_info {
     text_format_ptr format;
     // double height() const { return ymax-ymin; }
 };
+
+inline bool operator<(glyph_info const& lhs, glyph_info const& rhs) {
+    return lhs.glyph_index < rhs.glyph_index;
+}
 
 }
