@@ -50,6 +50,10 @@ struct glyph_info {
           offset(),
           format() {}
 
+    inline bool operator<(glyph_info const& rhs) {
+        return this->glyph_index < rhs.glyph_index;
+    }
+
     uint32_t glyph_index;
     face_ptr face;
 
