@@ -7,24 +7,18 @@ env:
   global:
   - BUILD: '/tmp/fontserver-build'
   - PKG_CONFIG_PATH: '/tmp/fontserver-build/lib/pkgconfig'
-
+  - secure: 'odYEXvhqQCw5TCQIdiME4nsKDyly+Sc1CI1UfEi3xKtQcxntIWTGMLNOyop1W3f4kVhEOdqWgB9tKMulBBIlqBLOoOql5hbdLExdwmtk3j2E2I34wR7vf7VJk9WAvxk49uqRhIors98SKhBzvt3PVZCtq8gZEZDrEM/Zx8hsSAg='
+  - secure: 'mGyR6Q0WPXw3ze1rLuX0ArCh1GMSsPax8njnZD/xKnXsZMjgWA/+o7RI9UtqDrO187i99c0OLjTFWFQHWatcB2t2JRFRQEB/lt5Mpb8LENSNWr3/RKQQv806gsM6sxtoYUQkeO//6IKf0ATjp1ot7lNqy5o83z2XehvGoMZytJg='
 
 before_install:
- - sudo add-apt-repository -y ppa:boost-latest/ppa
- - sudo add-apt-repository --yes ppa:ubuntu-toolchain-r/test; sudo apt-get update; sudo apt-get install boost1.55 gcc-4.8 g++-4.8; export CXX=g++-4.8; export CC=gcc-4.8;
- - mkdir -p $BUILD
- - ./deps/build_icu.sh 1>> build.log
- - ./deps/build_protobuf.sh 1>> build.log
- - ./deps/build_freetype.sh 1>> build.log
- - ./deps/build_harfbuzz.sh 1>> build.log
- - export PATH="$BUILD/bin:$PATH"
- - echo "PKG_CONFIG_PATH is set to $PKG_CONFIG_PATH"
- - ls /tmp/fontserver-build/lib/pkgconfig
+ - ./deps/travis-build.sh
 
 install:
- - echo $CXX
- - npm install
+ - npm install --build-from-source
 
 script:
  - npm test
+
+after_success:
+ - ./deps/travis-publish.sh
 
