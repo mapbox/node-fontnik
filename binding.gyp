@@ -6,59 +6,70 @@
       'hard_dependency': 1,
       'actions': [
         {
-          'action_name': 'run_protoc_metrics',
-          'inputs': [
-            './proto/metrics.proto'
-          ],
-          'outputs': [
-            "./src/metrics.pb.cc"
-          ],
-          'action': ['protoc','-Iproto/','--cpp_out=./src/','./proto/metrics.proto']
-        },
-        {
           'action_name': 'run_protoc_vector_tile',
           'inputs': [
             './proto/vector_tile.proto'
           ],
           'outputs': [
-            "./src/vector_tile.pb.cc"
+            "<(SHARED_INTERMEDIATE_DIR)/vector_tile.pb.cc"
           ],
-          'action': ['protoc','-Iproto/','--cpp_out=./src/','./proto/vector_tile.proto']
+          'action': ['protoc','-Iproto/','--cpp_out=<(SHARED_INTERMEDIATE_DIR)/','./proto/vector_tile.proto']
         }
       ]
     },
     {
       'target_name': 'fontserver',
+      'dependencies': [ 'action_before_build' ],
       'sources': [
-        'src/fontserver.cpp',
-        'src/font.cpp',
         'src/tile.cpp',
-        'src/shaping.cpp',
-        'src/clipper.cpp',
-        'src/sdf_renderer.cpp',
+        'src/font_face.cpp',
+        'src/font_engine_freetype.cpp',
+        'src/harfbuzz_shaper.cpp',
+        'src/fontserver.cpp',
+        'src/itemizer.cpp',
+        'src/scrptrun.cpp',
+        'src/font_face_set.cpp',
+        'src/text_line.cpp',
+        'src/font_set.cpp',
+        'src/util.cpp',
         'src/distmap.c',
         'src/edtaa4func.c',
-        'src/globals.cpp',
-        'src/metrics.pb.cc',
-        'src/vector_tile.pb.cc'
+        '<(SHARED_INTERMEDIATE_DIR)/vector_tile.pb.cc'
       ],
       'include_dirs': [
-        '<!@(pkg-config pangoft2 --cflags-only-I | sed s/-I//g)',
-        '<!@(pkg-config protobuf --cflags-only-I | sed s/-I//g)',
+        'src/',
+        '<(SHARED_INTERMEDIATE_DIR)/',
+        '<!@(pkg-config freetype2 --cflags-only-I | sed s/-I//g)',
+        '<!@(pkg-config icu-uc --cflags-only-I | sed s/-I//g)',
+        '<!@(pkg-config protobuf --cflags-only-I | sed s/-I//g)'
       ],
       'libraries': [
-        '<!@(pkg-config pangoft2 --libs)',
-        '<!@(pkg-config protobuf --libs)'
+        '-lboost_system',
+        '-lboost_filesystem',
+        '<!@(pkg-config freetype2 --libs --static)',
+        '<!@(pkg-config protobuf --libs --static)',
+        '<!@(pkg-config harfbuzz-icu --libs --static)',
       ],
       'xcode_settings': {
           'MACOSX_DEPLOYMENT_TARGET': '10.8',
-          'OTHER_CPLUSPLUSFLAGS': ['-std=c++11', '-stdlib=libc++', '-Wno-unused-variable'],
+          'OTHER_CPLUSPLUSFLAGS': ['-Wshadow','-std=c++11', '-stdlib=libc++', '-Wno-unused-variable'],
           'GCC_ENABLE_CPP_RTTI': 'YES',
           'GCC_ENABLE_CPP_EXCEPTIONS': 'YES'
       },
       'cflags_cc!': ['-fno-rtti', '-fno-exceptions'],
-      'cflags_cc' : ['-std=c++11'],
+      'cflags_cc' : ['-std=c++11','-Wshadow'],
       'cflags_c' : ['-std=c99'],
+    },
+    {
+      'target_name': 'action_after_build',
+      'type': 'none',
+      'dependencies': [ '<(module_name)' ],
+      'copies': [
+          {
+            'files': [ '<(PRODUCT_DIR)/<(module_name).node' ],
+            'destination': '<(module_path)'
+          }
+      ]
     }
   ]
 }

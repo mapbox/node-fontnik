@@ -1,13 +1,13 @@
 #include <node.h>
-#include "font.hpp"
+
+#include "mapnik_fonts.hpp"
 #include "tile.hpp"
-#include "shaping.hpp"
 
-using namespace v8;
+void RegisterModule(v8::Handle<v8::Object> target) {
+    NODE_SET_METHOD(target, "register_fonts", fontserver::register_fonts);
+    NODE_SET_METHOD(target, "faces", fontserver::available_font_faces);
+    NODE_SET_METHOD(target, "files", fontserver::available_font_files);
 
-void RegisterModule(Handle<Object> target) {
-    InitShaping(target);
-    Font::Init(target);
     Tile::Init(target);
 }
 
