@@ -6,7 +6,7 @@
 // node
 #include <node_buffer.h>
 
-#include <set>
+// stl
 #include <algorithm>
 #include <memory>
 #include <iostream>
@@ -150,9 +150,9 @@ void Tile::AsyncShape(uv_work_t* req) {
 
     for (auto const& face : *face_set) {
         // Create tile_face, add to face_map and tile_faces.
-        fontserver::tile_face *tile_face = new fontserver::tile_face(face);
-        face_map.emplace(face, tile_face);
-        tile_faces.push_back(tile_face);
+        fontserver::tile_face *t_face = new fontserver::tile_face(face);
+        face_map.emplace(face, t_face);
+        tile_faces.push_back(t_face);
 
         // Get FreeType face from face_ptr.
         FT_Face ft_face = face->get_face();
@@ -161,10 +161,13 @@ void Tile::AsyncShape(uv_work_t* req) {
         // faces as they appear.
         FT_ULong char_code = FT_Get_First_Char(ft_face, &glyph_index);
         while (glyph_index != 0 && char_code < glyph_end) {
-            // TODO: glyph_dimensions
+            fontserver::glyph_info glyph;
+            glyph.glyph_index = char_code;
 
-            // Add glyph to tile_face.
-            tile_face->add_glyph(glyph);
+            face->glyph_dimensions(glyph);
+
+            // Add glyph to t_face.
+            t_face->add_glyph(glyph);
 
             // Advance char_code to next glyph index.
             char_code = FT_Get_Next_Char(ft_face, char_code, &glyph_index);
