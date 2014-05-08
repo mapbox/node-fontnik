@@ -19,6 +19,7 @@ protected:
 
     static v8::Handle<v8::Value> Shape(const v8::Arguments& args);
     static void AsyncShape(uv_work_t* req);
+    static void AsyncRange(uv_work_t* req);
     static void ShapeAfter(uv_work_t* req);
 public:
     llmr::vector::tile tile;
