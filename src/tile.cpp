@@ -24,6 +24,14 @@ struct ShapeBaton {
     std::string fontstack;
 };
 
+struct RangeBaton {
+    v8::Persistent<v8::Function> callback;
+    Tile *tile;
+    std::string fontstack;
+    uint32_t start;
+    uint32_t end;
+};
+
 v8::Persistent<v8::FunctionTemplate> Tile::constructor;
 
 Tile::Tile(const char *data, size_t length) : node::ObjectWrap() {
