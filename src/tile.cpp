@@ -260,8 +260,8 @@ void Tile::AsyncShape(uv_work_t* req) {
             }
         }
 
-        // Add a textual representation of the font so that we can figure out
-        // later what font we need to use.
+        // Add a textual representation of the font so that we can figure
+        // out later what font we need to use.
         for (auto const& face : tile_faces) {
             std::string name = face->family + " " + face->style;
             mutable_layer->add_faces(name);
