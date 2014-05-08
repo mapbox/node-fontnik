@@ -11,9 +11,8 @@ env:
   - secure: 'mGyR6Q0WPXw3ze1rLuX0ArCh1GMSsPax8njnZD/xKnXsZMjgWA/+o7RI9UtqDrO187i99c0OLjTFWFQHWatcB2t2JRFRQEB/lt5Mpb8LENSNWr3/RKQQv806gsM6sxtoYUQkeO//6IKf0ATjp1ot7lNqy5o83z2XehvGoMZytJg='
 before_install:
 - export platform=$(uname -s | sed "y/ABCDEFGHIJKLMNOPQRSTUVWXYZ/abcdefghijklmnopqrstuvwxyz/")
-- export CXX=g++-4.8
-- export CC=gcc-4.8
 - export PATH="$BUILD/bin:$PATH"
+- if [[ "$platform" == "linux" ]]; then export CXX=g++-4.8; export CC=gcc-4.8; fi
 - git clone https://github.com/creationix/nvm.git ../.nvm
 - source ../.nvm/nvm.sh
 - nvm install $NODE_NVM_VERSION
