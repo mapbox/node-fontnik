@@ -6,7 +6,7 @@
 // node
 #include <node_buffer.h>
 
-#include <set>
+// stl
 #include <algorithm>
 #include <memory>
 #include <iostream>
