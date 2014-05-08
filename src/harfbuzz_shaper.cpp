@@ -59,7 +59,6 @@ void harfbuzz_shaper::shape_text(text_line &line,
     hb_buffer_pre_allocate(buffer.get(), length);
 
     for (auto const& text_item : list) {
-        unsigned start = text_item.start;
 
         // TODO: can this face set be passed with the text_item
         // instead of being recreated each time?

@@ -38,8 +38,6 @@
 #include <fstream>
 #include <iostream>
 
-typedef boost::unique_lock<std::mutex> scoped_lock;
-
 namespace fontserver {
 
 freetype_engine::freetype_engine() :
@@ -73,7 +71,7 @@ bool freetype_engine::is_font_file(std::string const& file_name) {
 }
 
 bool freetype_engine::register_font(std::string const& file_name) {
-    scoped_lock lock(mutex_);
+    std::lock_guard<std::mutex> guard(mutex_);
 
     FT_Library library = 0;
     FT_Error error = FT_Init_FreeType(&library);
@@ -195,7 +193,7 @@ face_ptr freetype_engine::create_face(std::string const& family_name) {
     itr = name2file_.find(family_name);
 
     if (itr != name2file_.end()) {
-        scoped_lock lock(mutex_);
+        std::lock_guard<std::mutex> guard(mutex_);
 
         FT_Face face;
         glyph_cache_ptr glyphs;

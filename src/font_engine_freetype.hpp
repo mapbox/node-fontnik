@@ -26,10 +26,6 @@
 #include "font_set.hpp"
 #include "guarded_map.hpp"
 
-// boost
-#include <boost/ptr_container/ptr_vector.hpp>
-#include <boost/optional.hpp>
-
 // stl
 #include <map>
 #include <memory>

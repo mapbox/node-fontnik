@@ -66,10 +66,10 @@ public:
 private:
     template<typename T>
     struct run {
-        run(T data, unsigned start, unsigned end)
-            : data(data),
-              start(start),
-              end(end) {}
+        run(T _data, unsigned _start, unsigned _end)
+            : data(_data),
+              start(_start),
+              end(_end) {}
         T data;
         unsigned start;
         unsigned end;

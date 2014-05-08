@@ -9,6 +9,7 @@
 #include <set>
 #include <algorithm>
 #include <memory>
+#include <iostream>
 
 // freetype2
 extern "C"

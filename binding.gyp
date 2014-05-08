@@ -11,14 +11,15 @@
             './proto/vector_tile.proto'
           ],
           'outputs': [
-            "./src/vector_tile.pb.cc"
+            "<(SHARED_INTERMEDIATE_DIR)/vector_tile.pb.cc"
           ],
-          'action': ['protoc','-Iproto/','--cpp_out=./src/','./proto/vector_tile.proto']
+          'action': ['protoc','-Iproto/','--cpp_out=<(SHARED_INTERMEDIATE_DIR)/','./proto/vector_tile.proto']
         }
       ]
     },
     {
       'target_name': 'fontserver',
+      'dependencies': [ 'action_before_build' ],
       'sources': [
         'src/tile.cpp',
         'src/font_face.cpp',
@@ -33,9 +34,11 @@
         'src/util.cpp',
         'src/distmap.c',
         'src/edtaa4func.c',
-        'src/vector_tile.pb.cc'
+        '<(SHARED_INTERMEDIATE_DIR)/vector_tile.pb.cc'
       ],
       'include_dirs': [
+        'src/',
+        '<(SHARED_INTERMEDIATE_DIR)/',
         '<!@(pkg-config freetype2 --cflags-only-I | sed s/-I//g)',
         '<!@(pkg-config icu-uc --cflags-only-I | sed s/-I//g)',
         '<!@(pkg-config protobuf --cflags-only-I | sed s/-I//g)'
@@ -43,20 +46,30 @@
       'libraries': [
         '-lboost_system',
         '-lboost_filesystem',
-        '<!@(pkg-config freetype2 --libs)',
-        '<!@(pkg-config icu-uc --libs)',
-        '<!@(pkg-config harfbuzz-icu --libs)',
-        '<!@(pkg-config protobuf --libs)'
+        '<!@(pkg-config freetype2 --libs --static)',
+        '<!@(pkg-config protobuf --libs --static)',
+        '<!@(pkg-config harfbuzz-icu --libs --static)',
       ],
       'xcode_settings': {
           'MACOSX_DEPLOYMENT_TARGET': '10.8',
-          'OTHER_CPLUSPLUSFLAGS': ['-std=c++11', '-stdlib=libc++', '-Wno-unused-variable'],
+          'OTHER_CPLUSPLUSFLAGS': ['-Wshadow','-std=c++11', '-stdlib=libc++', '-Wno-unused-variable'],
           'GCC_ENABLE_CPP_RTTI': 'YES',
           'GCC_ENABLE_CPP_EXCEPTIONS': 'YES'
       },
       'cflags_cc!': ['-fno-rtti', '-fno-exceptions'],
-      'cflags_cc' : ['-std=c++11'],
+      'cflags_cc' : ['-std=c++11','-Wshadow'],
       'cflags_c' : ['-std=c99'],
+    },
+    {
+      'target_name': 'action_after_build',
+      'type': 'none',
+      'dependencies': [ '<(module_name)' ],
+      'copies': [
+          {
+            'files': [ '<(PRODUCT_DIR)/<(module_name).node' ],
+            'destination': '<(module_path)'
+          }
+      ]
     }
   ]
 }
