@@ -25,7 +25,7 @@ export ICU_DETAILS="-sHAVE_ICU=1 -sICU_PATH=${BUILD}"
 --prefix=${BUILD} \
 --ignore-site-config \
 ${ICU_DETAILS} \
-"system filesystem" \
+system filesystem \
 link=static,shared \
 variant=release \
 linkflags="${BOOST_LDFLAGS}" \
@@ -39,7 +39,7 @@ STAGING_DIR=bcp_staging
 
 mkdir -p ${STAGING_DIR}
 rm -rf ${STAGING_DIR}/*
-for var in "system filesystem"
+for var in system filesystem
 do
   ./dist/bin/bcp "${var}" ${STAGING_DIR} 1>/dev/null
 done
