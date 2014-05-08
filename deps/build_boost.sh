@@ -11,38 +11,13 @@ mkdir -p /tmp/${NAME}
 wget ${PKGURL} -O - | tar -xj --strip-components=1 -C /tmp/${NAME}
 cd /tmp/${NAME}
 
-export PATH="/usr/local/bin:$PATH"
-export CXXFLAGS="$CXXFLAGS -fPIC"
-export CFLAGS="$CFLAGS -fPIC"
-export ICU_CORE_CPP_FLAGS="-DU_CHARSET_IS_UTF8=1"
-export BOOST_LDFLAGS="${BOOST_LDFLAGS} -L${BUILD}/lib -licuuc -licui18n -licudata"
-export BOOST_CXXFLAGS="${BOOST_CXXFLAGS} ${ICU_CORE_CPP_FLAGS}"
-export ICU_DETAILS="-sHAVE_ICU=1 -sICU_PATH=${BUILD}"
-
 ./bootstrap.sh
 
-./b2 \
+./b2 -d0 \
 --prefix=${BUILD} \
---ignore-site-config \
-${ICU_DETAILS} \
-system filesystem \
-link=static,shared \
+--with-system --with-filesystem \
+-sHAVE_ICU=0 \
+link=static \
 variant=release \
-linkflags="${BOOST_LDFLAGS}" \
-cxxflags="${BOOST_CXXFLAGS}" \
-stage install
-
-./b2 tools/bcp \
---ignore-site-config
-
-STAGING_DIR=bcp_staging
-
-mkdir -p ${STAGING_DIR}
-rm -rf ${STAGING_DIR}/*
-for var in system filesystem
-do
-  ./dist/bin/bcp "${var}" ${STAGING_DIR} 1>/dev/null
-done
-du -h -d 0 ${STAGING_DIR}/boost/
-mkdir -p ${BUILD}/include
-cp -r ${STAGING_DIR}/boost ${BUILD}/include/
+cxxflags="-fPIC" \
+install
