@@ -5,10 +5,25 @@
 
     "private": true,
 
+    "dependencies": {
+        "node-pre-gyp": "0.5.x"
+    },
+
+    "bundledDependencies": ["node-pre-gyp"],
+
     "devDependencies": {
         "mocha": "1.17.x"
     },
     "scripts": {
+        "install": "node-pre-gyp install --fallback-to-build",
         "test": "node_modules/.bin/mocha -R spec"
+    },
+
+    "binary": {
+        "module_name" : "fontserver",
+        "module_path" : "./lib/",
+        "host"        : "https://mapbox-node-binary.s3.amazonaws.com",
+        "remote_path" : "./{name}/v{version}",
+        "package_name": "{node_abi}-{platform}-{arch}.tar.gz"
     }
 }
