@@ -8,7 +8,7 @@ PKGURL="http://softlayer-dal.dl.sourceforge.net/project/boost/boost/1.55.0/boost
 PKGBASE=$(basename $PKGURL)
 
 mkdir -p /tmp/${NAME}
-wget ${PKGURL} -O - | tar -vxj --strip-components=1 -C /tmp/${NAME}
+wget ${PKGURL} -O - | tar -xj --strip-components=1 -C /tmp/${NAME}
 cd /tmp/${NAME}
 
 export PATH="/usr/local/bin:$PATH"
