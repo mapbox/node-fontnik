@@ -319,6 +319,10 @@ void Tile::AsyncRange(uv_work_t* req) {
 
     const double scale_factor = 1.0;
 
+    // Set character sizes.
+    double size = text_item.format->text_size * scale_factor;
+    face_set->set_character_sizes(size);
+
     FT_UInt glyph_index = 0;
     FT_UInt glyph_end = 128;
 

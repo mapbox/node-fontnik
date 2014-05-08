@@ -59,11 +59,9 @@ void harfbuzz_shaper::shape_text(text_line &line,
     hb_buffer_pre_allocate(buffer.get(), length);
 
     for (auto const& text_item : list) {
-
         // TODO: can this face set be passed with the text_item
         // instead of being recreated each time?
         // face_set_ptr face_set = font_manager.get_face_set(text_item.format->fontset);
-
         double size = text_item.format->text_size * scale_factor;
         face_set->set_character_sizes(size);
 
