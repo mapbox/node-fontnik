@@ -149,6 +149,12 @@ void Tile::AsyncShape(uv_work_t* req) {
     FT_UInt glyph_end = 128;
 
     for (auto const& face : *face_set) {
+        // Create tile_face, add to face_map and tile_faces.
+        fontserver::tile_face *tile_face = new fontserver::tile_face(face);
+        face_map.emplace(face, tile_face);
+        tile_faces.push_back(tile_face);
+
+        // Get FreeType face from face_ptr.
         FT_Face ft_face = face->get_face();
 
         // Add all glyphs for this labels and add new font
@@ -157,44 +163,13 @@ void Tile::AsyncShape(uv_work_t* req) {
         while (glyph_index != 0 && char_code < glyph_end) {
             // TODO: glyph_dimensions
 
-            // Try to find whether this font has already been
-            // used in this tile.
-            std::map<fontserver::face_ptr, fontserver::tile_face *>::iterator face_map_itr = face_map.find(glyph.face);
-            if (face_map_itr == face_map.end()) {
-                fontserver::tile_face *face = 
-                    new fontserver::tile_face(glyph.face);
-                std::pair<fontserver::face_ptr, fontserver::tile_face *> keyed(glyph.face, face);
-                face_map_itr = face_map.insert(keyed).first;
-
-                // Add to shared face cache if not found.
-                fontserver::font_face_set::iterator face_itr = std::find(face_set->begin(), face_set->end(), glyph.face);
-                if (face_itr == face_set->end()) {
-                    face_set->add(glyph.face);
-                }
-            }
-
-            fontserver::tile_face *face = face_map_itr->second;
-
-            // Find out whether this font has been used in 
-            // this tile before and get its position.
-            std::vector<fontserver::tile_face *>::iterator tile_itr = std::find(tile_faces.begin(), tile_faces.end(), face);
-            if (tile_itr == tile_faces.end()) {
-                tile_faces.push_back(face);
-                tile_itr = tile_faces.end() - 1;
-            }
-
-            int tile_face_id = tile_itr - tile_faces.begin();
-
             // Add glyph to tile_face.
-            face->add_glyph(glyph);
+            tile_face->add_glyph(glyph);
 
             // Advance char_code to next glyph index.
             char_code = FT_Get_Next_Char(ft_face, char_code, &glyph_index);
         }
     }
-
-    // Insert FAKE stacks
-    mutable_layer->add_stacks(baton->fontstack);
 
     // Insert SDF glyphs + bitmaps
     for (auto const& face : tile_faces) {
