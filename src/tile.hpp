@@ -1,5 +1,7 @@
 #pragma once
 
+#include "tile_face.hpp"
+
 #include <node.h>
 
 #include "vector_tile.pb.h"
@@ -20,6 +22,7 @@ protected:
     static v8::Handle<v8::Value> Shape(const v8::Arguments& args);
     static void AsyncShape(uv_work_t* req);
     static void AsyncRange(uv_work_t* req);
+    static void InsertGlyphs(llmr::vector::tile &tile, std::vector<fontserver::tile_face *> &tile_faces);
     static void ShapeAfter(uv_work_t* req);
 public:
     llmr::vector::tile tile;

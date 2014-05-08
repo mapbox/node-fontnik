@@ -1,7 +1,6 @@
 #include "tile.hpp"
 #include "font_face_set.hpp"
 #include "harfbuzz_shaper.hpp"
-#include "tile_face.hpp"
 
 // node
 #include <node_buffer.h>
@@ -275,25 +274,7 @@ void Tile::AsyncShape(uv_work_t* req) {
         mutable_layer->add_stacks(baton->fontstack);
     }
 
-    // Insert SDF glyphs + bitmaps
-    for (auto const& face : tile_faces) {
-        llmr::vector::face *mutable_face = tile.add_faces();
-        mutable_face->set_family(face->family);
-        mutable_face->set_style(face->style);
-
-        for (auto const& glyph : face->glyphs) {
-            llmr::vector::glyph *mutable_glyph = mutable_face->add_glyphs();
-            mutable_glyph->set_id(glyph.glyph_index);
-            mutable_glyph->set_width(glyph.width);
-            mutable_glyph->set_height(glyph.height);
-            mutable_glyph->set_left(glyph.left);
-            mutable_glyph->set_top(glyph.top);
-            mutable_glyph->set_advance(glyph.advance);
-            if (glyph.width > 0) {
-                mutable_glyph->set_bitmap(glyph.bitmap);
-            }
-        }
-    }
+    InsertGlyphs(tile, tile_faces);
 }
 
 void Tile::AsyncRange(uv_work_t* req) {
@@ -314,13 +295,10 @@ void Tile::AsyncRange(uv_work_t* req) {
     llmr::vector::tile& tile = baton->tile->tile;
 
     fontserver::text_format format(baton->fontstack, 24);
-    fontserver::text_format_ptr format_ptr = 
-        std::make_shared<fontserver::text_format>(format);
-
     const double scale_factor = 1.0;
 
     // Set character sizes.
-    double size = text_item.format->text_size * scale_factor;
+    double size = format.text_size * scale_factor;
     face_set->set_character_sizes(size);
 
     FT_UInt glyph_index = 0;
@@ -352,7 +330,12 @@ void Tile::AsyncRange(uv_work_t* req) {
         }
     }
 
-    // Insert SDF glyphs + bitmaps
+    InsertGlyphs(tile, tile_faces);
+}
+
+// Insert SDF glyphs + bitmaps
+void Tile::InsertGlyphs(llmr::vector::tile &tile, 
+                        std::vector<fontserver::tile_face *> &tile_faces) {
     for (auto const& face : tile_faces) {
         llmr::vector::face *mutable_face = tile.add_faces();
         mutable_face->set_family(face->family);
