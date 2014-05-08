@@ -7,8 +7,8 @@ env:
   global:
   - BUILD: '/tmp/fontserver-build'
   - PKG_CONFIG_PATH: '/tmp/fontserver-build/lib/pkgconfig'
-  - secure: 'odYEXvhqQCw5TCQIdiME4nsKDyly+Sc1CI1UfEi3xKtQcxntIWTGMLNOyop1W3f4kVhEOdqWgB9tKMulBBIlqBLOoOql5hbdLExdwmtk3j2E2I34wR7vf7VJk9WAvxk49uqRhIors98SKhBzvt3PVZCtq8gZEZDrEM/Zx8hsSAg='
-  - secure: 'mGyR6Q0WPXw3ze1rLuX0ArCh1GMSsPax8njnZD/xKnXsZMjgWA/+o7RI9UtqDrO187i99c0OLjTFWFQHWatcB2t2JRFRQEB/lt5Mpb8LENSNWr3/RKQQv806gsM6sxtoYUQkeO//6IKf0ATjp1ot7lNqy5o83z2XehvGoMZytJg='
+  - secure: "oW2YPGtJk6Nex8klCz+tkuwHyr0Sr6okbCHymrts3k4kvN7AIpX3QHW0eSfkrR55U5glURbggz9HrnhE56Y0aaLx8pMhhy0W2kvhAK0zWLhTbMKxjyI/B5i09dYLNHwDXANDYsf/RzGtkTDecO3H0v3tiYWgDiQiknzeNSeRQsY="
+  - secure: "cVE4mNbMdga1YI8dmQFJgpmntnGCDdbePE5EJpBxx9LQmoJx7yph/UGMpXyfy7bL354mo/ZwGRKu86jt/RWvJb2QILhQoTDv40cg64RakZx87o4q9xhAZ5lZj3vlpdbyEWFR76mLqhobsHODkfNXOSck8y+Wc56SZWJ93ePiEeY="
 before_install:
 - export platform=$(uname -s | sed "y/ABCDEFGHIJKLMNOPQRSTUVWXYZ/abcdefghijklmnopqrstuvwxyz/")
 - export PATH="$BUILD/bin:$PATH"
