@@ -19,6 +19,8 @@ export BOOST_LDFLAGS="${BOOST_LDFLAGS} -L${BUILD}/lib -licuuc -licui18n -licudat
 export BOOST_CXXFLAGS="${BOOST_CXXFLAGS} ${ICU_CORE_CPP_FLAGS}"
 export ICU_DETAILS="-sHAVE_ICU=1 -sICU_PATH=${BUILD}"
 
+./bootstrap.sh
+
 ./b2 \
 --prefix=${BUILD} \
 --ignore-site-config \
