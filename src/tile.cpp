@@ -163,7 +163,7 @@ v8::Handle<v8::Value> Tile::Range(const v8::Arguments& args) {
             v8::String::New("Fourth argument must be a callback function")));
     }
 
-    v8::Local<v8::Function> callback = v8::Local<v8::Function>::Cast(args[1]);
+    v8::Local<v8::Function> callback = v8::Local<v8::Function>::Cast(args[3]);
     v8::String::Utf8Value fontstack(args[0]->ToString());
     uint32_t start = args[1]->NumberValue();
     uint32_t end = args[2]->NumberValue();
