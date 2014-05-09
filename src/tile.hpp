@@ -12,6 +12,7 @@ public:
     static void Init(v8::Handle<v8::Object> target);
     static bool HasInstance(v8::Handle<v8::Value> val);
 protected:
+    Tile();
     Tile(const char *data, size_t length);
     ~Tile();
 

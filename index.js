@@ -37,6 +37,22 @@ function convert(zdata, options, callback) {
     }
 }
 
+// Retrieve a range of glyphs as a pbf.
+function range(options, callback) {
+    'use strict';
+    options = options || {};
+    options.fontstack = options.fontstack || 'Open Sans Regular';
+
+    var tile = new fontserver.Tile();
+    tile.range(options.fontstack, options.start, options.end, deflate);
+
+    function deflate(err) {
+        if (err) return callback(err);
+        var after = tile.serialize();
+        zlib.deflate(after, callback);
+    }
+}
+
 // Register fonts in FreeType.
 function conf(options) {
     options = options || {};

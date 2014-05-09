@@ -34,6 +34,8 @@ struct RangeBaton {
 
 v8::Persistent<v8::FunctionTemplate> Tile::constructor;
 
+Tile::Tile() : node::ObjectWrap() {}
+
 Tile::Tile(const char *data, size_t length) : node::ObjectWrap() {
     tile.ParseFromArray(data, length);
 }
@@ -67,13 +69,19 @@ v8::Handle<v8::Value> Tile::New(const v8::Arguments& args) {
     if (!args.IsConstructCall()) {
         return ThrowException(v8::Exception::TypeError(v8::String::New("Constructor must be called with new keyword")));
     }
-    if (args.Length() < 1 || !node::Buffer::HasInstance(args[0])) {
-        return ThrowException(v8::Exception::TypeError(v8::String::New("First argument must be a buffer")));
+    if (args.Length() > 0 && !node::Buffer::HasInstance(args[0])) {
+        return ThrowException(v8::Exception::TypeError(v8::String::New("First argument may only be a buffer")));
     }
 
-    v8::Local<v8::Object> buffer = args[0]->ToObject();
+    Tile* tile;
 
-    Tile* tile = new Tile(node::Buffer::Data(buffer), node::Buffer::Length(buffer));
+    if (args.Length() < 1) {
+        tile = new Tile();
+    } else {
+        v8::Local<v8::Object> buffer = args[0]->ToObject();
+        tile = new Tile(node::Buffer::Data(buffer), node::Buffer::Length(buffer));
+    }
+    
     tile->Wrap(args.This());
 
     return args.This();
