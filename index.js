@@ -13,6 +13,7 @@ conf(env_options);
 
 module.exports = fontserver;
 module.exports.convert = convert;
+module.exports.range = range;
 
 // Convert a zlib deflated mapnik vector pbf to a gl pbf.
 function convert(zdata, options, callback) {
