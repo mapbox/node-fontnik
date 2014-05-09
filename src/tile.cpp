@@ -334,7 +334,7 @@ void Tile::AsyncShape(uv_work_t* req) {
 }
 
 void Tile::AsyncRange(uv_work_t* req) {
-    ShapeBaton* baton = static_cast<ShapeBaton*>(req->data);
+    RangeBaton* baton = static_cast<RangeBaton*>(req->data);
 
     fontserver::freetype_engine font_engine_;
     fontserver::face_manager_freetype font_manager(font_engine_);
@@ -357,8 +357,8 @@ void Tile::AsyncRange(uv_work_t* req) {
     double size = format.text_size * scale_factor;
     face_set->set_character_sizes(size);
 
-    FT_UInt glyph_index = 0;
-    FT_UInt glyph_end = 128;
+    FT_UInt glyph_index = baton->start;
+    FT_UInt glyph_end = baton->end;
 
     for (auto const& face : *face_set) {
         // Create tile_face, add to face_map and tile_faces.
