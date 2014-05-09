@@ -56,6 +56,7 @@ void Tile::Init(v8::Handle<v8::Object> target) {
     constructor->PrototypeTemplate()->SetAccessor(v8::String::NewSymbol("length"), Length);
     NODE_SET_PROTOTYPE_METHOD(constructor, "serialize", Serialize);
     NODE_SET_PROTOTYPE_METHOD(constructor, "shape", Shape);
+    NODE_SET_PROTOTYPE_METHOD(constructor, "range", Range);
 
     // This has to be last, otherwise the properties won't show up on the
     // object in JavaScript.
