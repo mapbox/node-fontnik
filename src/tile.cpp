@@ -100,7 +100,8 @@ v8::Handle<v8::Value> Tile::Serialize(const v8::Arguments& args) {
 v8::Handle<v8::Value> Tile::Shape(const v8::Arguments& args) {
     v8::HandleScope scope;
 
-    if (args.Length() < 1) {
+    // Validate arguments.
+    if (args.Length() < 1 || !args[0]->IsString()) {
         return ThrowException(v8::Exception::TypeError(
             v8::String::New("First argument must be a font stack")));
     }
@@ -109,8 +110,8 @@ v8::Handle<v8::Value> Tile::Shape(const v8::Arguments& args) {
         return ThrowException(v8::Exception::TypeError(
             v8::String::New("Second argument must be a callback function")));
     }
+
     v8::Local<v8::Function> callback = v8::Local<v8::Function>::Cast(args[1]);
-    // TODO: validate this is a string
     v8::String::Utf8Value fontstack(args[0]->ToString());
 
     Tile *tile = node::ObjectWrap::Unwrap<Tile>(args.This());
@@ -124,6 +125,53 @@ v8::Handle<v8::Value> Tile::Shape(const v8::Arguments& args) {
     req->data = baton;
 
     int status = uv_queue_work(uv_default_loop(), req, AsyncShape, (uv_after_work_cb)ShapeAfter);
+    assert(status == 0);
+
+    return v8::Undefined();
+}
+
+v8::Handle<v8::Value> Tile::Range(const v8::Arguments& args) {
+    v8::HandleScope scope;
+
+    // Validate arguments.
+    if (args.Length() < 1 || !args[0]->IsString()) {
+        return ThrowException(v8::Exception::TypeError(
+            v8::String::New("First argument must be a font stack")));
+    }
+
+    if (args.Length() < 2 || !args[1]->IsNumber()) {
+        return ThrowException(v8::Exception::TypeError(
+            v8::String::New("Second argument must be a number")));
+    }
+
+    if (args.Length() < 3 || !args[2]->IsNumber()) {
+        return ThrowException(v8::Exception::TypeError(
+            v8::String::New("Third argument must be a number")));
+    }
+
+    if (args.Length() < 4 || !args[3]->IsFunction()) {
+        return ThrowException(v8::Exception::TypeError(
+            v8::String::New("Fourth argument must be a callback function")));
+    }
+
+    v8::Local<v8::Function> callback = v8::Local<v8::Function>::Cast(args[1]);
+    v8::String::Utf8Value fontstack(args[0]->ToString());
+    uint32_t start = args[1]->NumberValue();
+    uint32_t end = args[2]->NumberValue();
+
+    Tile *tile = node::ObjectWrap::Unwrap<Tile>(args.This());
+
+    RangeBaton* baton = new RangeBaton();
+    baton->callback = v8::Persistent<v8::Function>::New(callback);
+    baton->tile = tile;
+    baton->fontstack = *fontstack;
+    baton->start = start;
+    baton->end = end;
+
+    uv_work_t *req = new uv_work_t();
+    req->data = baton;
+
+    int status = uv_queue_work(uv_default_loop(), req, AsyncRange, (uv_after_work_cb)RangeAfter);
     assert(status == 0);
 
     return v8::Undefined();
@@ -367,6 +415,25 @@ void Tile::InsertGlyphs(llmr::vector::tile &tile,
 void Tile::ShapeAfter(uv_work_t* req) {
     v8::HandleScope scope;
     ShapeBaton* baton = static_cast<ShapeBaton*>(req->data);
+
+    const unsigned argc = 1;
+    v8::Local<v8::Value> argv[argc] = { v8::Local<v8::Value>::New(v8::Null()) };
+
+    v8::TryCatch try_catch;
+    baton->callback->Call(v8::Context::GetCurrent()->Global(), argc, argv);
+    if (try_catch.HasCaught()) {
+        node::FatalException(try_catch);
+    }
+
+    baton->callback.Dispose();
+
+    delete baton;
+    delete req;
+}
+
+void Tile::RangeAfter(uv_work_t* req) {
+    v8::HandleScope scope;
+    RangeBaton* baton = static_cast<RangeBaton*>(req->data);
 
     const unsigned argc = 1;
     v8::Local<v8::Value> argv[argc] = { v8::Local<v8::Value>::New(v8::Null()) };
