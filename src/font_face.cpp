@@ -92,6 +92,9 @@ void font_face::glyph_dimensions(glyph_info &glyph) const {
     glyph.line_height = face_->size->metrics.height / 64.0;
     glyph.advance = face_->glyph->metrics.horiAdvance / 64.0;
 
+    glyph.ascender = face_->size->metrics.ascender / 64.0;
+    glyph.descender = face_->size->metrics.ascender / 64.0;
+
     FT_Glyph_To_Bitmap(&ft_glyph, FT_RENDER_MODE_NORMAL, 0, 1);
 
     int width = ((FT_BitmapGlyph)ft_glyph)->bitmap.width;
