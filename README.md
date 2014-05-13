@@ -15,8 +15,8 @@ the augmented ("styled") vector tile.
 
 ## Installing
 
-Make sure you have `pango` and `protobuf` installed. With homebrew, you can just
-type `brew install pango protobuf`. The makefile uses `pkg-config` to find these
+Make sure you have `boost`, `freetype`, `icu4c`, `harfbuzz` and `protobuf` installed. With homebrew, you can
+type `brew install boost --c++11 --with-icu freetype icu4c --c++11 protobuf --c++11`. The makefile uses `pkg-config` to find these
 libraries and links dynamically to them, so make sure that `pkg-config` can find
 them.
 

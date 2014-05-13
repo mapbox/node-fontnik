@@ -1,15 +1,29 @@
-language: node_js
-
-node_js:
- - "0.10"
-
+language: cpp
+compiler:
+- gcc
+env:
+  matrix:
+  - NODE_NVM_VERSION="0.10"
+  global:
+  - BUILD: '/tmp/fontserver-build'
+  - PKG_CONFIG_PATH: '/tmp/fontserver-build/lib/pkgconfig'
+  - secure: "oW2YPGtJk6Nex8klCz+tkuwHyr0Sr6okbCHymrts3k4kvN7AIpX3QHW0eSfkrR55U5glURbggz9HrnhE56Y0aaLx8pMhhy0W2kvhAK0zWLhTbMKxjyI/B5i09dYLNHwDXANDYsf/RzGtkTDecO3H0v3tiYWgDiQiknzeNSeRQsY="
+  - secure: "cVE4mNbMdga1YI8dmQFJgpmntnGCDdbePE5EJpBxx9LQmoJx7yph/UGMpXyfy7bL354mo/ZwGRKu86jt/RWvJb2QILhQoTDv40cg64RakZx87o4q9xhAZ5lZj3vlpdbyEWFR76mLqhobsHODkfNXOSck8y+Wc56SZWJ93ePiEeY="
 before_install:
- - sudo add-apt-repository --yes ppa:george-edison55/gcc4.7-precise
- - sudo add-apt-repository --yes ppa:chris-lea/protobuf
- - sudo apt-get update
- - sudo apt-get install -y gcc-4.7 gcc g++ libprotobuf7 libprotobuf-dev protobuf-compiler libpango1.0-0 libpango1.0-dev
-
+- export platform=$(uname -s | sed "y/ABCDEFGHIJKLMNOPQRSTUVWXYZ/abcdefghijklmnopqrstuvwxyz/")
+- export PATH="$BUILD/bin:$PATH"
+- if [[ "$platform" == "linux" ]]; then export CXX=g++-4.8; export CC=gcc-4.8; fi
+- git clone https://github.com/creationix/nvm.git ../.nvm
+- source ../.nvm/nvm.sh
+- nvm install $NODE_NVM_VERSION
+- nvm use $NODE_NVM_VERSION
+- node --version
+- npm --version
+- ./deps/travis-build.sh
+install:
+- npm install --build-from-source
 script:
- - npm install
- - npm test
+- npm test
+after_success:
+- ./deps/travis-publish.sh
 
