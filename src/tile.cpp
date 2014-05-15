@@ -317,8 +317,8 @@ void Tile::AsyncShape(uv_work_t* req) {
 
                     label->add_faces(tile_face_id);
                     label->add_glyphs(glyph.glyph_index);
-                    label->add_x(width_map_[glyph.char_index]);
-                    label->add_y(glyph.offset.y);
+                    label->add_x(width_map_[glyph.char_index] + glyph.offset.x);
+                    label->add_y(glyph.ascender + glyph.offset.y);
                 }
 
                 itemizer.clear();

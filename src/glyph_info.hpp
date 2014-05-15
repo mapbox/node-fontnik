@@ -47,6 +47,8 @@ struct glyph_info {
           ymin(0.0),
           ymax(0.0),
           line_height(0.0),
+          ascender(0.0),
+          descender(0.0),
           offset(),
           format() {}
 
@@ -69,9 +71,14 @@ struct glyph_info {
     double ymin;
     double ymax;
 
-    // Line height returned by freetype, includes normal font
+    // Line height returned by FreeType, includes normal font
     // line spacing, but not additional user defined spacing
     double line_height;
+
+    // Ascender and descender from baseline returned by FreeType.
+    double ascender;
+    double descender;
+
     pixel_position offset;
     text_format_ptr format;
     // double height() const { return ymax-ymin; }
