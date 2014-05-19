@@ -339,7 +339,7 @@ void Tile::AsyncShape(uv_work_t* req) {
         mutable_layer->add_stacks(baton->fontstack);
     }
 
-    InsertGlyphs(tile, tile_faces);
+    InsertIndexes(tile, tile_faces);
 }
 
 void Tile::AsyncRange(uv_work_t* req) {
@@ -396,6 +396,21 @@ void Tile::AsyncRange(uv_work_t* req) {
     }
 
     InsertGlyphs(tile, tile_faces);
+}
+
+// Insert glyph indexes
+void Tile::InsertIndexes(llmr::vector::tile &tile, 
+                        std::vector<fontserver::tile_face *> &tile_faces) {
+    for (auto const& face : tile_faces) {
+        llmr::vector::face *mutable_face = tile.add_faces();
+        mutable_face->set_family(face->family);
+        mutable_face->set_style(face->style);
+
+        for (auto const& glyph : face->glyphs) {
+            llmr::vector::glyph *mutable_glyph = mutable_face->add_glyphs();
+            mutable_glyph->set_id(glyph.glyph_index);
+        }
+    }
 }
 
 // Insert SDF glyphs + bitmaps
