@@ -335,7 +335,7 @@ void Tile::AsyncShape(uv_work_t* req) {
             // later on.
         }
 
-        // Insert FAKE stacks
+        // Insert fontstacks
         mutable_layer->add_stacks(baton->fontstack);
     }
 
@@ -359,6 +359,9 @@ void Tile::AsyncRange(uv_work_t* req) {
 
     llmr::vector::tile& tile = baton->tile->tile;
 
+    llmr::vector::fontstack *mutable_fontstack = tile.add_stacks();
+    mutable_fontstack->set_name(baton->fontstack);
+
     fontserver::text_format format(baton->fontstack, 24);
     const double scale_factor = 1.0;
 
@@ -374,6 +377,8 @@ void Tile::AsyncRange(uv_work_t* req) {
         fontserver::tile_face *t_face = new fontserver::tile_face(face);
         face_map.emplace(face, t_face);
         tile_faces.push_back(t_face);
+
+        mutable_fontstack->add_faces(t_face->family + ' ' + t_face->style);
 
         // Get FreeType face from face_ptr.
         FT_Face ft_face = face->get_face();
