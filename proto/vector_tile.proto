@@ -100,7 +100,8 @@ message face {
 // Stores fontstack information and a list of faces.
 message fontstack {
     required string name = 1;
-    repeated string faces = 2;
+    required string range = 2;
+    repeated glyph glyphs = 3;
 }
 
 // Stores the shaping information for the label with a given text

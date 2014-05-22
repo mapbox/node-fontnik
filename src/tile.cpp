@@ -8,6 +8,7 @@
 // stl
 #include <algorithm>
 #include <memory>
+#include <sstream>
 #include <iostream>
 
 // freetype2
@@ -357,10 +358,17 @@ void Tile::AsyncRange(uv_work_t* req) {
     std::map<fontserver::face_ptr, fontserver::tile_face *> face_map;
     std::vector<fontserver::tile_face *> tile_faces;
 
+    FT_UInt glyph_index = baton->start;
+    FT_UInt glyph_end = baton->end;
+
     llmr::vector::tile& tile = baton->tile->tile;
 
     llmr::vector::fontstack *mutable_fontstack = tile.add_stacks();
     mutable_fontstack->set_name(baton->fontstack);
+
+    std::stringstream range;
+    range << baton->start << "-" << baton->end;
+    mutable_fontstack->set_range(range.str());
 
     fontserver::text_format format(baton->fontstack, 24);
     const double scale_factor = 1.0;
@@ -369,16 +377,11 @@ void Tile::AsyncRange(uv_work_t* req) {
     double size = format.text_size * scale_factor;
     face_set->set_character_sizes(size);
 
-    FT_UInt glyph_index = baton->start;
-    FT_UInt glyph_end = baton->end;
-
     for (auto const& face : *face_set) {
         // Create tile_face, add to face_map and tile_faces.
         fontserver::tile_face *t_face = new fontserver::tile_face(face);
         face_map.emplace(face, t_face);
         tile_faces.push_back(t_face);
-
-        mutable_fontstack->add_faces(t_face->family + ' ' + t_face->style);
 
         // Get FreeType face from face_ptr.
         FT_Face ft_face = face->get_face();
@@ -400,7 +403,20 @@ void Tile::AsyncRange(uv_work_t* req) {
         }
     }
 
-    InsertGlyphs(tile, tile_faces);
+    for (auto const& face : tile_faces) {
+        for (auto const& glyph : face->glyphs) {
+            llmr::vector::glyph *mutable_glyph = mutable_fontstack->add_glyphs();
+            mutable_glyph->set_id(glyph.glyph_index);
+            mutable_glyph->set_width(glyph.width);
+            mutable_glyph->set_height(glyph.height);
+            mutable_glyph->set_left(glyph.left);
+            mutable_glyph->set_top(glyph.top);
+            mutable_glyph->set_advance(glyph.advance);
+            if (glyph.width > 0) {
+                mutable_glyph->set_bitmap(glyph.bitmap);
+            }
+        }
+    }
 }
 
 // Insert glyph indexes
@@ -414,29 +430,6 @@ void Tile::InsertIndexes(llmr::vector::tile &tile,
         for (auto const& glyph : face->glyphs) {
             llmr::vector::glyph *mutable_glyph = mutable_face->add_glyphs();
             mutable_glyph->set_id(glyph.glyph_index);
-        }
-    }
-}
-
-// Insert SDF glyphs + bitmaps
-void Tile::InsertGlyphs(llmr::vector::tile &tile, 
-                        std::vector<fontserver::tile_face *> &tile_faces) {
-    for (auto const& face : tile_faces) {
-        llmr::vector::face *mutable_face = tile.add_faces();
-        mutable_face->set_family(face->family);
-        mutable_face->set_style(face->style);
-
-        for (auto const& glyph : face->glyphs) {
-            llmr::vector::glyph *mutable_glyph = mutable_face->add_glyphs();
-            mutable_glyph->set_id(glyph.glyph_index);
-            mutable_glyph->set_width(glyph.width);
-            mutable_glyph->set_height(glyph.height);
-            mutable_glyph->set_left(glyph.left);
-            mutable_glyph->set_top(glyph.top);
-            mutable_glyph->set_advance(glyph.advance);
-            if (glyph.width > 0) {
-                mutable_glyph->set_bitmap(glyph.bitmap);
-            }
         }
     }
 }

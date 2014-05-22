@@ -27,7 +27,6 @@ protected:
     static void AsyncRange(uv_work_t* req);
 
     static void InsertIndexes(llmr::vector::tile &tile, std::vector<fontserver::tile_face *> &tile_faces);
-    static void InsertGlyphs(llmr::vector::tile &tile, std::vector<fontserver::tile_face *> &tile_faces);
 
     static void ShapeAfter(uv_work_t* req);
     static void RangeAfter(uv_work_t* req);
