@@ -58,6 +58,8 @@ void harfbuzz_shaper::shape_text(text_line &line,
     hb_buffer_set_unicode_funcs(buffer.get(), hb_icu_get_unicode_funcs());
     hb_buffer_pre_allocate(buffer.get(), length);
 
+    // Current line length of all text items.
+    double current_line_length = 0;
     for (auto const& text_item : list) {
         // TODO: can this face set be passed with the text_item
         // instead of being recreated each time?
@@ -101,7 +103,6 @@ void harfbuzz_shaper::shape_text(text_line &line,
                 continue;
             }
 
-            double current_line_length = 0;
             for (unsigned i = 0; i < num_glyph_infos; ++i) {
                 glyph_info tmp;
                 tmp.glyph_index = glyph_infos[i].codepoint;
