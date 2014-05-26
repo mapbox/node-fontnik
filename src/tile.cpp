@@ -388,12 +388,12 @@ void Tile::AsyncRange(uv_work_t* req) {
             // Try next font in fontset.
             if (!char_index) continue;
 
-            glyph.glyph_index = char_code;
+            glyph.glyph_index = char_index;
             face->glyph_dimensions(glyph);
 
             // Add glyph to fontstack.
             llmr::vector::glyph *mutable_glyph = mutable_fontstack->add_glyphs();
-            mutable_glyph->set_id(glyph.glyph_index);
+            mutable_glyph->set_id(char_code);
             mutable_glyph->set_width(glyph.width);
             mutable_glyph->set_height(glyph.height);
             mutable_glyph->set_left(glyph.left);
