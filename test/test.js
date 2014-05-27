@@ -4,7 +4,7 @@ var zlib = require('zlib');
 var fs = require('fs');
 var zdata = fs.readFileSync(__dirname + '/fixtures/mapbox-streets-v4.13.1306.3163.vector.pbf');
 var Protobuf = require('./format/protobuf');
-var VectorTile = require('./format/vectortile');
+var Glyphs = require('./format/glyphs');
 var UPDATE = process.env.UPDATE;
 
 function nobuffer(key, val) {
@@ -28,7 +28,7 @@ describe('convert', function() {
 
     it('serialize', function(done) {
         var tile = new fontserver.Tile(data);
-        var vt = new VectorTile(new Protobuf(new Uint8Array(tile.serialize())));
+        var vt = new Glyphs(new Protobuf(new Uint8Array(tile.serialize())));
         var json = JSON.parse(JSON.stringify(vt, nobuffer));
         jsonEqual('serialize', json);
         done();
@@ -38,7 +38,7 @@ describe('convert', function() {
         var tile = new fontserver.Tile(data);
         tile.shape('Open Sans Regular, Arial Unicode MS Regular', function(err) {
             assert.ifError(err);
-            var vt = new VectorTile(new Protobuf(new Uint8Array(tile.serialize())));
+            var vt = new Glyphs(new Protobuf(new Uint8Array(tile.serialize())));
             var json = JSON.parse(JSON.stringify(vt, nobuffer));
             jsonEqual('shape', json);
             done();
@@ -49,7 +49,7 @@ describe('convert', function() {
         var tile = new fontserver.Tile();
         tile.range('Open Sans Regular, Arial Unicode MS Regular', 0, 256, function(err) {
             assert.ifError(err);
-            var vt = new VectorTile(new Protobuf(new Uint8Array(tile.serialize())));
+            var vt = new Glyphs(new Protobuf(new Uint8Array(tile.serialize())));
             var json = JSON.parse(JSON.stringify(vt, nobuffer));
             jsonEqual('range', json);
             done();
@@ -134,22 +134,5 @@ describe('convert', function() {
             done();
         });
     });
-
-    /*
-    it('shape (x10)', function(done) {
-        this.timeout(10000);
-        var remaining = 10;
-        for (var i = 0; i < 10; i++) (function() {
-            var tile = new fontserver.Tile(data);
-            tile.shape('Open Sans Regular', function(err) {
-                assert.ifError(err);
-                var vt = new VectorTile(new Protobuf(new Uint8Array(tile.serialize())));
-                var json = JSON.parse(JSON.stringify(vt, nobuffer));
-                // jsonEqual('shape', json);
-                if (!--remaining) return done();
-            });
-        })();
-    });
-    */
 });
 
