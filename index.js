@@ -12,31 +12,7 @@ if (process.env['FONTSERVER_FONTS']) env_options.fonts = process.env['FONTSERVER
 conf(env_options);
 
 module.exports = fontserver;
-module.exports.convert = convert;
 module.exports.range = range;
-
-// Convert a zlib deflated mapnik vector pbf to a gl pbf.
-function convert(zdata, options, callback) {
-    'use strict';
-    options = options || {};
-    options.fontstack = options.fontstack || 'Open Sans Regular';
-
-    var tile;
-
-    zlib.inflate(zdata, inflated);
-
-    function inflated(err, data) {
-        if (err) return callback(err);
-        tile = new fontserver.Tile(data);
-        tile.shape(options.fontstack, shaped);
-    }
-
-    function shaped(err) {
-        if (err) return callback(err);
-        var after = tile.serialize();
-        zlib.deflate(after, callback);
-    }
-}
 
 // Retrieve a range of glyphs as a pbf.
 function range(options, callback) {
@@ -44,12 +20,12 @@ function range(options, callback) {
     options = options || {};
     options.fontstack = options.fontstack || 'Open Sans Regular';
 
-    var tile = new fontserver.Tile();
-    tile.range(options.fontstack, options.start, options.end, deflate);
+    var glyphs = new fontserver.Glyphs();
+    glyphs.range(options.fontstack, options.start, options.end, deflate);
 
     function deflate(err) {
         if (err) return callback(err);
-        var after = tile.serialize();
+        var after = glyphs.serialize();
         zlib.deflate(after, callback);
     }
 }

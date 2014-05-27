@@ -1,4 +1,4 @@
-#include "tile.hpp"
+#include "glyphs.hpp"
 #include "font_face_set.hpp"
 #include "harfbuzz_shaper.hpp"
 
@@ -21,7 +21,7 @@ extern "C"
 
 struct RangeBaton {
     v8::Persistent<v8::Function> callback;
-    Tile *tile;
+    Glyphs *glyphs;
     std::string fontstack;
     bool error;
     std::string error_name;
@@ -29,21 +29,21 @@ struct RangeBaton {
     unsigned long end;
 };
 
-v8::Persistent<v8::FunctionTemplate> Tile::constructor;
+v8::Persistent<v8::FunctionTemplate> Glyphs::constructor;
 
-Tile::Tile() : node::ObjectWrap() {}
+Glyphs::Glyphs() : node::ObjectWrap() {}
 
-Tile::Tile(const char *data, size_t length) : node::ObjectWrap() {
+Glyphs::Glyphs(const char *data, size_t length) : node::ObjectWrap() {
     glyphs.ParseFromArray(data, length);
 }
 
-Tile::~Tile() {}
+Glyphs::~Glyphs() {}
 
-void Tile::Init(v8::Handle<v8::Object> target) {
+void Glyphs::Init(v8::Handle<v8::Object> target) {
     v8::HandleScope scope;
 
     v8::Local<v8::FunctionTemplate> tpl = v8::FunctionTemplate::New(New);
-    v8::Local<v8::String> name = v8::String::NewSymbol("Tile");
+    v8::Local<v8::String> name = v8::String::NewSymbol("Glyphs");
 
     constructor = v8::Persistent<v8::FunctionTemplate>::New(tpl);
 
@@ -60,7 +60,7 @@ void Tile::Init(v8::Handle<v8::Object> target) {
     target->Set(name, constructor->GetFunction());
 }
 
-v8::Handle<v8::Value> Tile::New(const v8::Arguments& args) {
+v8::Handle<v8::Value> Glyphs::New(const v8::Arguments& args) {
     if (!args.IsConstructCall()) {
         return ThrowException(v8::Exception::TypeError(v8::String::New("Constructor must be called with new keyword")));
     }
@@ -68,33 +68,33 @@ v8::Handle<v8::Value> Tile::New(const v8::Arguments& args) {
         return ThrowException(v8::Exception::TypeError(v8::String::New("First argument may only be a buffer")));
     }
 
-    Tile* tile;
+    Glyphs* glyphs;
 
     if (args.Length() < 1) {
-        tile = new Tile();
+        glyphs = new Glyphs();
     } else {
         v8::Local<v8::Object> buffer = args[0]->ToObject();
-        tile = new Tile(node::Buffer::Data(buffer), node::Buffer::Length(buffer));
+        glyphs = new Glyphs(node::Buffer::Data(buffer), node::Buffer::Length(buffer));
     }
     
-    tile->Wrap(args.This());
+    glyphs->Wrap(args.This());
 
     return args.This();
 }
 
-bool Tile::HasInstance(v8::Handle<v8::Value> val) {
+bool Glyphs::HasInstance(v8::Handle<v8::Value> val) {
     if (!val->IsObject()) return false;
     return constructor->HasInstance(val->ToObject());
 }
 
-v8::Handle<v8::Value> Tile::Serialize(const v8::Arguments& args) {
+v8::Handle<v8::Value> Glyphs::Serialize(const v8::Arguments& args) {
     v8::HandleScope scope;
-    llmr::glyphs::glyphs& tile = node::ObjectWrap::Unwrap<Tile>(args.This())->glyphs;
-    std::string serialized = tile.SerializeAsString();
+    llmr::glyphs::glyphs& glyphs = node::ObjectWrap::Unwrap<Glyphs>(args.This())->glyphs;
+    std::string serialized = glyphs.SerializeAsString();
     return scope.Close(node::Buffer::New(serialized.data(), serialized.length())->handle_);
 }
 
-v8::Handle<v8::Value> Tile::Range(const v8::Arguments& args) {
+v8::Handle<v8::Value> Glyphs::Range(const v8::Arguments& args) {
     v8::HandleScope scope;
 
     // Validate arguments.
@@ -142,11 +142,11 @@ v8::Handle<v8::Value> Tile::Range(const v8::Arguments& args) {
     unsigned long start = args[1]->NumberValue();
     unsigned long end = args[2]->NumberValue();
 
-    Tile *tile = node::ObjectWrap::Unwrap<Tile>(args.This());
+    Glyphs *glyphs = node::ObjectWrap::Unwrap<Glyphs>(args.This());
 
     RangeBaton* baton = new RangeBaton();
     baton->callback = v8::Persistent<v8::Function>::New(callback);
-    baton->tile = tile;
+    baton->glyphs = glyphs;
     baton->fontstack = *fontstack;
     baton->start = start;
     baton->end = end;
@@ -160,7 +160,7 @@ v8::Handle<v8::Value> Tile::Range(const v8::Arguments& args) {
     return v8::Undefined();
 }
 
-void Tile::AsyncRange(uv_work_t* req) {
+void Glyphs::AsyncRange(uv_work_t* req) {
     RangeBaton* baton = static_cast<RangeBaton*>(req->data);
 
     fontserver::freetype_engine font_engine_;
@@ -179,9 +179,9 @@ void Tile::AsyncRange(uv_work_t* req) {
     FT_ULong char_code = baton->start;
     FT_ULong char_end = baton->end + 1;
 
-    llmr::glyphs::glyphs& tile = baton->tile->glyphs;
+    llmr::glyphs::glyphs& glyphs = baton->glyphs->glyphs;
 
-    llmr::glyphs::fontstack *mutable_fontstack = tile.add_stacks();
+    llmr::glyphs::fontstack *mutable_fontstack = glyphs.add_stacks();
     mutable_fontstack->set_name(baton->fontstack);
 
     std::stringstream range;
@@ -228,7 +228,7 @@ void Tile::AsyncRange(uv_work_t* req) {
     }
 }
 
-void Tile::RangeAfter(uv_work_t* req) {
+void Glyphs::RangeAfter(uv_work_t* req) {
     v8::HandleScope scope;
     RangeBaton* baton = static_cast<RangeBaton*>(req->data);
 

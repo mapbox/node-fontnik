@@ -1,20 +1,18 @@
 #pragma once
 
-#include "tile_face.hpp"
-
 #include <node.h>
 
 #include "glyphs.pb.h"
 
-class Tile : public node::ObjectWrap {
+class Glyphs : public node::ObjectWrap {
 public:
     static v8::Persistent<v8::FunctionTemplate> constructor;
     static void Init(v8::Handle<v8::Object> target);
     static bool HasInstance(v8::Handle<v8::Value> val);
 protected:
-    Tile();
-    Tile(const char *data, size_t length);
-    ~Tile();
+    Glyphs();
+    Glyphs(const char *data, size_t length);
+    ~Glyphs();
 
     static v8::Handle<v8::Value> New(const v8::Arguments& args);
     static v8::Handle<v8::Value> Serialize(const v8::Arguments& args);
