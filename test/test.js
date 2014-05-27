@@ -56,15 +56,48 @@ describe('convert', function() {
         });
     });
 
+    it('range typeerror fontstack', function(done) {
+        var tile = new fontserver.Tile();
+        assert.throws(function() {
+            tile.range(0, 0, 256, function() {});
+        }, /fontstack must be a string/);
+        done();
+    });
+
+    it('range typeerror start', function(done) {
+        var tile = new fontserver.Tile();
+        assert.throws(function() {
+            tile.range('Open Sans Regular', 'foo', 256, function() {});
+        }, /start must be a number/);
+        done();
+    });
+
+    it('range typeerror end', function(done) {
+        var tile = new fontserver.Tile();
+        assert.throws(function() {
+            tile.range('Open Sans Regular', 0, 'foo', function() {});
+        }, /end must be a number/);
+        done();
+    });
+
+    it('range typeerror callback', function(done) {
+        var tile = new fontserver.Tile();
+        assert.throws(function() {
+            tile.range('Open Sans Regular', 0, 256, '');
+        }, /callback must be a function/);
+        done();
+    });
+
     it('range for fontstack with 0 matching fonts', function(done) {
         var tile = new fontserver.Tile();
         tile.range('doesnotexist', 0, 256, function(err) {
             assert.ok(err);
+            assert.equal('Error: Font stack could not be loaded', err.toString());
             done();
         });
     });
 
-    it('range for fontstack with 1 bad font', function(done) {
+    it.skip('range for fontstack with 1 bad font', function(done) {
         var tile = new fontserver.Tile();
         tile.range('Open Sans Regular, doesnotexist', 0, 256, function(err) {
             assert.ok(err);
@@ -77,6 +110,7 @@ describe('convert', function() {
         var tile = new fontserver.Tile();
         tile.range('Open Sans Regular', -128, 256, function(err) {
             assert.ok(err);
+            assert.equal('Error: start must be a number from 0-65533', err.toString());
             done();
         });
     });
@@ -86,6 +120,7 @@ describe('convert', function() {
         var tile = new fontserver.Tile();
         tile.range('Open Sans Regular', 256, 0, function(err) {
             assert.ok(err);
+            assert.equal('Error: start must be less than or equal to end', err.toString());
             done();
         });
     });
@@ -95,24 +130,9 @@ describe('convert', function() {
         var tile = new fontserver.Tile();
         tile.range('Open Sans Regular', 0, 65534, function(err) {
             assert.ok(err);
+            assert.equal('Error: end must be a number from 0-65533', err.toString());
             done();
         });
-    });
-
-    it('range typeerror start', function(done) {
-        var tile = new fontserver.Tile();
-        assert.throws(function() {
-            tile.range('Open Sans Regular', 'foo', 256, function() {});
-        }, /Second argument must be a number/);
-        done();
-    });
-
-    it('range typeerror end', function(done) {
-        var tile = new fontserver.Tile();
-        assert.throws(function() {
-            tile.range('Open Sans Regular', 0, 'foo', function() {});
-        }, /Third argument must be a number/);
-        done();
     });
 
     /*
