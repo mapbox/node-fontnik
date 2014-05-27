@@ -34,7 +34,7 @@ describe('convert', function() {
         done();
     });
 
-    it('shape', function(done) {
+    it.skip('shape', function(done) {
         var tile = new fontserver.Tile(data);
         tile.shape('Open Sans Regular, Arial Unicode MS Regular', function(err) {
             assert.ifError(err);
