@@ -422,7 +422,7 @@ void Tile::AsyncRange(uv_work_t* req) {
             mutable_glyph->set_width(glyph.width);
             mutable_glyph->set_height(glyph.height);
             mutable_glyph->set_left(glyph.left);
-            mutable_glyph->set_top(glyph.top);
+            mutable_glyph->set_top(glyph.top - glyph.ascender);
             mutable_glyph->set_advance(glyph.advance);
 
             if (glyph.width > 0) {
