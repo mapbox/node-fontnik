@@ -1,6 +1,6 @@
 {
     "name": "fontserver",
-    "version": "0.0.4",
+    "version": "0.0.5-dev",
     "main": "index.js",
 
     "private": true,

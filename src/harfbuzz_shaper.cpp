@@ -61,11 +61,9 @@ void harfbuzz_shaper::shape_text(text_line &line,
     // Current line length of all text items.
     double current_line_length = 0;
     for (auto const& text_item : list) {
-
         // TODO: can this face set be passed with the text_item
         // instead of being recreated each time?
         // face_set_ptr face_set = font_manager.get_face_set(text_item.format->fontset);
-
         double size = text_item.format->text_size * scale_factor;
         face_set->set_character_sizes(size);
 
@@ -91,9 +89,6 @@ void harfbuzz_shaper::shape_text(text_line &line,
             bool font_has_all_glyphs = true;
             for (unsigned i = 0; i < num_glyph_infos; ++i) {
                 if (!glyph_infos[i].codepoint) {
-                    std::cout << face->family_name() << ' ' <<
-                        face->style_name() << " is missing glyph" <<
-                        glyph_infos[i].cluster;
                     font_has_all_glyphs = false;
                     break;
                 }

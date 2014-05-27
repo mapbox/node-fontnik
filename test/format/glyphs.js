@@ -1,13 +1,9 @@
 'use strict';
 
-var VectorTileLayer = require('./vectortilelayer');
-
-module.exports = VectorTile;
-function VectorTile(buffer, end) {
+module.exports = Glyphs;
+function Glyphs(buffer, end) {
     // Public
-    this.layers = {};
-    this.faces = {};
-
+    this.stacks = {};
     // Private
     this._buffer = buffer;
 
@@ -16,14 +12,9 @@ function VectorTile(buffer, end) {
     while (buffer.pos < end) {
         val = buffer.readVarint();
         tag = val >> 3;
-        if (tag == 3) {
-            var layer = this.readLayer();
-            if (layer.length) {
-                this.layers[layer.name] = layer;
-            }
-        } else if (tag == 4) {
-            var face = this.readFace();
-            this.faces[face.family + ' ' + face.style] = face;
+        if (tag == 1) {
+            var fontstack = this.readFontstack();
+            this.stacks[fontstack.name] = fontstack;
         } else {
             // console.warn('skipping tile tag ' + tag);
             buffer.skip(val);
@@ -31,19 +22,9 @@ function VectorTile(buffer, end) {
     }
 }
 
-VectorTile.prototype.readLayer = function() {
+Glyphs.prototype.readFontstack = function() {
     var buffer = this._buffer;
-
-    var bytes = buffer.readVarint();
-    var end = buffer.pos + bytes;
-    var layer = new VectorTileLayer(buffer, end);
-    buffer.pos = end;
-    return layer;
-};
-
-VectorTile.prototype.readFace = function() {
-    var buffer = this._buffer;
-    var face = { glyphs: {} };
+    var fontstack = { glyphs: {} };
 
     var bytes = buffer.readVarint();
     var val, tag;
@@ -53,22 +34,22 @@ VectorTile.prototype.readFace = function() {
         tag = val >> 3;
 
         if (tag == 1) {
-            face.family = buffer.readString();
+            fontstack.name = buffer.readString();
         } else if (tag == 2) {
-            face.style = buffer.readString();
-        } else if (tag == 5) {
+            var range = buffer.readString();
+            fontstack.range = range;
+        } else if (tag == 3) {
             var glyph = this.readGlyph();
-            face.glyphs[glyph.id] = glyph;
+            fontstack.glyphs[glyph.id] = glyph;
         } else {
             buffer.skip(val);
         }
     }
 
-    return face;
+    return fontstack;
 };
 
-
-VectorTile.prototype.readGlyph = function() {
+Glyphs.prototype.readGlyph = function() {
     var buffer = this._buffer;
     var glyph = {};
 
