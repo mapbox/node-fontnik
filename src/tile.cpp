@@ -23,6 +23,8 @@ struct RangeBaton {
     v8::Persistent<v8::Function> callback;
     Tile *tile;
     std::string fontstack;
+    bool error;
+    std::string error_name;
     unsigned long start;
     unsigned long end;
 };
@@ -98,25 +100,44 @@ v8::Handle<v8::Value> Tile::Range(const v8::Arguments& args) {
     // Validate arguments.
     if (args.Length() < 1 || !args[0]->IsString()) {
         return ThrowException(v8::Exception::TypeError(
-            v8::String::New("First argument must be a font stack")));
+            v8::String::New("fontstack must be a string")));
     }
 
     if (args.Length() < 2 || !args[1]->IsNumber()) {
         return ThrowException(v8::Exception::TypeError(
-            v8::String::New("Second argument must be a number")));
+            v8::String::New("start must be a number")));
     }
 
     if (args.Length() < 3 || !args[2]->IsNumber()) {
         return ThrowException(v8::Exception::TypeError(
-            v8::String::New("Third argument must be a number")));
+            v8::String::New("end must be a number")));
     }
 
     if (args.Length() < 4 || !args[3]->IsFunction()) {
         return ThrowException(v8::Exception::TypeError(
-            v8::String::New("Fourth argument must be a callback function")));
+            v8::String::New("callback must be a function")));
     }
 
     v8::Local<v8::Function> callback = v8::Local<v8::Function>::Cast(args[3]);
+
+    if (args[1]->NumberValue() < 0 || args[1]->NumberValue() > 65533) {
+        v8::Local<v8::Value> argv[1] = { v8::Exception::Error(v8::String::New("start must be a number from 0-65533")) };
+        callback->Call(v8::Context::GetCurrent()->Global(), 1, argv);
+        return v8::Undefined();
+    }
+
+    if (args[2]->NumberValue() < 0 || args[2]->NumberValue() > 65533) {
+        v8::Local<v8::Value> argv[1] = { v8::Exception::Error(v8::String::New("end must be a number from 0-65533")) };
+        callback->Call(v8::Context::GetCurrent()->Global(), 1, argv);
+        return v8::Undefined();
+    }
+
+    if (args[1]->NumberValue() > args[2]->NumberValue()) {
+        v8::Local<v8::Value> argv[1] = { v8::Exception::Error(v8::String::New("start must be less than or equal to end")) };
+        callback->Call(v8::Context::GetCurrent()->Global(), 1, argv);
+        return v8::Undefined();
+    }
+
     v8::String::Utf8Value fontstack(args[0]->ToString());
     unsigned long start = args[1]->NumberValue();
     unsigned long end = args[2]->NumberValue();
@@ -149,7 +170,11 @@ void Tile::AsyncRange(uv_work_t* req) {
     fset.add_fontstack(baton->fontstack, ',');
 
     fontserver::face_set_ptr face_set = font_manager.get_face_set(fset);
-    if (!face_set->size()) return;
+    if (!face_set->size()) {
+        baton->error = true;
+        baton->error_name = std::string("Font stack could not be loaded");
+        return;
+    }
 
     FT_ULong char_code = baton->start;
     FT_ULong char_end = baton->end + 1;
@@ -208,10 +233,17 @@ void Tile::RangeAfter(uv_work_t* req) {
     RangeBaton* baton = static_cast<RangeBaton*>(req->data);
 
     const unsigned argc = 1;
-    v8::Local<v8::Value> argv[argc] = { v8::Local<v8::Value>::New(v8::Null()) };
 
     v8::TryCatch try_catch;
-    baton->callback->Call(v8::Context::GetCurrent()->Global(), argc, argv);
+
+    if (baton->error) {
+        v8::Local<v8::Value> argv[argc] = { v8::Exception::Error(v8::String::New(baton->error_name.c_str())) };
+        baton->callback->Call(v8::Context::GetCurrent()->Global(), argc, argv);
+    } else {
+        v8::Local<v8::Value> argv[argc] = { v8::Local<v8::Value>::New(v8::Null()) };
+        baton->callback->Call(v8::Context::GetCurrent()->Global(), argc, argv);
+    }
+
     if (try_catch.HasCaught()) {
         node::FatalException(try_catch);
     }
