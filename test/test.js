@@ -34,17 +34,6 @@ describe('convert', function() {
         done();
     });
 
-    it.skip('shape', function(done) {
-        var tile = new fontserver.Tile(data);
-        tile.shape('Open Sans Regular, Arial Unicode MS Regular', function(err) {
-            assert.ifError(err);
-            var vt = new Glyphs(new Protobuf(new Uint8Array(tile.serialize())));
-            var json = JSON.parse(JSON.stringify(vt, nobuffer));
-            jsonEqual('shape', json);
-            done();
-        });
-    });
-
     it('range', function(done) {
         var tile = new fontserver.Tile();
         tile.range('Open Sans Regular, Arial Unicode MS Regular', 0, 256, function(err) {
