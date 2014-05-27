@@ -2,7 +2,7 @@ var fontserver = require('../index.js');
 var assert = require('assert');
 var zlib = require('zlib');
 var fs = require('fs');
-var zdata = fs.readFileSync(__dirname + '/fixtures/mapbox-streets-v4.13.1306.3163.vector.pbf');
+var zdata = fs.readFileSync(__dirname + '/fixtures/range.0.256.pbf');
 var Protobuf = require('./format/protobuf');
 var Glyphs = require('./format/glyphs');
 var UPDATE = process.env.UPDATE;
@@ -27,6 +27,18 @@ describe('convert', function() {
     });
 
     it('serialize', function(done) {
+        // On disk fixture generated with the following code.
+        /*
+        fontserver.range({
+            fontstack:'Open Sans Regular, Arial Unicode MS Regular',
+            start: 0,
+            end: 256
+        }, function(err, zdata) {
+            if (err) throw err;
+            fs.writeFileSync(__dirname + '/fixtures/range.0.256.pbf', zdata);
+            done();
+        });
+        */
         var tile = new fontserver.Tile(data);
         var vt = new Glyphs(new Protobuf(new Uint8Array(tile.serialize())));
         var json = JSON.parse(JSON.stringify(vt, nobuffer));
