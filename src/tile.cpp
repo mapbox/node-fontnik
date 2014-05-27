@@ -29,8 +29,8 @@ struct RangeBaton {
     v8::Persistent<v8::Function> callback;
     Tile *tile;
     std::string fontstack;
-    uint32_t start;
-    uint32_t end;
+    unsigned long start;
+    unsigned long end;
 };
 
 v8::Persistent<v8::FunctionTemplate> Tile::constructor;
@@ -166,8 +166,8 @@ v8::Handle<v8::Value> Tile::Range(const v8::Arguments& args) {
 
     v8::Local<v8::Function> callback = v8::Local<v8::Function>::Cast(args[3]);
     v8::String::Utf8Value fontstack(args[0]->ToString());
-    uint32_t start = args[1]->NumberValue();
-    uint32_t end = args[2]->NumberValue();
+    unsigned long start = args[1]->NumberValue();
+    unsigned long end = args[2]->NumberValue();
 
     Tile *tile = node::ObjectWrap::Unwrap<Tile>(args.This());
 
@@ -358,8 +358,8 @@ void Tile::AsyncRange(uv_work_t* req) {
     std::map<fontserver::face_ptr, fontserver::tile_face *> face_map;
     std::vector<fontserver::tile_face *> tile_faces;
 
-    FT_UInt glyph_index = baton->start;
-    FT_UInt glyph_end = baton->end;
+    FT_ULong char_code = baton->start;
+    FT_ULong char_end = baton->end + 1;
 
     llmr::vector::tile& tile = baton->tile->tile;
 
@@ -377,44 +377,35 @@ void Tile::AsyncRange(uv_work_t* req) {
     double size = format.text_size * scale_factor;
     face_set->set_character_sizes(size);
 
-    for (auto const& face : *face_set) {
-        // Create tile_face, add to face_map and tile_faces.
-        fontserver::tile_face *t_face = new fontserver::tile_face(face);
-        face_map.emplace(face, t_face);
-        tile_faces.push_back(t_face);
+    for (; char_code < char_end; char_code++) {
+        fontserver::glyph_info glyph;
 
-        // Get FreeType face from face_ptr.
-        FT_Face ft_face = face->get_face();
+        for (auto const& face : *face_set) {
+            // Get FreeType face from face_ptr.
+            FT_Face ft_face = face->get_face();
+            FT_UInt char_index = FT_Get_Char_Index(ft_face, char_code);
 
-        // Add all glyphs for this labels and add new font
-        // faces as they appear.
-        FT_ULong char_code = FT_Get_First_Char(ft_face, &glyph_index);
-        while (glyph_index != 0 && char_code < glyph_end) {
-            fontserver::glyph_info glyph;
-            glyph.glyph_index = char_code;
+            // Try next font in fontset.
+            if (!char_index) continue;
 
+            glyph.glyph_index = char_index;
             face->glyph_dimensions(glyph);
 
-            // Add glyph to t_face.
-            t_face->add_glyph(glyph);
-
-            // Advance char_code to next glyph index.
-            char_code = FT_Get_Next_Char(ft_face, char_code, &glyph_index);
-        }
-    }
-
-    for (auto const& face : tile_faces) {
-        for (auto const& glyph : face->glyphs) {
+            // Add glyph to fontstack.
             llmr::vector::glyph *mutable_glyph = mutable_fontstack->add_glyphs();
-            mutable_glyph->set_id(glyph.glyph_index);
+            mutable_glyph->set_id(char_code);
             mutable_glyph->set_width(glyph.width);
             mutable_glyph->set_height(glyph.height);
             mutable_glyph->set_left(glyph.left);
             mutable_glyph->set_top(glyph.top);
             mutable_glyph->set_advance(glyph.advance);
+
             if (glyph.width > 0) {
                 mutable_glyph->set_bitmap(glyph.bitmap);
             }
+
+            // Glyph added, continue to next char_code.
+            break;
         }
     }
 }
