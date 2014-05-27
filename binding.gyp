@@ -6,14 +6,14 @@
       'hard_dependency': 1,
       'actions': [
         {
-          'action_name': 'run_protoc_vector_tile',
+          'action_name': 'run_protoc_glyphs',
           'inputs': [
-            './proto/vector_tile.proto'
+            './proto/glyphs.proto'
           ],
           'outputs': [
-            "<(SHARED_INTERMEDIATE_DIR)/vector_tile.pb.cc"
+            "<(SHARED_INTERMEDIATE_DIR)/glyphs.pb.cc"
           ],
-          'action': ['protoc','-Iproto/','--cpp_out=<(SHARED_INTERMEDIATE_DIR)/','./proto/vector_tile.proto']
+          'action': ['protoc','-Iproto/','--cpp_out=<(SHARED_INTERMEDIATE_DIR)/','./proto/glyphs.proto']
         }
       ]
     },
@@ -34,7 +34,7 @@
         'src/util.cpp',
         'src/distmap.c',
         'src/edtaa4func.c',
-        '<(SHARED_INTERMEDIATE_DIR)/vector_tile.pb.cc'
+        '<(SHARED_INTERMEDIATE_DIR)/glyphs.pb.cc'
       ],
       'include_dirs': [
         'src/',
