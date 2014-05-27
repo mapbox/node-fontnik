@@ -90,6 +90,15 @@ describe('convert', function() {
         });
     });
 
+    // Should error because end > 65533
+    it('range error end > 65533', function(done) {
+        var tile = new fontserver.Tile();
+        tile.range('Open Sans Regular', 0, 65534, function(err) {
+            assert.ok(err);
+            done();
+        });
+    });
+
     it('range typeerror start', function(done) {
         var tile = new fontserver.Tile();
         assert.throws(function() {
