@@ -3,7 +3,7 @@ var assert = require('assert');
 var zlib = require('zlib');
 var fs = require('fs');
 var zdata = fs.readFileSync(__dirname + '/fixtures/range.0.256.pbf');
-var Protobuf = require('./format/protobuf');
+var Protobuf = require('pbf');
 var Glyphs = require('./format/glyphs');
 var UPDATE = process.env.UPDATE;
 
