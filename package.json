@@ -12,7 +12,7 @@
     "bundledDependencies": ["node-pre-gyp"],
 
     "devDependencies": {
-        "mocha": "1.17.x",
+        "mocha": "1.20.x",
         "pbf": "0.0.1"
     },
     "scripts": {
