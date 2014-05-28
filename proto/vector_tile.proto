@@ -97,6 +97,13 @@ message face {
     repeated glyph glyphs = 5;
 }
 
+// Stores fontstack information and a list of faces.
+message fontstack {
+    required string name = 1;
+    required string range = 2;
+    repeated glyph glyphs = 3;
+}
+
 // Stores the shaping information for the label with a given text
 message label {
     // The original value ID this shaping information is for.
@@ -148,6 +155,8 @@ message tile {
     repeated layer layers = 3;
 
     repeated face faces = 4;
+
+    repeated fontstack stacks = 5;
 
     extensions 16 to 8191;
 }

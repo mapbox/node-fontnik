@@ -2,16 +2,8 @@
 
 fontserver
 ----------
-Is no longer a server, but a library that augments a given mapnik vector tile
-with the glyphs needed to render the tile.
-
-Fontserver requires a vector tile buffer to be passed to it and a "font stack"
-string of one or more fonts. It extracts all labels required to render the tile
-and loads all fonts in the font stack. Then, it layouts the text with the
-respective writing direction ([Unicode bidi](http://www.unicode.org/reports/tr9/))
-and glyph shaping and embeds these shaped glyphs aas well as the positions into
-the augmented ("styled") vector tile.
-
+Is no longer a server, but a library that delivers a range of characters
+rendered as SDFs (signed distance fields) in a protobuf.
 
 ## Installing
 
