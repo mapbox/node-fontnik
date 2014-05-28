@@ -169,10 +169,13 @@ void Glyphs::AsyncRange(uv_work_t* req) {
     fontserver::font_set fset(baton->fontstack);
     fset.add_fontstack(baton->fontstack, ',');
 
-    fontserver::face_set_ptr face_set = font_manager.get_face_set(fset);
-    if (!face_set->size()) {
+    fontserver::face_set_ptr face_set;
+
+    try {
+        face_set = font_manager.get_face_set(fset);
+    } catch(const std::runtime_error &e) {
         baton->error = true;
-        baton->error_name = std::string("Font stack could not be loaded");
+        baton->error_name = e.what();
         return;
     }
 

@@ -21,9 +21,9 @@
       'target_name': 'fontserver',
       'dependencies': [ 'action_before_build' ],
       'sources': [
+        'src/font_engine_freetype.cpp',
         'src/glyphs.cpp',
         'src/font_face.cpp',
-        'src/font_engine_freetype.cpp',
         'src/harfbuzz_shaper.cpp',
         'src/fontserver.cpp',
         'src/itemizer.cpp',

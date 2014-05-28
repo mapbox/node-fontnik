@@ -317,6 +317,10 @@ face_set_ptr face_manager<T>::get_face_set(const std::string &name) {
 
     if (face_ptr face = get_face(name)) {
         face_set->add(face);
+    } else {
+        std::ostringstream runtime_error;
+        runtime_error << "Failed to find face " << name;
+        throw std::runtime_error(runtime_error.str());
     }
 
     return face_set;
@@ -332,10 +336,9 @@ face_set_ptr face_manager<T>::get_face_set(const font_set &fset) {
         if (face) {
             face_set->add(face);
         } else {
-          /*
-          std::cerr << "Failed to find face '" << *name
-              << "' in font set '" << fset.get_name() << "'\n";
-              */
+          std::ostringstream runtime_error;
+          runtime_error << "Failed to find face " << *name;
+          throw std::runtime_error(runtime_error.str());
         }
     }
 

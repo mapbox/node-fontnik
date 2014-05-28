@@ -16,7 +16,7 @@ function jsonEqual(key, json) {
     assert.deepEqual(json, require('./expected/'+key+'.json'));
 }
 
-describe('convert', function() {
+describe('glyphs', function() {
     var data;
     before(function(done) {
         zlib.inflate(zdata, function(err, d) {
@@ -30,7 +30,7 @@ describe('convert', function() {
         // On disk fixture generated with the following code.
         /*
         fontserver.range({
-            fontstack:'Open Sans Regular, Arial Unicode MS Regular',
+            fontstack:'Open Sans Regular, Siyam Rupali Regular',
             start: 0,
             end: 256
         }, function(err, zdata) {
@@ -48,7 +48,7 @@ describe('convert', function() {
 
     it('range', function(done) {
         var glyphs = new fontserver.Glyphs();
-        glyphs.range('Open Sans Regular, Arial Unicode MS Regular', 0, 256, function(err) {
+        glyphs.range('Open Sans Regular, Siyam Rupali Regular', 0, 256, function(err) {
             assert.ifError(err);
             var vt = new Glyphs(new Protobuf(new Uint8Array(glyphs.serialize())));
             var json = JSON.parse(JSON.stringify(vt, nobuffer));
@@ -93,15 +93,16 @@ describe('convert', function() {
         var glyphs = new fontserver.Glyphs();
         glyphs.range('doesnotexist', 0, 256, function(err) {
             assert.ok(err);
-            assert.equal('Error: Font stack could not be loaded', err.toString());
+            assert.equal('Error: Failed to find face doesnotexist', err.toString());
             done();
         });
     });
 
-    it.skip('range for fontstack with 1 bad font', function(done) {
+    it('range for fontstack with 1 bad font', function(done) {
         var glyphs = new fontserver.Glyphs();
         glyphs.range('Open Sans Regular, doesnotexist', 0, 256, function(err) {
             assert.ok(err);
+            assert.equal('Error: Failed to find face doesnotexist', err.toString());
             done();
         });
     });
