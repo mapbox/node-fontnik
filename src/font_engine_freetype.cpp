@@ -37,22 +37,40 @@
 #include <sstream>
 #include <fstream>
 #include <iostream>
+#include <cstdlib>
+
+void* _Alloc_Func(FT_Memory memory, long size) {
+    return std::malloc(size);
+}
+
+void _Free_Func(FT_Memory memory, void *block) {
+    std::free(block);
+}
+
+void* _Realloc_Func(FT_Memory memory, long cur_size, long new_size, void *block) {
+    return std::realloc(block, new_size);
+}
 
 namespace fontserver {
 
 freetype_engine::freetype_engine() :
-    library_(nullptr) {
+    library_(nullptr),
+    memory_(new FT_MemoryRec_) {
 
-    FT_Error error = FT_Init_FreeType(&library_);
+    memory_->alloc = _Alloc_Func;
+    memory_->free = _Free_Func;
+    memory_->realloc = _Realloc_Func;
+    FT_Error error = FT_New_Library( &*memory_, &library_);
     if (error) {
         std::ostringstream runtime_error;
         runtime_error << "Could not load FreeType2 library: FT_Error " << error;
         throw std::runtime_error(runtime_error.str());
     }
+    FT_Add_Default_Modules(library_);
 }
 
 freetype_engine::~freetype_engine() {
-    FT_Done_FreeType(library_);
+    FT_Done_Library(library_);
 }
 
 bool freetype_engine::is_font_file(std::string const& file_name) {

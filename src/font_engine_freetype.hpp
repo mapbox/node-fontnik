@@ -38,9 +38,11 @@ extern "C"
 #include <ft2build.h>
 #include FT_FREETYPE_H
 // #include FT_STROKER_H
+#include FT_MODULE_H
 }
 
 struct FT_LibraryRec_;
+struct FT_MemoryRec_;
 
 namespace fontserver {
 
@@ -75,6 +77,8 @@ public:
     face_ptr create_face(std::string const& family_name);
 private:
     FT_LibraryRec_ *library_;
+    std::unique_ptr<FT_MemoryRec_> memory_;
+
     static std::mutex mutex_;
     static std::map<std::string, std::pair<int, std::string>> name2file_;
     static std::map<std::string, std::string> memory_fonts_;
