@@ -13,7 +13,6 @@
 
     "devDependencies": {
         "mocha": "1.17.x",
-        "llmr": "http://mapbox-npm.s3.amazonaws.com/tiles/llmr@v0.0.4.tar.gz",
         "pbf": "0.0.1"
     },
     "scripts": {
