@@ -48,7 +48,7 @@ describe('glyphs', function() {
 
     it('range', function(done) {
         var glyphs = new fontserver.Glyphs();
-        glyphs.range('Open Sans Regular, Siyam Rupali Regular', 0, 256, function(err) {
+        glyphs.range('Open Sans Regular, Siyam Rupali Regular', '0-256', fontserver.getRange(0, 256), function(err) {
             assert.ifError(err);
             var vt = new Glyphs(new Protobuf(new Uint8Array(glyphs.serialize())));
             var json = JSON.parse(JSON.stringify(vt, nobuffer));
@@ -57,41 +57,52 @@ describe('glyphs', function() {
         });
     });
 
+    it('range (chars input)', function(done) {
+        var glyphs = new fontserver.Glyphs();
+        glyphs.range('Open Sans Regular, Siyam Rupali Regular', 'a-and-z', [('a').charCodeAt(0), ('z').charCodeAt(0)], function(err) {
+            assert.ifError(err);
+            var vt = new Glyphs(new Protobuf(new Uint8Array(glyphs.serialize())));
+            var json = JSON.parse(JSON.stringify(vt, nobuffer));
+            jsonEqual('chars', json);
+            done();
+        });
+    });
+
     it('range typeerror fontstack', function(done) {
         var glyphs = new fontserver.Glyphs();
         assert.throws(function() {
-            glyphs.range(0, 0, 256, function() {});
+            glyphs.range(0, '0-256', fontserver.getRange(0, 256), function() {});
         }, /fontstack must be a string/);
         done();
     });
 
-    it('range typeerror start', function(done) {
+    it('range typeerror range', function(done) {
         var glyphs = new fontserver.Glyphs();
         assert.throws(function() {
-            glyphs.range('Open Sans Regular', 'foo', 256, function() {});
-        }, /start must be a number/);
+            glyphs.range('Open Sans Regular', 0, fontserver.getRange(0, 256), function() {});
+        }, /range must be a string/);
         done();
     });
 
-    it('range typeerror end', function(done) {
+    it('range typeerror chars', function(done) {
         var glyphs = new fontserver.Glyphs();
         assert.throws(function() {
-            glyphs.range('Open Sans Regular', 0, 'foo', function() {});
-        }, /end must be a number/);
+            glyphs.range('Open Sans Regular', '0-256', 'foo', function() {});
+        }, /chars must be an array/);
         done();
     });
 
     it('range typeerror callback', function(done) {
         var glyphs = new fontserver.Glyphs();
         assert.throws(function() {
-            glyphs.range('Open Sans Regular', 0, 256, '');
+            glyphs.range('Open Sans Regular', '0-256', fontserver.getRange(0, 256), '');
         }, /callback must be a function/);
         done();
     });
 
     it('range for fontstack with 0 matching fonts', function(done) {
         var glyphs = new fontserver.Glyphs();
-        glyphs.range('doesnotexist', 0, 256, function(err) {
+        glyphs.range('doesnotexist', '0-256', fontserver.getRange(0, 256), function(err) {
             assert.ok(err);
             assert.equal('Error: Failed to find face doesnotexist', err.toString());
             done();
@@ -100,7 +111,7 @@ describe('glyphs', function() {
 
     it('range for fontstack with 1 bad font', function(done) {
         var glyphs = new fontserver.Glyphs();
-        glyphs.range('Open Sans Regular, doesnotexist', 0, 256, function(err) {
+        glyphs.range('Open Sans Regular, doesnotexist', '0-256', fontserver.getRange(0, 256), function(err) {
             assert.ok(err);
             assert.equal('Error: Failed to find face doesnotexist', err.toString());
             done();
@@ -108,33 +119,24 @@ describe('glyphs', function() {
     });
 
     // Should error because start is < 0
-    it('range error start < 0', function(done) {
-        var glyphs = new fontserver.Glyphs();
-        glyphs.range('Open Sans Regular', -128, 256, function(err) {
-            assert.ok(err);
-            assert.equal('Error: start must be a number from 0-65533', err.toString());
-            done();
-        });
+    it('getRange error start < 0', function() {
+        assert.throws(function() {
+            fontserver.getRange(-128, 256);
+        }, 'Error: start must be a number from 0-65533');
     });
 
     // Should error because end < start
-    it('range error end < start', function(done) {
-        var glyphs = new fontserver.Glyphs();
-        glyphs.range('Open Sans Regular', 256, 0, function(err) {
-            assert.ok(err);
-            assert.equal('Error: start must be less than or equal to end', err.toString());
-            done();
-        });
+    it('getRange error end < start', function() {
+        assert.throws(function() {
+            fontserver.getRange(256, 0);
+        }, 'Error: start must be less than or equal to end');
     });
 
     // Should error because end > 65533
-    it('range error end > 65533', function(done) {
-        var glyphs = new fontserver.Glyphs();
-        glyphs.range('Open Sans Regular', 0, 65534, function(err) {
-            assert.ok(err);
-            assert.equal('Error: end must be a number from 0-65533', err.toString());
-            done();
-        });
+    it('getRange error end > 65533', function() {
+        assert.throws(function() {
+            fontserver.getRange(0, 65534);
+        }, 'Error: end must be a number from 0-65533');
     });
 });
 
