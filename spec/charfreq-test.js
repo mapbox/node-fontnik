@@ -1,4 +1,5 @@
 var cjk = {
+    none: {},
     osm: require('./cjk-osm.json'),
     modern: require('./cjk-modern.json')
 };
@@ -18,7 +19,7 @@ var tiles = [
     require('./fixtures/14.13487.6208.json'),
 ];
 
-var ranges = { osm:{}, modern:{} };
+var ranges = { none:{}, osm:{}, modern:{} };
 
 tiles.forEach(function(layers) {
     layers.forEach(function(l) {
@@ -27,7 +28,7 @@ tiles.forEach(function(layers) {
             var name = f.properties.name;
             for (var i = 0; i < name.length; i++) {
                 var char = name.charCodeAt(i);
-                ['osm','modern'].forEach(function(type) {
+                ['none','osm','modern'].forEach(function(type) {
                     if (cjk[type][char]) {
                         ranges[type][cjk[type][char]] = true;
                     } else {
@@ -40,6 +41,9 @@ tiles.forEach(function(layers) {
         });
     });
 });
+
+console.log('none (%s ranges)', Object.keys(ranges.none).length);
+console.log(Object.keys(ranges.none).sort());
 
 console.log('osm (%s ranges)', Object.keys(ranges.osm).length);
 console.log(Object.keys(ranges.osm).sort());
