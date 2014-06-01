@@ -57,6 +57,17 @@ describe('glyphs', function() {
         });
     });
 
+    it('range (chars input)', function(done) {
+        var glyphs = new fontserver.Glyphs();
+        glyphs.range('Open Sans Regular, Siyam Rupali Regular', 'a-and-z', [('a').charCodeAt(0), ('z').charCodeAt(0)], function(err) {
+            assert.ifError(err);
+            var vt = new Glyphs(new Protobuf(new Uint8Array(glyphs.serialize())));
+            var json = JSON.parse(JSON.stringify(vt, nobuffer));
+            jsonEqual('chars', json);
+            done();
+        });
+    });
+
     it('range typeerror fontstack', function(done) {
         var glyphs = new fontserver.Glyphs();
         assert.throws(function() {
