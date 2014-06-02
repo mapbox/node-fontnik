@@ -222,11 +222,6 @@ face_ptr freetype_engine::create_face(std::string const& family_name) {
 
         if (glyph_cache_map_itr != glyph_cache_map_.end()) {
             glyphs = glyph_cache_map_itr->second;
-            /*
-            std::cout << "Found shared glyph cache for " <<
-                itr->second.second << " with " << 
-                glyph_cache_map_itr->second->size() << " glyphs\n";
-                */
         } else {
             std::pair<std::map<const std::string, glyph_cache_ptr>::iterator, bool> glyphs_result 
                 = glyph_cache_map_.emplace(itr->second.second, std::make_shared<glyph_cache_type>());
@@ -275,19 +270,6 @@ face_ptr freetype_engine::create_face(std::string const& family_name) {
 
     return face_ptr();
 }
-
-/*
-stroker_ptr freetype_engine::create_stroker()
-{
-    FT_Stroker s;
-    FT_Error error = FT_Stroker_New(library_, &s);
-    if (!error)
-    {
-        return std::make_shared<stroker>(s);
-    }
-    return stroker_ptr();
-}
-*/
 
 template <typename T>
 face_ptr face_manager<T>::get_face(const std::string &name) {

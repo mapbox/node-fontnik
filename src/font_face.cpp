@@ -23,9 +23,6 @@
 #include "font_face.hpp"
 #include "distmap.h"
 
-// stl
-#include <iostream>
-
 namespace fontserver {
 
 font_face::font_face(FT_Face face)
@@ -38,14 +35,7 @@ font_face::font_face(FT_Face face, glyph_cache_ptr glyphs)
       glyphs_(glyphs),
       char_height_(0.0) {}
 
-font_face::~font_face() {
-    /*
-    std::cout << "font_face: Clean up face " << family_name()
-        << " " << style_name() << "\n";
-
-    FT_Done_Face(face_);
-    */
-}
+font_face::~font_face() {}
 
 double font_face::get_char_height() const {
     if (char_height_ != 0.0) return char_height_;
@@ -119,26 +109,6 @@ void font_face::glyph_dimensions(glyph_info &glyph) const {
     FT_Done_Glyph(ft_glyph);
 
     glyphs_.get()->emplace(glyph.glyph_index, glyph);
-
-    /*
-    std::cout << "Added " << glyph.glyph_index
-        << " to shared glyph cache.\n";
-    */
 }
-
-/*
-void stroker::init(double radius) {
-    FT_Stroker_Set(s_, (FT_Fixed) (radius * (1<<6)),
-                   FT_STROKER_LINECAP_ROUND,
-                   FT_STROKER_LINEJOIN_ROUND,
-                   0);
-}
-
-stroker::~stroker() {
-    MAPNIK_LOG_DEBUG(font_engine_freetype) << "stroker: Destroy stroker=" << s_;
-
-    FT_Stroker_Done(s_);
-}
-*/
 
 }

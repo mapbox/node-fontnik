@@ -35,7 +35,6 @@ extern "C"
 #include <ft2build.h>
 #include FT_FREETYPE_H
 #include FT_GLYPH_H
-// #include FT_STROKER_H
 }
 
 namespace fontserver {
@@ -83,18 +82,3 @@ inline bool operator==(face_ptr const& lhs, face_ptr const& rhs) {
 }
 
 }
-
-/*
-// FT_Stroker wrapper
-class stroker {
-public:
-    explicit stroker(FT_Stroker s)
-        : s_(s) {}
-    ~stroker();
-
-    void init(double radius);
-    FT_Stroker const& get() const { return s_; }
-private:
-    FT_Stroker s_;
-};
-*/

@@ -9,7 +9,6 @@
 #include <algorithm>
 #include <memory>
 #include <sstream>
-#include <iostream>
 
 // freetype2
 extern "C"
