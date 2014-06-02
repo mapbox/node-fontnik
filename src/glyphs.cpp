@@ -1,6 +1,7 @@
-#include "glyphs.hpp"
-#include "font_engine_freetype.hpp"
-#include "face_set.hpp"
+// fontserver
+#include <fontserver/glyphs.hpp>
+#include <fontserver/font_engine_freetype.hpp>
+#include <fontserver/face_set.hpp>
 
 // node
 #include <node_buffer.h>

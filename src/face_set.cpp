@@ -20,7 +20,8 @@
  *
  *****************************************************************************/
 
-#include "face_set.hpp"
+// fontserver
+#include <fontserver/face_set.hpp>
 
 namespace fontserver {
 

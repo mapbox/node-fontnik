@@ -20,11 +20,12 @@
  *
  *****************************************************************************/
 
-#include "font_engine_freetype.hpp"
-#include "pixel_position.hpp"
-#include "face.hpp"
-#include "face_set.hpp"
-#include "util.hpp"
+// fontserver
+#include <fontserver/font_engine_freetype.hpp>
+#include <fontserver/pixel_position.hpp>
+#include <fontserver/face.hpp>
+#include <fontserver/face_set.hpp>
+#include <fontserver/util.hpp>
 
 // boost
 #include <boost/algorithm/string.hpp>

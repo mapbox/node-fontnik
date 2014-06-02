@@ -22,7 +22,8 @@
 
 // #define BOOST_FILESYSTEM_VERSION 2
 
-#include "util.hpp"
+// fontserver
+#include <fontserver/util.hpp>
 
 // boost
 #include <boost/filesystem/convenience.hpp>

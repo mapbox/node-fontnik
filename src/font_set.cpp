@@ -20,7 +20,8 @@
  *
  *****************************************************************************/
 
-#include "font_set.hpp"
+// fontserver
+#include <fontserver/font_set.hpp>
 
 // stl
 #include <sstream>

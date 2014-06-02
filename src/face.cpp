@@ -20,7 +20,9 @@
  *
  *****************************************************************************/
 
-#include "face.hpp"
+// fontserver
+#include <fontserver/face.hpp>
+
 #include "distmap.h"
 
 namespace fontserver {

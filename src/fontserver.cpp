@@ -1,7 +1,9 @@
-#include <node.h>
+// fontserver
+#include <fontserver/mapnik_fonts.hpp>
+#include <fontserver/glyphs.hpp>
 
-#include "mapnik_fonts.hpp"
-#include "glyphs.hpp"
+// node
+#include <node.h>
 
 void RegisterModule(v8::Handle<v8::Object> target) {
     NODE_SET_METHOD(target, "register_fonts", fontserver::register_fonts);
