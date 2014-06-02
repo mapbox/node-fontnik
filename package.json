@@ -6,6 +6,7 @@
     "private": true,
 
     "dependencies": {
+        "queue-async": "1.0.x",
         "node-pre-gyp": "0.5.x"
     },
 
