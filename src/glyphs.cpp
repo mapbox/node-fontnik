@@ -26,7 +26,7 @@ struct RangeBaton {
     std::string range;
     bool error;
     std::string error_name;
-    v8::Local<v8::Array> chars;
+    std::vector<std::uint32_t> chars;
 };
 
 v8::Persistent<v8::FunctionTemplate> Glyphs::constructor;
@@ -120,8 +120,14 @@ v8::Handle<v8::Value> Glyphs::Range(const v8::Arguments& args) {
 
     v8::String::Utf8Value fontstack(args[0]->ToString());
     v8::String::Utf8Value range(args[1]->ToString());
-    v8::Local<v8::Array> chars = v8::Local<v8::Array>::Cast(args[2]);
+    v8::Local<v8::Array> charsArray = v8::Local<v8::Array>::Cast(args[2]);
     v8::Local<v8::Function> callback = v8::Local<v8::Function>::Cast(args[3]);
+
+    unsigned array_size = charsArray->Length();
+    std::vector<std::uint32_t> chars;
+    for (unsigned i=0; i < array_size; i++) {
+        chars.push_back(charsArray->Get(i)->IntegerValue());
+    }
 
     Glyphs *glyphs = node::ObjectWrap::Unwrap<Glyphs>(args.This());
 
@@ -173,9 +179,8 @@ void Glyphs::AsyncRange(uv_work_t* req) {
     double size = format.text_size * scale_factor;
     face_set->set_character_sizes(size);
 
-    unsigned array_size = baton->chars->Length();
-    for (unsigned i=0;i<array_size;++i) {
-        FT_ULong char_code = baton->chars->Get(i)->NumberValue();
+    for (std::vector<uint32_t>::size_type i = 0; i != baton->chars.size(); i++) {
+        FT_ULong char_code = baton->chars[i];
         fontserver::glyph_info glyph;
 
         for (auto const& face : *face_set) {

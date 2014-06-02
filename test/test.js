@@ -57,6 +57,16 @@ describe('glyphs', function() {
         });
     });
 
+    // Render a long range of characters which can cause segfaults
+    // with V8 arrays ... not sure yet why.
+    it('longrange', function(done) {
+        var glyphs = new fontserver.Glyphs();
+        glyphs.range('Open Sans Regular, Siyam Rupali Regular', '0-1024', fontserver.getRange(0, 1024), function(err) {
+            assert.ifError(err);
+            done();
+        });
+    });
+
     it('range (chars input)', function(done) {
         var glyphs = new fontserver.Glyphs();
         glyphs.range('Open Sans Regular, Siyam Rupali Regular', 'a-and-z', [('a').charCodeAt(0), ('z').charCodeAt(0)], function(err) {
