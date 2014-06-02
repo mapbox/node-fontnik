@@ -27,9 +27,9 @@
         'src/font_engine_freetype.cpp',
         'src/font_set.cpp',
         'src/fontserver.cpp',
-        'src/util.cpp',
-        'src/distmap.c',
-        'src/edtaa4func.c',
+        'src/util/distmap.c',
+        'src/util/edtaa4func.c',
+        'src/util/fs.cpp',
         '<(SHARED_INTERMEDIATE_DIR)/glyphs.pb.cc'
       ],
       'include_dirs': [

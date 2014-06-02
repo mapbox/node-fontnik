@@ -20,13 +20,13 @@
  *
  *****************************************************************************/
 
-// fontserver
-#include <fontserver/font_set.hpp>
+// mapnik
+#include <mapnik/font_set.hpp>
 
 // stl
 #include <sstream>
 
-namespace fontserver {
+namespace mapnik {
 
 font_set::font_set(std::string const& name)
     : name_(name) {}

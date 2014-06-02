@@ -20,12 +20,12 @@
  *
  *****************************************************************************/
 
-// fontserver
-#include <fontserver/face.hpp>
+// mapnik
+#include <mapnik/face.hpp>
 
-#include "distmap.h"
+#include "util/distmap.h"
 
-namespace fontserver {
+namespace mapnik {
 
 face::face(FT_Face ft_face)
     : ft_face_(ft_face),

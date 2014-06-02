@@ -20,12 +20,12 @@
  *
  *****************************************************************************/
 
-// fontserver
-#include <fontserver/font_engine_freetype.hpp>
-#include <fontserver/pixel_position.hpp>
-#include <fontserver/face.hpp>
-#include <fontserver/face_set.hpp>
-#include <fontserver/util.hpp>
+// mapnik
+#include <mapnik/font_engine_freetype.hpp>
+#include <mapnik/pixel_position.hpp>
+#include <mapnik/face.hpp>
+#include <mapnik/face_set.hpp>
+#include <mapnik/util/fs.hpp>
 
 // boost
 #include <boost/algorithm/string.hpp>
@@ -52,7 +52,7 @@ void* _Realloc_Func(FT_Memory memory, long cur_size, long new_size, void *block)
     return std::realloc(block, new_size);
 }
 
-namespace fontserver {
+namespace mapnik {
 
 freetype_engine::freetype_engine() :
     library_(nullptr),

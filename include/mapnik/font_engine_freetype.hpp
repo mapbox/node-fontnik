@@ -24,7 +24,9 @@
 
 #include "glyph_info.hpp"
 #include "font_set.hpp"
-#include "guarded_map.hpp"
+
+// fontserver
+#include <fontserver/guarded_map.hpp>
 
 // stl
 #include <map>
@@ -44,7 +46,7 @@ extern "C"
 struct FT_LibraryRec_;
 struct FT_MemoryRec_;
 
-namespace fontserver {
+namespace mapnik {
 
 typedef guarded_map<uint32_t, glyph_info> glyph_cache_type;
 typedef std::shared_ptr<glyph_cache_type> glyph_cache_ptr;

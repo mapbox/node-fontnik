@@ -25,7 +25,8 @@
 // stl
 #include <string>
 
-namespace util {
+namespace mapnik { namespace util {
+
     bool exists(std::string const& value);
     bool is_directory(std::string const& value);
     bool remove(std::string const& value);
@@ -33,4 +34,5 @@ namespace util {
     std::string make_relative(std::string const& filepath, std::string const& base);
     std::string make_absolute(std::string const& filepath, std::string const& base);
     std::string dirname(std::string const& value);
-}
+
+}}

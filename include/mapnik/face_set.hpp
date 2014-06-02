@@ -2,7 +2,7 @@
  *
  * This file is part of Mapnik (c++ mapping toolkit)
  *
- * Copyright (C) 2011 Artem Pavlenko
+ * Copyright (C) 2013 Artem Pavlenko
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -22,31 +22,38 @@
 
 #pragma once
 
+#include "face.hpp"
+
 // stl
-#include <string>
+#include <memory>
 #include <vector>
 
-namespace fontserver {
+// freetype2
+extern "C"
+{
+#include <ft2build.h>
+#include FT_FREETYPE_H
+// #include FT_STROKER_H
+}
 
-class font_set {
+namespace mapnik {
+
+class face_set {
 public:
-    font_set(std::string const& name);
-    font_set(font_set const& rhs);
-    ~font_set();
+    typedef std::vector<face_ptr>::const_iterator iterator;
 
-    font_set& operator=(font_set const& rhs);
+    face_set(void) : faces_() {}
 
-    std::size_t size() const;
-    void set_name(std::string const& name);
-    std::string const& get_name() const;
-    void add_face_name(std::string const& face_name);
-    void add_fontstack(std::string const& fontstack, char delim);
-    std::vector<std::string> const& get_face_names() const;
+    void add(face_ptr face);
+    void set_character_sizes(double size);
+
+    unsigned size() const { return faces_.size(); }
+    iterator begin() { return faces_.cbegin(); }
+    iterator end() { return faces_.cend(); }
 private:
-    std::string name_;
-    std::vector<std::string> face_names_;
-    std::string trim(std::string const& str,
-                     std::string const& whitespace = " \t");
+    std::vector<face_ptr> faces_;
 };
+
+typedef std::shared_ptr<face_set> face_set_ptr;
 
 }

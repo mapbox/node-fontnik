@@ -3,7 +3,8 @@
 // v8
 #include <v8.h>
 
-#include "font_engine_freetype.hpp"
+// mapnik
+#include <mapnik/font_engine_freetype.hpp>
 
 // stl
 #include <vector>
@@ -12,7 +13,7 @@
 
 using namespace v8;
 
-namespace fontserver {
+namespace node_mapnik {
 
 static inline Handle<Value> register_fonts(const Arguments& args)
 {
@@ -26,7 +27,7 @@ static inline Handle<Value> register_fonts(const Arguments& args)
 
         bool found = false;
 
-        std::vector<std::string> const names_before = freetype_engine::face_names();
+        std::vector<std::string> const names_before = mapnik::freetype_engine::face_names();
 
         // option hash
         if (args.Length() == 2){
@@ -44,16 +45,16 @@ static inline Handle<Value> register_fonts(const Arguments& args)
 
                 bool recurse = recurse_opt->BooleanValue();
                 std::string path = TOSTR(args[0]);
-                found = freetype_engine::register_fonts(path,recurse);
+                found = mapnik::freetype_engine::register_fonts(path,recurse);
             }
         }
         else
         {
             std::string path = TOSTR(args[0]);
-            found = freetype_engine::register_fonts(path);
+            found = mapnik::freetype_engine::register_fonts(path);
         }
 
-        std::vector<std::string> const& names_after = freetype_engine::face_names();
+        std::vector<std::string> const& names_after = mapnik::freetype_engine::face_names();
         if (names_after.size() == names_before.size())
             found = false;
 
@@ -69,7 +70,7 @@ static inline Handle<Value> register_fonts(const Arguments& args)
 static inline Handle<Value> available_font_faces(const Arguments& args)
 {
     HandleScope scope;
-    std::vector<std::string> const& names = freetype_engine::face_names();
+    std::vector<std::string> const& names = mapnik::freetype_engine::face_names();
     Local<Array> a = Array::New(names.size());
     for (unsigned i = 0; i < names.size(); ++i)
     {
@@ -82,7 +83,7 @@ static inline Handle<Value> available_font_files(const Arguments& args)
 {
     HandleScope scope;
 
-    std::map<std::string,std::pair<int,std::string> > const& mapping = freetype_engine::get_mapping();
+    std::map<std::string,std::pair<int,std::string> > const& mapping = mapnik::freetype_engine::get_mapping();
     Local<Object> obj = Object::New();
     std::map<std::string,std::pair<int,std::string> >::const_iterator itr;
     for (itr = mapping.begin();itr!=mapping.end();++itr)

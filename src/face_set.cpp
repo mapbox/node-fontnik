@@ -20,10 +20,10 @@
  *
  *****************************************************************************/
 
-// fontserver
-#include <fontserver/face_set.hpp>
+// mapnik
+#include <mapnik/face_set.hpp>
 
-namespace fontserver {
+namespace mapnik {
 
 void face_set::add(face_ptr face) {
     faces_.push_back(face);
