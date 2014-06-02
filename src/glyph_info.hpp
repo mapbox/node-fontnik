@@ -30,8 +30,8 @@
 
 namespace fontserver {
 
-class font_face;
-typedef std::shared_ptr<font_face> face_ptr;
+class face;
+typedef std::shared_ptr<face> face_ptr;
 
 struct glyph_info {
     glyph_info()

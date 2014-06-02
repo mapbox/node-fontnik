@@ -20,15 +20,15 @@
  *
  *****************************************************************************/
 
-#include "font_face_set.hpp"
+#include "face_set.hpp"
 
 namespace fontserver {
 
-void font_face_set::add(face_ptr face) {
+void face_set::add(face_ptr face) {
     faces_.push_back(face);
 }
 
-void font_face_set::set_character_sizes(double size) {
+void face_set::set_character_sizes(double size) {
     for (face_ptr const& face : faces_) {
         face->set_character_sizes(size);
     }

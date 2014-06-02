@@ -22,63 +22,38 @@
 
 #pragma once
 
-#include "glyph_info.hpp"
-#include "guarded_map.hpp"
+#include "face.hpp"
 
 // stl
 #include <memory>
-#include <string>
+#include <vector>
 
 // freetype2
 extern "C"
 {
 #include <ft2build.h>
 #include FT_FREETYPE_H
-#include FT_GLYPH_H
+// #include FT_STROKER_H
 }
 
 namespace fontserver {
 
-typedef guarded_map<uint32_t, glyph_info> glyph_cache_type;
-typedef std::shared_ptr<glyph_cache_type> glyph_cache_ptr;
-
-class font_face {
+class face_set {
 public:
-    typedef glyph_cache_type::const_iterator iterator;
+    typedef std::vector<face_ptr>::const_iterator iterator;
 
-    font_face(FT_Face face);
-    font_face(FT_Face face, glyph_cache_ptr glyphs);
-    ~font_face();
+    face_set(void) : faces_() {}
 
-    std::string family_name() const {
-        return std::string(face_->family_name);
-    }
+    void add(face_ptr face);
+    void set_character_sizes(double size);
 
-    std::string style_name() const {
-        return std::string(face_->style_name);
-    }
-
-    FT_Face get_face() const {
-        return face_;
-    }
-
-    double get_char_height() const;
-    bool set_character_sizes(double size);
-    void glyph_dimensions(glyph_info &glyph) const;
-
-    unsigned size() const { return glyphs_->size(); }
-    iterator begin() { return glyphs_->cbegin(); }
-    iterator end() { return glyphs_->cend(); }
+    unsigned size() const { return faces_.size(); }
+    iterator begin() { return faces_.cbegin(); }
+    iterator end() { return faces_.cend(); }
 private:
-    FT_Face face_;
-    glyph_cache_ptr glyphs_;
-    mutable double char_height_;
+    std::vector<face_ptr> faces_;
 };
 
-typedef std::shared_ptr<font_face> face_ptr;
-
-inline bool operator==(face_ptr const& lhs, face_ptr const& rhs) {
-    return lhs->get_face() == rhs->get_face();
-}
+typedef std::shared_ptr<face_set> face_set_ptr;
 
 }

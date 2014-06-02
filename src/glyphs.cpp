@@ -1,6 +1,6 @@
 #include "glyphs.hpp"
 #include "font_engine_freetype.hpp"
-#include "font_face_set.hpp"
+#include "face_set.hpp"
 
 // node
 #include <node_buffer.h>
@@ -151,13 +151,13 @@ void Glyphs::AsyncRange(uv_work_t* req) {
     fontserver::freetype_engine font_engine_;
     fontserver::face_manager_freetype font_manager(font_engine_);
 
-    fontserver::font_set fset(baton->fontstack);
-    fset.add_fontstack(baton->fontstack, ',');
+    fontserver::font_set font_set(baton->fontstack);
+    font_set.add_fontstack(baton->fontstack, ',');
 
     fontserver::face_set_ptr face_set;
 
     try {
-        face_set = font_manager.get_face_set(fset);
+        face_set = font_manager.get_face_set(font_set);
     } catch(const std::runtime_error &e) {
         baton->error = true;
         baton->error_name = e.what();

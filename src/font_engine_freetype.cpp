@@ -22,8 +22,8 @@
 
 #include "font_engine_freetype.hpp"
 #include "pixel_position.hpp"
-#include "font_face.hpp"
-#include "font_face_set.hpp"
+#include "face.hpp"
+#include "face_set.hpp"
 #include "util.hpp"
 
 // boost
@@ -213,7 +213,7 @@ face_ptr freetype_engine::create_face(std::string const& family_name) {
     if (itr != name2file_.end()) {
         std::lock_guard<std::mutex> guard(mutex_);
 
-        FT_Face face;
+        FT_Face ft_face;
         glyph_cache_ptr glyphs;
 
         // Find face shared glyphs cache or create it if it doesn't exist yet.
@@ -238,9 +238,9 @@ face_ptr freetype_engine::create_face(std::string const& family_name) {
                                                 reinterpret_cast<FT_Byte const*>(mem_font_itr->second.c_str()),
                                                 static_cast<FT_Long>(mem_font_itr->second.size()), // size
                                                 itr->second.first, // face index
-                                                &face);
+                                                &ft_face);
 
-            if (!error) return std::make_shared<font_face>(face, glyphs);
+            if (!error) return std::make_shared<face>(ft_face, glyphs);
         } else {
             // Load font into memory
             std::ifstream is(itr->second.second.c_str(), std::ios::binary);
@@ -255,10 +255,10 @@ face_ptr freetype_engine::create_face(std::string const& family_name) {
                                                 reinterpret_cast<FT_Byte const*>(result.first->second.c_str()),
                                                 static_cast<FT_Long>(buffer.size()),
                                                 itr->second.first,
-                                                &face);
+                                                &ft_face);
 
             if (!error) {
-                return std::make_shared<font_face>(face, glyphs);
+                return std::make_shared<face>(ft_face, glyphs);
             } else {
                 // Can't load font, erase it.
                 memory_fonts_.erase(result.first);
@@ -289,34 +289,34 @@ face_ptr face_manager<T>::get_face(const std::string &name) {
 
 template <typename T>
 face_set_ptr face_manager<T>::get_face_set() {
-    face_set_ptr face_set = std::make_shared<font_face_set>();
-    return face_set;
+    face_set_ptr fset = std::make_shared<face_set>();
+    return fset;
 }
 
 template <typename T>
 face_set_ptr face_manager<T>::get_face_set(const std::string &name) {
-    face_set_ptr face_set = std::make_shared<font_face_set>();
+    face_set_ptr fset = std::make_shared<face_set>();
 
     if (face_ptr face = get_face(name)) {
-        face_set->add(face);
+        fset->add(face);
     } else {
         std::ostringstream runtime_error;
         runtime_error << "Failed to find face " << name;
         throw std::runtime_error(runtime_error.str());
     }
 
-    return face_set;
+    return fset;
 }
 
 template <typename T>
-face_set_ptr face_manager<T>::get_face_set(const font_set &fset) {
-    std::vector<std::string> const& names = fset.get_face_names();
-    face_set_ptr face_set = std::make_shared<font_face_set>();
+face_set_ptr face_manager<T>::get_face_set(const font_set &font_set) {
+    std::vector<std::string> const& names = font_set.get_face_names();
+    face_set_ptr fset = std::make_shared<face_set>();
 
     for (std::vector<std::string>::const_iterator name = names.begin(); name != names.end(); ++name) {
         face_ptr face = get_face(*name);
         if (face) {
-            face_set->add(face);
+            fset->add(face);
         } else {
           std::ostringstream runtime_error;
           runtime_error << "Failed to find face " << *name;
@@ -324,7 +324,7 @@ face_set_ptr face_manager<T>::get_face_set(const font_set &fset) {
         }
     }
 
-    return face_set;
+    return fset;
 }
 
 std::mutex freetype_engine::mutex_;
