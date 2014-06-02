@@ -1,6 +1,6 @@
 #include "glyphs.hpp"
+#include "font_engine_freetype.hpp"
 #include "font_face_set.hpp"
-#include "harfbuzz_shaper.hpp"
 
 // node
 #include <node_buffer.h>
@@ -16,7 +16,6 @@ extern "C"
 {
 #include <ft2build.h>
 #include FT_FREETYPE_H
-// #include FT_STROKER_H
 }
 
 struct RangeBaton {

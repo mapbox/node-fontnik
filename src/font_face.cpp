@@ -26,9 +26,6 @@
 // stl
 #include <iostream>
 
-// icu
-#include <unicode/unistr.h>
-
 namespace fontserver {
 
 font_face::font_face(FT_Face face)
