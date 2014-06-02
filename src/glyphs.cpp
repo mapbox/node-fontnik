@@ -23,10 +23,10 @@ struct RangeBaton {
     v8::Persistent<v8::Function> callback;
     Glyphs *glyphs;
     std::string fontstack;
+    std::string range;
     bool error;
     std::string error_name;
-    unsigned long start;
-    unsigned long end;
+    std::vector<std::uint32_t> chars;
 };
 
 v8::Persistent<v8::FunctionTemplate> Glyphs::constructor;
@@ -103,14 +103,14 @@ v8::Handle<v8::Value> Glyphs::Range(const v8::Arguments& args) {
             v8::String::New("fontstack must be a string")));
     }
 
-    if (args.Length() < 2 || !args[1]->IsNumber()) {
+    if (args.Length() < 2 || !args[1]->IsString()) {
         return ThrowException(v8::Exception::TypeError(
-            v8::String::New("start must be a number")));
+            v8::String::New("range must be a string")));
     }
 
-    if (args.Length() < 3 || !args[2]->IsNumber()) {
+    if (args.Length() < 3 || !args[2]->IsArray()) {
         return ThrowException(v8::Exception::TypeError(
-            v8::String::New("end must be a number")));
+            v8::String::New("chars must be an array")));
     }
 
     if (args.Length() < 4 || !args[3]->IsFunction()) {
@@ -118,29 +118,16 @@ v8::Handle<v8::Value> Glyphs::Range(const v8::Arguments& args) {
             v8::String::New("callback must be a function")));
     }
 
+    v8::String::Utf8Value fontstack(args[0]->ToString());
+    v8::String::Utf8Value range(args[1]->ToString());
+    v8::Local<v8::Array> charsArray = v8::Local<v8::Array>::Cast(args[2]);
     v8::Local<v8::Function> callback = v8::Local<v8::Function>::Cast(args[3]);
 
-    if (args[1]->NumberValue() < 0 || args[1]->NumberValue() > 65533) {
-        v8::Local<v8::Value> argv[1] = { v8::Exception::Error(v8::String::New("start must be a number from 0-65533")) };
-        callback->Call(v8::Context::GetCurrent()->Global(), 1, argv);
-        return v8::Undefined();
+    unsigned array_size = charsArray->Length();
+    std::vector<std::uint32_t> chars;
+    for (unsigned i=0; i < array_size; i++) {
+        chars.push_back(charsArray->Get(i)->IntegerValue());
     }
-
-    if (args[2]->NumberValue() < 0 || args[2]->NumberValue() > 65533) {
-        v8::Local<v8::Value> argv[1] = { v8::Exception::Error(v8::String::New("end must be a number from 0-65533")) };
-        callback->Call(v8::Context::GetCurrent()->Global(), 1, argv);
-        return v8::Undefined();
-    }
-
-    if (args[1]->NumberValue() > args[2]->NumberValue()) {
-        v8::Local<v8::Value> argv[1] = { v8::Exception::Error(v8::String::New("start must be less than or equal to end")) };
-        callback->Call(v8::Context::GetCurrent()->Global(), 1, argv);
-        return v8::Undefined();
-    }
-
-    v8::String::Utf8Value fontstack(args[0]->ToString());
-    unsigned long start = args[1]->NumberValue();
-    unsigned long end = args[2]->NumberValue();
 
     Glyphs *glyphs = node::ObjectWrap::Unwrap<Glyphs>(args.This());
 
@@ -148,8 +135,8 @@ v8::Handle<v8::Value> Glyphs::Range(const v8::Arguments& args) {
     baton->callback = v8::Persistent<v8::Function>::New(callback);
     baton->glyphs = glyphs;
     baton->fontstack = *fontstack;
-    baton->start = start;
-    baton->end = end;
+    baton->range = *range;
+    baton->chars = chars;
 
     uv_work_t *req = new uv_work_t();
     req->data = baton;
@@ -179,17 +166,11 @@ void Glyphs::AsyncRange(uv_work_t* req) {
         return;
     }
 
-    FT_ULong char_code = baton->start;
-    FT_ULong char_end = baton->end + 1;
-
     llmr::glyphs::glyphs& glyphs = baton->glyphs->glyphs;
 
     llmr::glyphs::fontstack *mutable_fontstack = glyphs.add_stacks();
     mutable_fontstack->set_name(baton->fontstack);
-
-    std::stringstream range;
-    range << baton->start << "-" << baton->end;
-    mutable_fontstack->set_range(range.str());
+    mutable_fontstack->set_range(baton->range);
 
     fontserver::text_format format(baton->fontstack, 24);
     const double scale_factor = 1.0;
@@ -198,7 +179,8 @@ void Glyphs::AsyncRange(uv_work_t* req) {
     double size = format.text_size * scale_factor;
     face_set->set_character_sizes(size);
 
-    for (; char_code < char_end; char_code++) {
+    for (std::vector<uint32_t>::size_type i = 0; i != baton->chars.size(); i++) {
+        FT_ULong char_code = baton->chars[i];
         fontserver::glyph_info glyph;
 
         for (auto const& face : *face_set) {

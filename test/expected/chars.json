@@ -1,0 +1,26 @@
+{
+  "stacks": {
+    "Open Sans Regular, Siyam Rupali Regular": {
+      "glyphs": {
+        "97": {
+          "id": 97,
+          "width": 11,
+          "height": 15,
+          "left": 1,
+          "top": -12,
+          "advance": 13
+        },
+        "122": {
+          "id": 122,
+          "width": 11,
+          "height": 13,
+          "left": 0,
+          "top": -13,
+          "advance": 11
+        }
+      },
+      "name": "Open Sans Regular, Siyam Rupali Regular",
+      "range": "a-and-z"
+    }
+  }
+}
