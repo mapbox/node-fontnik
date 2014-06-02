@@ -20,9 +20,11 @@ function range(options, callback) {
     'use strict';
     options = options || {};
     options.fontstack = options.fontstack || 'Open Sans Regular';
+    options.range = options.range || options.start + '-' + options.end;
+    options.chars = options.chars || getRange(options.start, options.end);
 
     var glyphs = new fontserver.Glyphs();
-    glyphs.range(options.fontstack, options.start + '-' + options.end, getRange(options.start, options.end), deflate);
+    glyphs.range(options.fontstack, options.range, options.chars, deflate);
 
     function deflate(err) {
         if (err) return callback(err);
