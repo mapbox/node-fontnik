@@ -1,5 +1,3 @@
-# Contributing
-
 ## Building from source
 
 ```
