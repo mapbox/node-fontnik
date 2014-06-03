@@ -39,7 +39,6 @@ extern "C"
 {
 #include <ft2build.h>
 #include FT_FREETYPE_H
-// #include FT_STROKER_H
 #include FT_MODULE_H
 }
 
