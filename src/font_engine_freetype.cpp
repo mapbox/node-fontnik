@@ -109,9 +109,9 @@ bool freetype_engine::is_font_file(std::string const& file_name)
 
 bool freetype_engine::register_font(std::string const& file_name)
 {
-#ifdef MAPNIK_THREADSAFE
+// #ifdef MAPNIK_THREADSAFE
     std::lock_guard<std::mutex> guard(mutex_);
-#endif
+// #endif
     std::unique_ptr<FT_MemoryRec_> memory(new FT_MemoryRec_);
     FT_Library library = 0;
     init_freetype(&*memory, library);
@@ -172,9 +172,9 @@ bool freetype_engine::register_font_impl(std::string const& file_name, FT_Librar
 
 bool freetype_engine::register_fonts(std::string const& dir, bool recurse)
 {
-#ifdef MAPNIK_THREADSAFE
+// #ifdef MAPNIK_THREADSAFE
     std::lock_guard<std::mutex> guard(mutex_);
-#endif
+// #endif
     std::unique_ptr<FT_MemoryRec_> memory(new FT_MemoryRec_);
     FT_Library library = 0;
     init_freetype(&*memory, library);
@@ -368,7 +368,7 @@ face_set_ptr face_manager<T>::get_face_set(font_set const& font_set)
     face_set_ptr fset = std::make_shared<face_set>();
     for (auto const& name  : names)
     {
-        face_ptr face = get_face(*name);
+        face_ptr face = get_face(name);
         if (face)
         {
             fset->add(face);
@@ -385,9 +385,9 @@ face_set_ptr face_manager<T>::get_face_set(font_set const& font_set)
     return fset;
 }
 
-#ifdef MAPNIK_THREADSAFE
+// #ifdef MAPNIK_THREADSAFE
 std::mutex freetype_engine::mutex_;
-#endif
+// #endif
 std::map<std::string,std::pair<int,std::string> > freetype_engine::name2file_;
 std::map<std::string,std::string> freetype_engine::memory_fonts_;
 std::map<const std::string,glyph_cache_ptr> freetype_engine::glyph_cache_map_;

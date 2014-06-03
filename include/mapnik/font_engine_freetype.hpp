@@ -24,8 +24,10 @@
 #define MAPNIK_FONT_ENGINE_FREETYPE_HPP
 
 // mapnik
+#include <mapnik/config.hpp>
 #include <mapnik/glyph_info.hpp>
 #include <mapnik/font_set.hpp>
+#include <mapnik/noncopyable.hpp>
 
 // fontserver
 #include <fontserver/guarded_map.hpp>
@@ -33,9 +35,9 @@
 // stl
 #include <map>
 #include <memory>
-#ifdef MAPNIK_THREADSAFE
+// #ifdef MAPNIK_THREADSAFE
 #include <thread>
-#endif
+// #endif
 #include <vector>
 
 struct FT_LibraryRec_;
@@ -77,9 +79,9 @@ private:
     static bool register_fonts_impl(std::string const& dir, FT_LibraryRec_ * library, bool recurse = false);
     FT_LibraryRec_ * library_;
     std::unique_ptr<FT_MemoryRec_> memory_;
-#ifdef MAPNIK_THREADSAFE
+// #ifdef MAPNIK_THREADSAFE
     static std::mutex mutex_;
-#endif
+// #endif
     static std::map<std::string, std::pair<int,std::string> > name2file_;
     static std::map<std::string, std::string> memory_fonts_;
     static std::map<const std::string, glyph_cache_ptr> glyph_cache_map_;
