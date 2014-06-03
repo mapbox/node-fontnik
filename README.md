@@ -21,8 +21,8 @@ However, other platforms will fall back to a source compile: see [building from 
 
 ## Building from source
 
-Make sure you have `boost`, `freetype`, and `protobuf` installed. With homebrew, you can
-type `brew install boost --c++11 freetype protobuf --c++11`. The makefile uses `pkg-config` to find these
+Make sure you have `boost`, `freetype`, and `protobuf` installed. With [Homebrew](http://brew.sh/), you can
+type `brew install boost --c++11 freetype protobuf --c++11`. The Makefile uses `pkg-config` to find these
 libraries and links dynamically to them, so make sure that `pkg-config` can find
 them.
 
