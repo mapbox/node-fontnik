@@ -350,14 +350,14 @@ face_set_ptr face_manager<T>::get_face_set(std::string const& name)
     {
         fset->add(face);
     }
-#ifdef MAPNIK_LOG
+// #ifdef MAPNIK_LOG
     else
     {
         std::ostringstream runtime_error;
         runtime_error << "Failed to find face " << name;
         throw std::runtime_error(runtime_error.str());
     }
-#endif
+// #endif
     return fset;
 }
 
@@ -373,14 +373,14 @@ face_set_ptr face_manager<T>::get_face_set(font_set const& font_set)
         {
             fset->add(face);
         }
-#ifdef MAPNIK_LOG
+// #ifdef MAPNIK_LOG
         else
         {
           std::ostringstream runtime_error;
-          runtime_error << "Failed to find face " << *name;
+          runtime_error << "Failed to find face " << name;
           throw std::runtime_error(runtime_error.str());
         }
-#endif
+// #endif
     }
     return fset;
 }
