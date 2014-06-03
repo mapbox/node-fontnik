@@ -17,9 +17,9 @@ Just run:
 npm install
 ```
 
-However other platforms will fall back to a source compile: see Source Build for details.
+However other platforms will fall back to a source compile: see [building from source](#building-from-source) for details.
 
-## Source Build
+## Building from source
 
 Make sure you have `boost`, `freetype`, and `protobuf` installed. With homebrew, you can
 type `brew install boost --c++11 freetype protobuf --c++11`. The makefile uses `pkg-config` to find these
