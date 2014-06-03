@@ -22,7 +22,8 @@
 
 #pragma once
 
-#include "face.hpp"
+// mapnik
+#include <mapnik/text/face.hpp>
 
 // stl
 #include <memory>

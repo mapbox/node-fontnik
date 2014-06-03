@@ -21,7 +21,7 @@
  *****************************************************************************/
 
 // mapnik
-#include <mapnik/face.hpp>
+#include <mapnik/text/face.hpp>
 
 #include "util/distmap.h"
 
