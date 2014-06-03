@@ -22,7 +22,8 @@
 
 #pragma once
 
-#include "glyph_info.hpp"
+// mapnik
+#include <mapnik/glyph_info.hpp>
 
 // fontserver
 #include <fontserver/guarded_map.hpp>
