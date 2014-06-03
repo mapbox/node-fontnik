@@ -1,8 +1,8 @@
+[![Build Status](https://magnum.travis-ci.com/mapbox/fontserver.png?token=ctvz1otCksqcmNzRzzxa&branch=master)](https://magnum.travis-ci.com/mapbox/fontserver)
+
 # fontserver
 
 A library that delivers a range of characters rendered as SDFs (signed distance fields) in a protobuf.
-
-[![Build Status](https://magnum.travis-ci.com/mapbox/fontserver.png?token=ctvz1otCksqcmNzRzzxa&branch=master)](https://magnum.travis-ci.com/mapbox/fontserver)
 
 ## Installing
 
