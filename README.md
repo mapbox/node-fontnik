@@ -17,7 +17,7 @@ Just run:
 npm install
 ```
 
-However other platforms will fall back to a source compile: see [building from source](#building-from-source) for details.
+However, other platforms will fall back to a source compile: see [building from source](#building-from-source) for details.
 
 ## Building from source
 
