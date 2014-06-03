@@ -30,7 +30,7 @@ describe('glyphs', function() {
         // On disk fixture generated with the following code.
         /*
         fontserver.range({
-            fontstack:'Open Sans Regular, Siyam Rupali Regular',
+            fontstack:'Open Sans Regular',
             start: 0,
             end: 256
         }, function(err, zdata) {
@@ -48,7 +48,7 @@ describe('glyphs', function() {
 
     it('range', function(done) {
         var glyphs = new fontserver.Glyphs();
-        glyphs.range('Open Sans Regular, Siyam Rupali Regular', '0-256', fontserver.getRange(0, 256), function(err) {
+        glyphs.range('Open Sans Regular', '0-256', fontserver.getRange(0, 256), function(err) {
             assert.ifError(err);
             var vt = new Glyphs(new Protobuf(new Uint8Array(glyphs.serialize())));
             var json = JSON.parse(JSON.stringify(vt, nobuffer));
@@ -61,7 +61,7 @@ describe('glyphs', function() {
     // with V8 arrays ... not sure yet why.
     it('longrange', function(done) {
         var glyphs = new fontserver.Glyphs();
-        glyphs.range('Open Sans Regular, Siyam Rupali Regular', '0-1024', fontserver.getRange(0, 1024), function(err) {
+        glyphs.range('Open Sans Regular', '0-1024', fontserver.getRange(0, 1024), function(err) {
             assert.ifError(err);
             done();
         });
@@ -69,7 +69,7 @@ describe('glyphs', function() {
 
     it('range (chars input)', function(done) {
         var glyphs = new fontserver.Glyphs();
-        glyphs.range('Open Sans Regular, Siyam Rupali Regular', 'a-and-z', [('a').charCodeAt(0), ('z').charCodeAt(0)], function(err) {
+        glyphs.range('Open Sans Regular', 'a-and-z', [('a').charCodeAt(0), ('z').charCodeAt(0)], function(err) {
             assert.ifError(err);
             var vt = new Glyphs(new Protobuf(new Uint8Array(glyphs.serialize())));
             var json = JSON.parse(JSON.stringify(vt, nobuffer));
