@@ -21,6 +21,7 @@
  *****************************************************************************/
 
 // mapnik
+#include <mapnik/debug.hpp>
 #include <mapnik/font_engine_freetype.hpp>
 #include <mapnik/pixel_position.hpp>
 #include <mapnik/text/face.hpp>
@@ -35,8 +36,6 @@
 // stl
 #include <algorithm>
 #include <stdexcept>
-#include <sstream>
-#include <fstream>
 #include <cstdlib>
 
 // freetype2
@@ -161,7 +160,7 @@ bool freetype_engine::register_font_impl(std::string const& file_name, FT_Librar
             else if (face->style_name)
                 s << "which reports a style name of '" << std::string(face->style_name) << "' and lacks a family name";
 
-            std::cerr << "register_font: " << s.str();
+            MAPNIK_LOG_ERROR(font_engine_freetype) << "register_font: " << s.str();
         }
     }
 
@@ -232,7 +231,7 @@ bool freetype_engine::register_fonts_impl(std::string const& dir, FT_LibraryRec_
     }
     catch (std::exception const& ex)
     {
-        std::cerr << "register_fonts: " << ex.what() << '\n';
+        MAPNIK_LOG_ERROR(font_engine_freetype) << "register_fonts: " << ex.what();
     }
     return success;
 }
@@ -259,7 +258,9 @@ face_ptr freetype_engine::create_face(std::string const& family_name)
     auto itr = name2file_.find(family_name);
     if (itr != name2file_.end())
     {
+// #ifdef MAPNIK_THREADSAFE
         std::lock_guard<std::mutex> guard(mutex_);
+// #endif
 
         FT_Face ft_face;
         glyph_cache_ptr glyphs;

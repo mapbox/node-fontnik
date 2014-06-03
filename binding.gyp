@@ -27,6 +27,7 @@
         'src/font_engine_freetype.cpp',
         'src/font_set.cpp',
         'src/fontserver.cpp',
+        'src/debug.cpp',
         'src/util/distmap.c',
         'src/util/edtaa4func.c',
         'src/util/fs.cpp',
