@@ -22,36 +22,17 @@
 
 #pragma once
 
-#include "text_line.hpp"
-#include "itemizer.hpp"
-#include "font_engine_freetype.hpp"
-#include "glyph_info.hpp"
-
 // stl
-#include <list>
-#include <map>
+#include <string>
 
-// icu
-#include <unicode/unistr.h>
+namespace mapnik { namespace util {
 
-// harfbuzz
-#include <harfbuzz/hb.h>
-#include <harfbuzz/hb-ft.h>
-#include <harfbuzz/hb-icu.h>
+    bool exists(std::string const& value);
+    bool is_directory(std::string const& value);
+    bool remove(std::string const& value);
+    bool is_relative(std::string const& value);
+    std::string make_relative(std::string const& filepath, std::string const& base);
+    std::string make_absolute(std::string const& filepath, std::string const& base);
+    std::string dirname(std::string const& value);
 
-namespace fontserver {
-
-class harfbuzz_shaper {
-public:
-    harfbuzz_shaper();
-    ~harfbuzz_shaper();
-
-    static void shape_text(text_line &line,
-                           text_itemizer &itemizer,
-                           std::map<unsigned, double> &width_map,
-                           face_set_ptr &face_set,
-                           // face_manager_freetype &font_manager,
-                           double scale_factor);
-};
-
-}
+}}

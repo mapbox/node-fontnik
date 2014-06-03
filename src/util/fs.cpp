@@ -22,7 +22,8 @@
 
 // #define BOOST_FILESYSTEM_VERSION 2
 
-#include "util.hpp"
+// mapnik
+#include <mapnik/util/fs.hpp>
 
 // boost
 #include <boost/filesystem/convenience.hpp>
@@ -57,6 +58,8 @@ namespace filesystem {
 }
 }
 #endif
+
+namespace mapnik {
 
 namespace util {
     bool exists(std::string const& filepath) {
@@ -110,3 +113,5 @@ namespace util {
 #endif
     }
 } // end namespace util
+
+} // end namespace mapnik

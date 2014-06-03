@@ -22,16 +22,18 @@
 
 #pragma once
 
-#include "text_format.hpp"
+// fontserver
+#include <fontserver/text_format.hpp>
+
 #include "pixel_position.hpp"
 
 // stl
 #include <memory>
 
-namespace fontserver {
+namespace mapnik {
 
-class font_face;
-typedef std::shared_ptr<font_face> face_ptr;
+class face;
+typedef std::shared_ptr<face> face_ptr;
 
 struct glyph_info {
     glyph_info()
@@ -80,7 +82,7 @@ struct glyph_info {
     double descender;
 
     pixel_position offset;
-    text_format_ptr format;
+    fontserver::text_format_ptr format;
     // double height() const { return ymax-ymin; }
 };
 

@@ -20,53 +20,42 @@
  *
  *****************************************************************************/
 
-#include "font_face.hpp"
-#include "distmap.h"
+// mapnik
+#include <mapnik/face.hpp>
 
-// stl
-#include <iostream>
+#include "util/distmap.h"
 
-// icu
-#include <unicode/unistr.h>
+namespace mapnik {
 
-namespace fontserver {
-
-font_face::font_face(FT_Face face)
-    : face_(face),
+face::face(FT_Face ft_face)
+    : ft_face_(ft_face),
       glyphs_(std::make_shared<glyph_cache_type>()),
       char_height_(0.0) {}
 
-font_face::font_face(FT_Face face, glyph_cache_ptr glyphs)
-    : face_(face),
+face::face(FT_Face ft_face, glyph_cache_ptr glyphs)
+    : ft_face_(ft_face),
       glyphs_(glyphs),
       char_height_(0.0) {}
 
-font_face::~font_face() {
-    /*
-    std::cout << "font_face: Clean up face " << family_name()
-        << " " << style_name() << "\n";
+face::~face() {}
 
-    FT_Done_Face(face_);
-    */
-}
-
-double font_face::get_char_height() const {
+double face::get_char_height() const {
     if (char_height_ != 0.0) return char_height_;
 
     glyph_info tmp;
-    tmp.glyph_index = FT_Get_Char_Index(face_, 'X');
+    tmp.glyph_index = FT_Get_Char_Index(ft_face_, 'X');
     glyph_dimensions(tmp);
     char_height_ = tmp.height;
 
     return char_height_;
 }
 
-bool font_face::set_character_sizes(double size) {
+bool face::set_character_sizes(double size) {
     char_height_ = 0.0;
-    return !FT_Set_Char_Size(face_, 0, (FT_F26Dot6)(size * (1<<6)), 0, 0);
+    return !FT_Set_Char_Size(ft_face_, 0, (FT_F26Dot6)(size * (1<<6)), 0, 0);
 }
 
-void font_face::glyph_dimensions(glyph_info &glyph) const {
+void face::glyph_dimensions(glyph_info &glyph) const {
     // Check if char is already in cache.
     iterator itr;
     itr = glyphs_.get()->find(glyph.glyph_index);
@@ -78,10 +67,10 @@ void font_face::glyph_dimensions(glyph_info &glyph) const {
     // TODO: remove hardcoded buffer size?
     int buffer = 3;
 
-    if (FT_Load_Glyph(face_, glyph.glyph_index, FT_LOAD_NO_HINTING)) return;
+    if (FT_Load_Glyph(ft_face_, glyph.glyph_index, FT_LOAD_NO_HINTING)) return;
 
     FT_Glyph ft_glyph;
-    if (FT_Get_Glyph(face_->glyph, &ft_glyph)) return;
+    if (FT_Get_Glyph(ft_face_->glyph, &ft_glyph)) return;
 
     FT_BBox bbox;
     FT_Glyph_Get_CBox(ft_glyph, FT_GLYPH_BBOX_PIXELS, &bbox);
@@ -89,11 +78,11 @@ void font_face::glyph_dimensions(glyph_info &glyph) const {
     glyph.ymin = bbox.yMin;
     glyph.ymax = bbox.yMax;
 
-    glyph.line_height = face_->size->metrics.height / 64.0;
-    glyph.advance = face_->glyph->metrics.horiAdvance / 64.0;
+    glyph.line_height = ft_face_->size->metrics.height / 64.0;
+    glyph.advance = ft_face_->glyph->metrics.horiAdvance / 64.0;
 
-    glyph.ascender = face_->size->metrics.ascender / 64.0;
-    glyph.descender = face_->size->metrics.ascender / 64.0;
+    glyph.ascender = ft_face_->size->metrics.ascender / 64.0;
+    glyph.descender = ft_face_->size->metrics.ascender / 64.0;
 
     FT_Glyph_To_Bitmap(&ft_glyph, FT_RENDER_MODE_NORMAL, 0, 1);
 
@@ -122,26 +111,6 @@ void font_face::glyph_dimensions(glyph_info &glyph) const {
     FT_Done_Glyph(ft_glyph);
 
     glyphs_.get()->emplace(glyph.glyph_index, glyph);
-
-    /*
-    std::cout << "Added " << glyph.glyph_index
-        << " to shared glyph cache.\n";
-    */
 }
-
-/*
-void stroker::init(double radius) {
-    FT_Stroker_Set(s_, (FT_Fixed) (radius * (1<<6)),
-                   FT_STROKER_LINECAP_ROUND,
-                   FT_STROKER_LINEJOIN_ROUND,
-                   0);
-}
-
-stroker::~stroker() {
-    MAPNIK_LOG_DEBUG(font_engine_freetype) << "stroker: Destroy stroker=" << s_;
-
-    FT_Stroker_Done(s_);
-}
-*/
 
 }

@@ -1,7 +1,10 @@
 #pragma once
 
+// mapnik
+#include <mapnik/font_set.hpp>
+
+// stl
 #include <memory>
-#include "font_set.hpp"
 
 namespace fontserver {
 
@@ -14,7 +17,7 @@ struct text_format {
     };
 
     std::string fontstack;
-    font_set fontset;
+    mapnik::font_set fontset;
 
     double text_size;
 };

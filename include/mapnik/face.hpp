@@ -23,7 +23,9 @@
 #pragma once
 
 #include "glyph_info.hpp"
-#include "guarded_map.hpp"
+
+// fontserver
+#include <fontserver/guarded_map.hpp>
 
 // stl
 #include <memory>
@@ -35,32 +37,31 @@ extern "C"
 #include <ft2build.h>
 #include FT_FREETYPE_H
 #include FT_GLYPH_H
-// #include FT_STROKER_H
 }
 
-namespace fontserver {
+namespace mapnik {
 
 typedef guarded_map<uint32_t, glyph_info> glyph_cache_type;
 typedef std::shared_ptr<glyph_cache_type> glyph_cache_ptr;
 
-class font_face {
+class face {
 public:
     typedef glyph_cache_type::const_iterator iterator;
 
-    font_face(FT_Face face);
-    font_face(FT_Face face, glyph_cache_ptr glyphs);
-    ~font_face();
+    face(FT_Face ft_face);
+    face(FT_Face ft_face, glyph_cache_ptr glyphs);
+    ~face();
 
     std::string family_name() const {
-        return std::string(face_->family_name);
+        return std::string(ft_face_->family_name);
     }
 
     std::string style_name() const {
-        return std::string(face_->style_name);
+        return std::string(ft_face_->style_name);
     }
 
     FT_Face get_face() const {
-        return face_;
+        return ft_face_;
     }
 
     double get_char_height() const;
@@ -71,30 +72,15 @@ public:
     iterator begin() { return glyphs_->cbegin(); }
     iterator end() { return glyphs_->cend(); }
 private:
-    FT_Face face_;
+    FT_Face ft_face_;
     glyph_cache_ptr glyphs_;
     mutable double char_height_;
 };
 
-typedef std::shared_ptr<font_face> face_ptr;
+typedef std::shared_ptr<face> face_ptr;
 
 inline bool operator==(face_ptr const& lhs, face_ptr const& rhs) {
     return lhs->get_face() == rhs->get_face();
 }
 
 }
-
-/*
-// FT_Stroker wrapper
-class stroker {
-public:
-    explicit stroker(FT_Stroker s)
-        : s_(s) {}
-    ~stroker();
-
-    void init(double radius);
-    FT_Stroker const& get() const { return s_; }
-private:
-    FT_Stroker s_;
-};
-*/

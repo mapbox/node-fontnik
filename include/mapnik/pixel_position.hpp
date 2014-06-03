@@ -25,6 +25,8 @@
 // stl
 #include <iomanip>
 
+namespace mapnik {
+
 struct rotation;
 
 struct pixel_position {
@@ -75,4 +77,6 @@ operator << (std::basic_ostream<charT,traits>& out,
       << e.x << ", " << e.y << ')';
     out << s.str();
     return out;
+}
+
 }
