@@ -19,6 +19,8 @@ protected:
     static v8::Handle<v8::Value> Range(const v8::Arguments& args);
     static void AsyncRange(uv_work_t* req);
     static void RangeAfter(uv_work_t* req);
+
+    static std::string Trim(std::string str, std::string whitespace);
 public:
     llmr::glyphs::glyphs glyphs;
 };

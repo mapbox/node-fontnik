@@ -25,7 +25,6 @@
 
 //stl
 #include <string>
-#include <sstream>
 
 namespace mapnik
 {
@@ -74,17 +73,6 @@ void font_set::add_face_name(std::string face_name)
     face_names_.push_back(std::move(face_name));
 }
 
-void font_set::add_fontstack(std::string const& fontstack, char delim)
-{
-    std::stringstream stream(fontstack);
-    std::string face_name;
-
-    // TODO: better to split on delim and font_names_.reserve() then add?
-    while (std::getline(stream, face_name, delim)) {
-        face_names_.push_back(std::move(font_set::trim(face_name)));
-    }
-}
-
 void font_set::set_name(std::string const& name)
 {
     name_ = name;
@@ -98,20 +86,5 @@ std::string const& font_set::get_name() const
 std::vector<std::string> const& font_set::get_face_names() const
 {
     return face_names_;
-}
-
-std::string font_set::trim(std::string const& str,
-                           std::string const& whitespace)
-{
-    const auto strBegin = str.find_first_not_of(whitespace);
-
-    if (strBegin == std::string::npos) {
-        return "";
-    }
-
-    const auto strEnd = str.find_last_not_of(whitespace);
-    const auto strRange = strEnd - strBegin + 1;
-
-    return str.substr(strBegin, strRange);
 }
 }
