@@ -19,69 +19,92 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  *
  *****************************************************************************/
+#ifndef MAPNIK_FACE_HPP
+#define MAPNIK_FACE_HPP
 
-#pragma once
-
-// mapnik
-#include <mapnik/glyph_info.hpp>
+//mapnik
+#include <mapnik/text/glyph_info.hpp>
+#include <mapnik/config.hpp>
+#include <mapnik/noncopyable.hpp>
 
 // fontserver
 #include <fontserver/guarded_map.hpp>
-
-// stl
-#include <memory>
-#include <string>
 
 // freetype2
 extern "C"
 {
 #include <ft2build.h>
 #include FT_FREETYPE_H
-#include FT_GLYPH_H
 }
 
-namespace mapnik {
+//stl
+#include <memory>
+#include <string>
+#include <vector>
+
+namespace mapnik
+{
 
 typedef guarded_map<uint32_t, glyph_info> glyph_cache_type;
 typedef std::shared_ptr<glyph_cache_type> glyph_cache_ptr;
 
-class face {
+class face : mapnik::noncopyable
+{
 public:
-    typedef glyph_cache_type::const_iterator iterator;
-
     face(FT_Face ft_face);
     face(FT_Face ft_face, glyph_cache_ptr glyphs);
-    ~face();
 
-    std::string family_name() const {
+    std::string family_name() const
+    {
         return std::string(ft_face_->family_name);
     }
 
-    std::string style_name() const {
+    std::string style_name() const
+    {
         return std::string(ft_face_->style_name);
     }
 
-    FT_Face get_face() const {
+    FT_Face get_face() const
+    {
         return ft_face_;
     }
 
     double get_char_height() const;
+
     bool set_character_sizes(double size);
+
     void glyph_dimensions(glyph_info &glyph) const;
 
-    unsigned size() const { return glyphs_->size(); }
-    iterator begin() { return glyphs_->cbegin(); }
-    iterator end() { return glyphs_->cend(); }
+    ~face();
+
 private:
     FT_Face ft_face_;
-    glyph_cache_ptr glyphs_;
+    mutable glyph_cache_ptr glyphs_;
     mutable double char_height_;
 };
-
 typedef std::shared_ptr<face> face_ptr;
 
 inline bool operator==(face_ptr const& lhs, face_ptr const& rhs) {
     return lhs->get_face() == rhs->get_face();
 }
 
-}
+class MAPNIK_DECL face_set : private mapnik::noncopyable
+{
+public:
+    typedef std::vector<face_ptr>::const_iterator iterator;
+    face_set(void) : faces_(){}
+
+    void add(face_ptr face);
+    void set_character_sizes(double size);
+
+    unsigned size() const { return faces_.size(); }
+    iterator begin() { return faces_.cbegin(); }
+    iterator end() { return faces_.cend(); }
+private:
+    std::vector<face_ptr> faces_;
+};
+typedef std::shared_ptr<face_set> face_set_ptr;
+
+} //ns mapnik
+
+#endif // FACE_HPP

@@ -1,5 +1,5 @@
-#include "edtaa4func.h"
-#include "distmap.h"
+#include <util/edtaa4func.h>
+#include <util/distmap.h>
 
 #include <stdlib.h>
 #include <string.h>

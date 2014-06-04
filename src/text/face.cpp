@@ -19,46 +19,52 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  *
  *****************************************************************************/
-
 // mapnik
 #include <mapnik/text/face.hpp>
+#include <mapnik/debug.hpp>
 
-#include "util/distmap.h"
+#include <util/distmap.h>
 
-namespace mapnik {
+extern "C"
+{
+#include FT_GLYPH_H
+}
+
+namespace mapnik
+{
 
 face::face(FT_Face ft_face)
     : ft_face_(ft_face),
       glyphs_(std::make_shared<glyph_cache_type>()),
-      char_height_(0.0) {}
+      char_height_(0.0)
+{
+}
 
 face::face(FT_Face ft_face, glyph_cache_ptr glyphs)
     : ft_face_(ft_face),
       glyphs_(glyphs),
       char_height_(0.0) {}
 
-face::~face() {}
-
-double face::get_char_height() const {
+double face::get_char_height() const
+{
     if (char_height_ != 0.0) return char_height_;
-
     glyph_info tmp;
     tmp.glyph_index = FT_Get_Char_Index(ft_face_, 'X');
     glyph_dimensions(tmp);
     char_height_ = tmp.height;
-
     return char_height_;
 }
 
-bool face::set_character_sizes(double size) {
+bool face::set_character_sizes(double size)
+{
     char_height_ = 0.0;
-    return !FT_Set_Char_Size(ft_face_, 0, (FT_F26Dot6)(size * (1<<6)), 0, 0);
+    return !FT_Set_Char_Size(ft_face_,0,(FT_F26Dot6)(size * (1<<6)),0,0);
 }
 
-void face::glyph_dimensions(glyph_info &glyph) const {
-    // Check if char is already in cache.
-    iterator itr;
-    itr = glyphs_.get()->find(glyph.glyph_index);
+void face::glyph_dimensions(glyph_info & glyph) const
+{
+    //Check if char is already in cache
+    auto const& itr = glyphs_->find(glyph.glyph_index);
     if (itr != glyphs_.get()->cend()) {
         glyph = itr->second;
         return;
@@ -71,16 +77,13 @@ void face::glyph_dimensions(glyph_info &glyph) const {
 
     FT_Glyph ft_glyph;
     if (FT_Get_Glyph(ft_face_->glyph, &ft_glyph)) return;
+    FT_BBox ft_bbox;
+    FT_Glyph_Get_CBox(ft_glyph, FT_GLYPH_BBOX_PIXELS, &ft_bbox);
 
-    FT_BBox bbox;
-    FT_Glyph_Get_CBox(ft_glyph, FT_GLYPH_BBOX_PIXELS, &bbox);
-
-    glyph.ymin = bbox.yMin;
-    glyph.ymax = bbox.yMax;
-
+    glyph.ymin = ft_bbox.yMin;
+    glyph.ymax = ft_bbox.yMax;
     glyph.line_height = ft_face_->size->metrics.height / 64.0;
     glyph.advance = ft_face_->glyph->metrics.horiAdvance / 64.0;
-
     glyph.ascender = ft_face_->size->metrics.ascender / 64.0;
     glyph.descender = ft_face_->size->metrics.ascender / 64.0;
 
@@ -94,6 +97,7 @@ void face::glyph_dimensions(glyph_info &glyph) const {
     glyph.left = ((FT_BitmapGlyph)ft_glyph)->left;
     glyph.top = ((FT_BitmapGlyph)ft_glyph)->top;
 
+    // TODO: move this out?
     // Create a signed distance field (SDF) for the glyph bitmap.
     if (width > 0) {
         unsigned int buffered_width = width + 2 * buffer;
@@ -113,4 +117,28 @@ void face::glyph_dimensions(glyph_info &glyph) const {
     glyphs_.get()->emplace(glyph.glyph_index, glyph);
 }
 
+face::~face()
+{
+    MAPNIK_LOG_DEBUG(face) <<
+        "font_face: Clean up face \"" << family_name() <<
+        " " << style_name() << "\"";
+
+    FT_Done_Face(ft_face_);
 }
+
+/******************************************************************************/
+
+void face_set::add(face_ptr face)
+{
+    faces_.push_back(face);
+}
+
+void face_set::set_character_sizes(double size)
+{
+    for (face_ptr const& face : faces_)
+    {
+        face->set_character_sizes(size);
+    }
+}
+
+}//ns mapnik

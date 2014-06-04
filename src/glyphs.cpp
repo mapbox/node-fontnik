@@ -1,7 +1,7 @@
 // fontserver
 #include <fontserver/glyphs.hpp>
 #include <mapnik/font_engine_freetype.hpp>
-#include <mapnik/face_set.hpp>
+#include <mapnik/text/face.hpp>
 
 // node
 #include <node_buffer.h>

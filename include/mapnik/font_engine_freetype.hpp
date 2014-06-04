@@ -25,7 +25,7 @@
 
 // mapnik
 #include <mapnik/config.hpp>
-#include <mapnik/glyph_info.hpp>
+#include <mapnik/text/glyph_info.hpp>
 #include <mapnik/font_set.hpp>
 #include <mapnik/noncopyable.hpp>
 

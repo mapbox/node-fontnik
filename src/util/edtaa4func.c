@@ -40,7 +40,7 @@ for more details.
 The GNU General Public License is available on <http://www.gnu.org/licenses/>.
  */
 
-#include "edtaa4func.h"
+#include <util/edtaa4func.h>
 
 /*
  * Compute the local gradient at edge pixels using convolution filters.

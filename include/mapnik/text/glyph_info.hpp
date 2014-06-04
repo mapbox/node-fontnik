@@ -22,10 +22,11 @@
 
 #pragma once
 
+// mapnik
+#include <mapnik/pixel_position.hpp>
+
 // fontserver
 #include <fontserver/text_format.hpp>
-
-#include "pixel_position.hpp"
 
 // stl
 #include <memory>

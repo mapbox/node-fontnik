@@ -22,12 +22,11 @@
       'dependencies': [ 'action_before_build' ],
       'sources': [
         'src/glyphs.cpp',
-        'src/face.cpp',
-        'src/face_set.cpp',
         'src/font_engine_freetype.cpp',
         'src/font_set.cpp',
         'src/fontserver.cpp',
         'src/debug.cpp',
+        'src/text/face.cpp',
         'src/util/distmap.c',
         'src/util/edtaa4func.c',
         'src/util/fs.cpp',

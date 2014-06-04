@@ -25,7 +25,6 @@
 #include <mapnik/font_engine_freetype.hpp>
 #include <mapnik/pixel_position.hpp>
 #include <mapnik/text/face.hpp>
-#include <mapnik/face_set.hpp>
 #include <mapnik/util/fs.hpp>
 
 // boost
