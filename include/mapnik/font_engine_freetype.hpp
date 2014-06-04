@@ -48,10 +48,10 @@ namespace mapnik
 
 typedef guarded_map<uint32_t, glyph_info> glyph_cache_type;
 typedef std::shared_ptr<glyph_cache_type> glyph_cache_ptr;
-class face_set;
-typedef std::shared_ptr<face_set> face_set_ptr;
-class face;
-typedef std::shared_ptr<face> face_ptr;
+class font_face_set;
+typedef std::shared_ptr<font_face_set> face_set_ptr;
+class font_face;
+typedef std::shared_ptr<font_face> face_ptr;
 
 
 class MAPNIK_DECL freetype_engine

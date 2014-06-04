@@ -289,7 +289,7 @@ face_ptr freetype_engine::create_face(std::string const& family_name)
                                                 itr->second.first, // face index
                                                 &ft_face);
 
-            if (!error) return std::make_shared<face>(ft_face, glyphs);
+            if (!error) return std::make_shared<font_face>(ft_face, glyphs);
         }
         else
         {
@@ -304,7 +304,7 @@ face_ptr freetype_engine::create_face(std::string const& family_name)
                                                  static_cast<FT_Long>(buffer.size()),
                                                  itr->second.first,
                                                  &ft_face);
-            if (!error) return std::make_shared<face>(ft_face, glyphs);
+            if (!error) return std::make_shared<font_face>(ft_face, glyphs);
             else
             {
                 // we can't load font, erase it.
@@ -338,17 +338,17 @@ face_ptr face_manager<T>::get_face(std::string const& name)
 template <typename T>
 face_set_ptr face_manager<T>::get_face_set()
 {
-    face_set_ptr fset = std::make_shared<face_set>();
-    return fset;
+    face_set_ptr face_set = std::make_shared<font_face_set>();
+    return face_set;
 }
 
 template <typename T>
 face_set_ptr face_manager<T>::get_face_set(std::string const& name)
 {
-    face_set_ptr fset = std::make_shared<face_set>();
+    face_set_ptr face_set = std::make_shared<font_face_set>();
     if (face_ptr face = get_face(name))
     {
-        fset->add(face);
+        face_set->add(face);
     }
 // #ifdef MAPNIK_LOG
     else
@@ -358,20 +358,20 @@ face_set_ptr face_manager<T>::get_face_set(std::string const& name)
         throw std::runtime_error(runtime_error.str());
     }
 // #endif
-    return fset;
+    return face_set;
 }
 
 template <typename T>
-face_set_ptr face_manager<T>::get_face_set(font_set const& font_set)
+face_set_ptr face_manager<T>::get_face_set(font_set const& fset)
 {
-    std::vector<std::string> const& names = font_set.get_face_names();
-    face_set_ptr fset = std::make_shared<face_set>();
+    std::vector<std::string> const& names = fset.get_face_names();
+    face_set_ptr face_set = std::make_shared<font_face_set>();
     for (auto const& name  : names)
     {
         face_ptr face = get_face(name);
         if (face)
         {
-            fset->add(face);
+            face_set->add(face);
         }
 // #ifdef MAPNIK_LOG
         else
@@ -382,7 +382,7 @@ face_set_ptr face_manager<T>::get_face_set(font_set const& font_set)
         }
 // #endif
     }
-    return fset;
+    return face_set;
 }
 
 // #ifdef MAPNIK_THREADSAFE

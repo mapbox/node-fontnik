@@ -48,25 +48,25 @@ namespace mapnik
 typedef guarded_map<uint32_t, glyph_info> glyph_cache_type;
 typedef std::shared_ptr<glyph_cache_type> glyph_cache_ptr;
 
-class face : mapnik::noncopyable
+class font_face : mapnik::noncopyable
 {
 public:
-    face(FT_Face ft_face);
-    face(FT_Face ft_face, glyph_cache_ptr glyphs);
+    font_face(FT_Face face);
+    font_face(FT_Face face, glyph_cache_ptr glyphs);
 
     std::string family_name() const
     {
-        return std::string(ft_face_->family_name);
+        return std::string(face_->family_name);
     }
 
     std::string style_name() const
     {
-        return std::string(ft_face_->style_name);
+        return std::string(face_->style_name);
     }
 
     FT_Face get_face() const
     {
-        return ft_face_;
+        return face_;
     }
 
     double get_char_height() const;
@@ -75,24 +75,24 @@ public:
 
     void glyph_dimensions(glyph_info &glyph) const;
 
-    ~face();
+    ~font_face();
 
 private:
-    FT_Face ft_face_;
+    FT_Face face_;
     mutable glyph_cache_ptr glyphs_;
     mutable double char_height_;
 };
-typedef std::shared_ptr<face> face_ptr;
+typedef std::shared_ptr<font_face> face_ptr;
 
 inline bool operator==(face_ptr const& lhs, face_ptr const& rhs) {
     return lhs->get_face() == rhs->get_face();
 }
 
-class MAPNIK_DECL face_set : private mapnik::noncopyable
+class MAPNIK_DECL font_face_set : private mapnik::noncopyable
 {
 public:
     typedef std::vector<face_ptr>::const_iterator iterator;
-    face_set(void) : faces_(){}
+    font_face_set(void) : faces_(){}
 
     void add(face_ptr face);
     void set_character_sizes(double size);
@@ -103,7 +103,7 @@ public:
 private:
     std::vector<face_ptr> faces_;
 };
-typedef std::shared_ptr<face_set> face_set_ptr;
+typedef std::shared_ptr<font_face_set> face_set_ptr;
 
 } //ns mapnik
 
