@@ -77,11 +77,7 @@ void font_face::glyph_dimensions(glyph_info & glyph) const
 
     FT_Glyph image;
     if (FT_Get_Glyph(face_->glyph, &image)) return;
-    FT_BBox glyph_bbox;
-    FT_Glyph_Get_CBox(image, ft_glyph_bbox_pixels, &glyph_bbox);
 
-    glyph.ymin = glyph_bbox.yMin; //pixels!
-    glyph.ymax = glyph_bbox.yMax;
     glyph.line_height = face_->size->metrics.height / 64.0;
     glyph.advance = face_->glyph->metrics.horiAdvance / 64.0;
     glyph.ascender = face_->size->metrics.ascender / 64.0;
