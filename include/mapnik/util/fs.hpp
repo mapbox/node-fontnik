@@ -20,19 +20,27 @@
  *
  *****************************************************************************/
 
-#pragma once
+#ifndef MAPNIK_FS_HPP
+#define MAPNIK_FS_HPP
+
+// mapnik
+#include <mapnik/config.hpp>
 
 // stl
 #include <string>
 
 namespace mapnik { namespace util {
 
-    bool exists(std::string const& value);
-    bool is_directory(std::string const& value);
-    bool remove(std::string const& value);
-    bool is_relative(std::string const& value);
-    std::string make_relative(std::string const& filepath, std::string const& base);
-    std::string make_absolute(std::string const& filepath, std::string const& base);
-    std::string dirname(std::string const& value);
+MAPNIK_DECL bool exists(std::string const& value);
+MAPNIK_DECL bool is_directory(std::string const& value);
+MAPNIK_DECL bool remove(std::string const& value);
+MAPNIK_DECL bool is_relative(std::string const& value);
+MAPNIK_DECL std::string make_relative(std::string const& filepath, std::string const& base);
+MAPNIK_DECL std::string make_absolute(std::string const& filepath, std::string const& base);
+MAPNIK_DECL std::string dirname(std::string const& value);
 
 }}
+
+
+
+#endif
