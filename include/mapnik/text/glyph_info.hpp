@@ -23,9 +23,9 @@
 #define MAPNIK_GLYPH_INFO_HPP
 
 //mapnik
+#include <mapnik/text/char_properties_ptr.hpp>
 #include <mapnik/pixel_position.hpp>
 
-// stl
 #include <memory>
 
 namespace mapnik
@@ -51,7 +51,8 @@ struct glyph_info
           line_height(0.0),
           ascender(0.0),
           descender(0.0),
-          offset() {}
+          offset(),
+          format() {}
     glyph_index_t glyph_index;
     face_ptr face;
     std::string bitmap;
@@ -69,6 +70,7 @@ struct glyph_info
     double ascender;
     double descender;
     pixel_position offset;
+    char_properties_ptr format;
 };
 
 inline bool operator<(glyph_info const& lhs, glyph_info const& rhs) {
