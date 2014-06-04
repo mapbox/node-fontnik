@@ -27,9 +27,9 @@
         'src/fontserver.cpp',
         'src/debug.cpp',
         'src/text/face.cpp',
+        'src/fs.cpp',
         'src/util/distmap.c',
         'src/util/edtaa4func.c',
-        'src/util/fs.cpp',
         '<(SHARED_INTERMEDIATE_DIR)/glyphs.pb.cc'
       ],
       'include_dirs': [
