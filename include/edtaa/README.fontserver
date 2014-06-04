@@ -1,0 +1,6 @@
+Name: edtaa
+URL: http://webstaff.itn.liu.se/~stegu76/edtaa/
+License: MIT
+Description: Sweep-and-update Euclidean distance transform of an image.
+Local Modifications:
+- Added C++ header file
