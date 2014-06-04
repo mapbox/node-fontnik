@@ -25,9 +25,6 @@
 //mapnik
 #include <mapnik/pixel_position.hpp>
 
-// fontserver
-#include <fontserver/text_format.hpp>
-
 // stl
 #include <memory>
 
@@ -54,8 +51,7 @@ struct glyph_info
           line_height(0.0),
           ascender(0.0),
           descender(0.0),
-          offset(),
-          format() {}
+          offset() {}
     glyph_index_t glyph_index;
     face_ptr face;
     std::string bitmap;
@@ -73,7 +69,6 @@ struct glyph_info
     double ascender;
     double descender;
     pixel_position offset;
-    fontserver::text_format_ptr format;
 };
 
 inline bool operator<(glyph_info const& lhs, glyph_info const& rhs) {

@@ -171,11 +171,10 @@ void Glyphs::AsyncRange(uv_work_t* req) {
     mutable_fontstack->set_name(baton->fontstack);
     mutable_fontstack->set_range(baton->range);
 
-    fontserver::text_format format(baton->fontstack, 24);
     const double scale_factor = 1.0;
 
     // Set character sizes.
-    double size = format.text_size * scale_factor;
+    double size = 24 * scale_factor;
     face_set->set_character_sizes(size);
 
     for (std::vector<uint32_t>::size_type i = 0; i != baton->chars.size(); i++) {
