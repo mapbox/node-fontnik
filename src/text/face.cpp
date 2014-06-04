@@ -23,7 +23,8 @@
 #include <mapnik/text/face.hpp>
 #include <mapnik/debug.hpp>
 
-#include <util/distmap.h>
+// freetype-gl
+#include <freetype-gl/distmap.h>
 
 extern "C"
 {

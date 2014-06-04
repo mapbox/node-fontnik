@@ -28,8 +28,8 @@
         'src/debug.cpp',
         'src/text/face.cpp',
         'src/fs.cpp',
-        'src/util/distmap.c',
-        'src/util/edtaa4func.c',
+        'src/freetype-gl/distmap.c',
+        'src/edtaa/edtaa4func.c',
         '<(SHARED_INTERMEDIATE_DIR)/glyphs.pb.cc'
       ],
       'include_dirs': [
