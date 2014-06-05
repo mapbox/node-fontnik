@@ -14,6 +14,9 @@
     "mocha": "^1.20.0",
     "pbf": "0.0.1"
   },
+  "bin": {
+    "build-glyphs": "./bin/build-glyphs"
+  },
   "scripts": {
     "install": "node-pre-gyp install --fallback-to-build",
     "test": "node_modules/.bin/mocha -R spec"
