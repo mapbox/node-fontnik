@@ -38,7 +38,7 @@ function writeGlyphs(opts, done) {
             console.warn(err.toString());
             process.exit(1);
         }
-        fs.writeFileSync(dir + '/' + opts.range + '.pbf', zdata);
+        fs.writeFileSync(dir + '/' + opts.start + '-' + opts.end + '.pbf', zdata);
         done();
     });
 }
