@@ -1,7 +1,7 @@
 // fontserver
 #include <fontserver/glyphs.hpp>
 #include <mapnik/font_engine_freetype.hpp>
-#include <mapnik/face_set.hpp>
+#include <mapnik/text/face.hpp>
 
 // node
 #include <node_buffer.h>
@@ -153,7 +153,13 @@ void Glyphs::AsyncRange(uv_work_t* req) {
     mapnik::face_manager_freetype font_manager(font_engine_);
 
     mapnik::font_set font_set(baton->fontstack);
-    font_set.add_fontstack(baton->fontstack, ',');
+    std::stringstream stream(baton->fontstack);
+    std::string face_name;
+
+    // TODO: better to split on delim and font_names_.reserve() then add?
+    while (std::getline(stream, face_name, ',')) {
+        font_set.add_face_name(Trim(face_name, " \t"));
+    }
 
     mapnik::face_set_ptr face_set;
 
@@ -171,11 +177,10 @@ void Glyphs::AsyncRange(uv_work_t* req) {
     mutable_fontstack->set_name(baton->fontstack);
     mutable_fontstack->set_range(baton->range);
 
-    fontserver::text_format format(baton->fontstack, 24);
     const double scale_factor = 1.0;
 
     // Set character sizes.
-    double size = format.text_size * scale_factor;
+    double size = 24 * scale_factor;
     face_set->set_character_sizes(size);
 
     for (std::vector<uint32_t>::size_type i = 0; i != baton->chars.size(); i++) {
@@ -236,4 +241,17 @@ void Glyphs::RangeAfter(uv_work_t* req) {
 
     delete baton;
     delete req;
+}
+
+std::string Glyphs::Trim(std::string str, std::string whitespace) {
+    const auto strBegin = str.find_first_not_of(whitespace);
+
+    if (strBegin == std::string::npos) {
+        return "";
+    }
+
+    const auto strEnd = str.find_last_not_of(whitespace);
+    const auto strRange = strEnd - strBegin + 1;
+
+    return str.substr(strBegin, strRange);
 }

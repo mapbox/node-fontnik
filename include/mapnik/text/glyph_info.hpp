@@ -19,23 +19,25 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  *
  *****************************************************************************/
+#ifndef MAPNIK_GLYPH_INFO_HPP
+#define MAPNIK_GLYPH_INFO_HPP
 
-#pragma once
+//mapnik
+#include <mapnik/text/char_properties_ptr.hpp>
+#include <mapnik/pixel_position.hpp>
 
-// fontserver
-#include <fontserver/text_format.hpp>
-
-#include "pixel_position.hpp"
-
-// stl
 #include <memory>
 
-namespace mapnik {
+namespace mapnik
+{
 
-class face;
-typedef std::shared_ptr<face> face_ptr;
+class font_face;
+typedef std::shared_ptr<font_face> face_ptr;
 
-struct glyph_info {
+typedef uint32_t glyph_index_t;
+
+struct glyph_info
+{
     glyph_info()
         : glyph_index(0),
           face(nullptr),
@@ -46,48 +48,35 @@ struct glyph_info {
           left(0),
           top(0),
           advance(0.0),
-          ymin(0.0),
-          ymax(0.0),
           line_height(0.0),
           ascender(0.0),
           descender(0.0),
           offset(),
           format() {}
-
-    uint32_t glyph_index;
+    glyph_index_t glyph_index;
     face_ptr face;
-
     std::string bitmap;
-
     // Position in the string of all characters i.e. before itemizing
     unsigned char_index;
-
     uint32_t width;
-
-    // From fontserver Glyph class
     uint32_t height;
     int32_t left;
     int32_t top;
     double advance;
-
-    double ymin;
-    double ymax;
-
     // Line height returned by FreeType, includes normal font
     // line spacing, but not additional user defined spacing
     double line_height;
-
-    // Ascender and descender from baseline returned by FreeType.
+    // Ascender and descender from baseline returned by FreeType
     double ascender;
     double descender;
-
     pixel_position offset;
-    fontserver::text_format_ptr format;
-    // double height() const { return ymax-ymin; }
+    char_properties_ptr format;
 };
 
 inline bool operator<(glyph_info const& lhs, glyph_info const& rhs) {
     return lhs.glyph_index < rhs.glyph_index;
 }
 
-}
+} //ns mapnik
+
+#endif // GLYPH_INFO_HPP

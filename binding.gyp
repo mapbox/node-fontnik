@@ -21,15 +21,15 @@
       'target_name': 'fontserver',
       'dependencies': [ 'action_before_build' ],
       'sources': [
-        'src/glyphs.cpp',
-        'src/face.cpp',
-        'src/face_set.cpp',
-        'src/font_engine_freetype.cpp',
-        'src/font_set.cpp',
         'src/fontserver.cpp',
-        'src/util/distmap.c',
-        'src/util/edtaa4func.c',
-        'src/util/fs.cpp',
+        'src/glyphs.cpp',
+        'src/mapnik/debug.cpp',
+        'src/mapnik/font_engine_freetype.cpp',
+        'src/mapnik/font_set.cpp',
+        'src/mapnik/fs.cpp',
+        'src/mapnik/text/face.cpp',
+        'src/freetype-gl/distmap.c',
+        'src/edtaa/edtaa4func.c',
         '<(SHARED_INTERMEDIATE_DIR)/glyphs.pb.cc'
       ],
       'include_dirs': [
