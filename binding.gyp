@@ -18,18 +18,19 @@
       ]
     },
     {
-      'target_name': 'fontserver',
+      'target_name': '<(module_name)',
       'dependencies': [ 'action_before_build' ],
       'sources': [
-        'src/fontserver.cpp',
+        'src/node_fontserver.cpp',
         'src/glyphs.cpp',
+        'src/edtaa/edtaa4func.c',
+        'src/fontserver/glyphs.cpp',
+        'src/freetype-gl/distmap.c',
         'src/mapnik/debug.cpp',
         'src/mapnik/font_engine_freetype.cpp',
         'src/mapnik/font_set.cpp',
         'src/mapnik/fs.cpp',
         'src/mapnik/text/face.cpp',
-        'src/freetype-gl/distmap.c',
-        'src/edtaa/edtaa4func.c',
         '<(SHARED_INTERMEDIATE_DIR)/glyphs.pb.cc'
       ],
       'include_dirs': [
