@@ -20,19 +20,15 @@
  *
  *****************************************************************************/
 
-// mapnik
-#include <mapnik/face_set.hpp>
+#ifndef CHAR_PROPERTIES_PTR_HPP
+#define CHAR_PROPERTIES_PTR_HPP
 
-namespace mapnik {
+#include <memory>
 
-void face_set::add(face_ptr face) {
-    faces_.push_back(face);
+namespace mapnik
+{
+struct char_properties;
+typedef std::shared_ptr<char_properties> char_properties_ptr;
 }
 
-void face_set::set_character_sizes(double size) {
-    for (face_ptr const& face : faces_) {
-        face->set_character_sizes(size);
-    }
-}
-
-}
+#endif // CHAR_PROPERTIES_PTR_HPP

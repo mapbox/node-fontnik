@@ -19,57 +19,66 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  *
  *****************************************************************************/
-
-#pragma once
+#ifndef MAPNIK_PIXEL_POSITION_HPP
+#define MAPNIK_PIXEL_POSITION_HPP
 
 // stl
 #include <iomanip>
 
-namespace mapnik {
+namespace mapnik
+{
 
 struct rotation;
-
-struct pixel_position {
+struct pixel_position
+{
     double x;
     double y;
     pixel_position(double x_, double y_) : x(x_), y(y_) { }
     pixel_position() : x(0), y(0) { }
-    pixel_position operator+ (pixel_position const& other) const {
+    pixel_position operator+ (pixel_position const& other) const
+    {
         return pixel_position(x + other.x, y + other.y);
     }
 
-    pixel_position operator- (pixel_position const& other) const {
+    pixel_position operator- (pixel_position const& other) const
+    {
         return pixel_position(x - other.x, y - other.y);
     }
 
-    pixel_position operator* (double other) const {
+    pixel_position operator* (double other) const
+    {
         return pixel_position(x * other, y * other);
     }
 
-    void set(double x_, double y_) {
+    void set(double x_, double y_)
+    {
         x = x_;
         y = y_;
     }
 
-    void clear() {
+    void clear()
+    {
         x = 0;
         y = 0;
     }
 
     pixel_position rotate(rotation const& rot) const;
-    pixel_position operator~() const {
+    pixel_position operator~() const
+    {
         return pixel_position(x, -y);
     }
 };
 
-inline pixel_position operator* (double factor, pixel_position const& pos) {
+inline pixel_position operator* (double factor, pixel_position const& pos)
+{
     return pixel_position(factor * pos.x, factor * pos.y);
 }
 
 template <class charT, class traits>
 inline std::basic_ostream<charT,traits>&
 operator << (std::basic_ostream<charT,traits>& out,
-             const pixel_position& e) {
+             const pixel_position& e)
+{
     std::basic_ostringstream<charT,traits> s;
     s.copyfmt(out);
     s.width(0);
@@ -80,3 +89,6 @@ operator << (std::basic_ostream<charT,traits>& out,
 }
 
 }
+
+
+#endif // MAPNIK_PIXEL_POSITION_HPP

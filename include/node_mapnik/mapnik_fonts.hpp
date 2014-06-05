@@ -1,4 +1,6 @@
-#pragma once
+#ifndef __NODE_MAPNIK_FONTS_H__
+#define __NODE_MAPNIK_FONTS_H__
+
 
 // v8
 #include <v8.h>
@@ -82,7 +84,6 @@ static inline Handle<Value> available_font_faces(const Arguments& args)
 static inline Handle<Value> available_font_files(const Arguments& args)
 {
     HandleScope scope;
-
     std::map<std::string,std::pair<int,std::string> > const& mapping = mapnik::freetype_engine::get_mapping();
     Local<Object> obj = Object::New();
     std::map<std::string,std::pair<int,std::string> >::const_iterator itr;
@@ -90,9 +91,10 @@ static inline Handle<Value> available_font_files(const Arguments& args)
     {
         obj->Set(String::NewSymbol(itr->first.c_str()),String::New(itr->second.second.c_str()));
     }
-
     return scope.Close(obj);
 }
 
 
 }
+
+#endif // __NODE_MAPNIK_FONTS_H__
