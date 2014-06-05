@@ -22,15 +22,37 @@
 
 #pragma once
 
-// stl
-#include <string>
+#include "face.hpp"
 
-namespace util {
-    bool exists(std::string const& value);
-    bool is_directory(std::string const& value);
-    bool remove(std::string const& value);
-    bool is_relative(std::string const& value);
-    std::string make_relative(std::string const& filepath, std::string const& base);
-    std::string make_absolute(std::string const& filepath, std::string const& base);
-    std::string dirname(std::string const& value);
+// stl
+#include <memory>
+#include <vector>
+
+// freetype2
+extern "C"
+{
+#include <ft2build.h>
+#include FT_FREETYPE_H
+}
+
+namespace mapnik {
+
+class face_set {
+public:
+    typedef std::vector<face_ptr>::const_iterator iterator;
+
+    face_set(void) : faces_() {}
+
+    void add(face_ptr face);
+    void set_character_sizes(double size);
+
+    unsigned size() const { return faces_.size(); }
+    iterator begin() { return faces_.cbegin(); }
+    iterator end() { return faces_.cend(); }
+private:
+    std::vector<face_ptr> faces_;
+};
+
+typedef std::shared_ptr<face_set> face_set_ptr;
+
 }

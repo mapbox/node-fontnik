@@ -2,7 +2,7 @@
  *
  * This file is part of Mapnik (c++ mapping toolkit)
  *
- * Copyright (C) 2011 Artem Pavlenko
+ * Copyright (C) 2013 Artem Pavlenko
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -20,33 +20,19 @@
  *
  *****************************************************************************/
 
-#pragma once
+// mapnik
+#include <mapnik/face_set.hpp>
 
-// stl
-#include <string>
-#include <vector>
+namespace mapnik {
 
-namespace fontserver {
+void face_set::add(face_ptr face) {
+    faces_.push_back(face);
+}
 
-class font_set {
-public:
-    font_set(std::string const& name);
-    font_set(font_set const& rhs);
-    ~font_set();
-
-    font_set& operator=(font_set const& rhs);
-
-    std::size_t size() const;
-    void set_name(std::string const& name);
-    std::string const& get_name() const;
-    void add_face_name(std::string const& face_name);
-    void add_fontstack(std::string const& fontstack, char delim);
-    std::vector<std::string> const& get_face_names() const;
-private:
-    std::string name_;
-    std::vector<std::string> face_names_;
-    std::string trim(std::string const& str,
-                     std::string const& whitespace = " \t");
-};
+void face_set::set_character_sizes(double size) {
+    for (face_ptr const& face : faces_) {
+        face->set_character_sizes(size);
+    }
+}
 
 }

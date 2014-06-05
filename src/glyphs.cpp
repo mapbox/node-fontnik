@@ -1,6 +1,7 @@
-#include "glyphs.hpp"
-#include "font_face_set.hpp"
-#include "harfbuzz_shaper.hpp"
+// fontserver
+#include <fontserver/glyphs.hpp>
+#include <mapnik/font_engine_freetype.hpp>
+#include <mapnik/face_set.hpp>
 
 // node
 #include <node_buffer.h>
@@ -9,14 +10,12 @@
 #include <algorithm>
 #include <memory>
 #include <sstream>
-#include <iostream>
 
 // freetype2
 extern "C"
 {
 #include <ft2build.h>
 #include FT_FREETYPE_H
-// #include FT_STROKER_H
 }
 
 struct RangeBaton {
@@ -150,16 +149,16 @@ v8::Handle<v8::Value> Glyphs::Range(const v8::Arguments& args) {
 void Glyphs::AsyncRange(uv_work_t* req) {
     RangeBaton* baton = static_cast<RangeBaton*>(req->data);
 
-    fontserver::freetype_engine font_engine_;
-    fontserver::face_manager_freetype font_manager(font_engine_);
+    mapnik::freetype_engine font_engine_;
+    mapnik::face_manager_freetype font_manager(font_engine_);
 
-    fontserver::font_set fset(baton->fontstack);
-    fset.add_fontstack(baton->fontstack, ',');
+    mapnik::font_set font_set(baton->fontstack);
+    font_set.add_fontstack(baton->fontstack, ',');
 
-    fontserver::face_set_ptr face_set;
+    mapnik::face_set_ptr face_set;
 
     try {
-        face_set = font_manager.get_face_set(fset);
+        face_set = font_manager.get_face_set(font_set);
     } catch(const std::runtime_error &e) {
         baton->error = true;
         baton->error_name = e.what();
@@ -181,7 +180,7 @@ void Glyphs::AsyncRange(uv_work_t* req) {
 
     for (std::vector<uint32_t>::size_type i = 0; i != baton->chars.size(); i++) {
         FT_ULong char_code = baton->chars[i];
-        fontserver::glyph_info glyph;
+        mapnik::glyph_info glyph;
 
         for (auto const& face : *face_set) {
             // Get FreeType face from face_ptr.

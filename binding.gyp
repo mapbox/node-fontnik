@@ -21,34 +21,28 @@
       'target_name': 'fontserver',
       'dependencies': [ 'action_before_build' ],
       'sources': [
-        'src/font_engine_freetype.cpp',
         'src/glyphs.cpp',
-        'src/font_face.cpp',
-        'src/harfbuzz_shaper.cpp',
-        'src/fontserver.cpp',
-        'src/itemizer.cpp',
-        'src/scrptrun.cpp',
-        'src/font_face_set.cpp',
-        'src/text_line.cpp',
+        'src/face.cpp',
+        'src/face_set.cpp',
+        'src/font_engine_freetype.cpp',
         'src/font_set.cpp',
-        'src/util.cpp',
-        'src/distmap.c',
-        'src/edtaa4func.c',
+        'src/fontserver.cpp',
+        'src/util/distmap.c',
+        'src/util/edtaa4func.c',
+        'src/util/fs.cpp',
         '<(SHARED_INTERMEDIATE_DIR)/glyphs.pb.cc'
       ],
       'include_dirs': [
-        'src/',
+        './include',
         '<(SHARED_INTERMEDIATE_DIR)/',
         '<!@(pkg-config freetype2 --cflags-only-I | sed s/-I//g)',
-        '<!@(pkg-config icu-uc --cflags-only-I | sed s/-I//g)',
         '<!@(pkg-config protobuf --cflags-only-I | sed s/-I//g)'
       ],
       'libraries': [
         '-lboost_system',
         '-lboost_filesystem',
         '<!@(pkg-config freetype2 --libs --static)',
-        '<!@(pkg-config protobuf --libs --static)',
-        '<!@(pkg-config harfbuzz-icu --libs --static)',
+        '<!@(pkg-config protobuf --libs --static)'
       ],
       'xcode_settings': {
           'MACOSX_DEPLOYMENT_TARGET': '10.8',
@@ -58,7 +52,7 @@
       },
       'cflags_cc!': ['-fno-rtti', '-fno-exceptions'],
       'cflags_cc' : ['-std=c++11','-Wshadow'],
-      'cflags_c' : ['-std=c99'],
+      'cflags_c' : ['-std=c99']
     },
     {
       'target_name': 'action_after_build',

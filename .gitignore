@@ -1,4 +1,2 @@
 build
 lib
-src/*.pb.cc
-src/*.pb.h

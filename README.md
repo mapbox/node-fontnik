@@ -1,24 +1,31 @@
 [![Build Status](https://magnum.travis-ci.com/mapbox/fontserver.png?token=ctvz1otCksqcmNzRzzxa&branch=master)](https://magnum.travis-ci.com/mapbox/fontserver)
 
-fontserver
-----------
-Is no longer a server, but a library that delivers a range of characters
-rendered as SDFs (signed distance fields) in a protobuf.
+# fontserver
+
+A library that delivers a range of characters rendered as SDFs (signed distance fields) in a protobuf.
 
 ## Installing
 
-Make sure you have `boost`, `freetype`, `icu4c`, `harfbuzz` and `protobuf` installed. With homebrew, you can
-type `brew install boost --c++11 --with-icu freetype icu4c --c++11 protobuf --c++11`. The makefile uses `pkg-config` to find these
-libraries and links dynamically to them, so make sure that `pkg-config` can find
-them.
+By default, installs binaries. On these platforms no external dependencies are needed.
+
+- 64 bit OS X or 64 bit Linux
+- Node v0.10.x
+
+Just run:
 
 ```
 npm install
 ```
 
-## Usage
+However, other platforms will fall back to a source compile: see [building from source](#building-from-source) for details.
 
-This is included in the following projects:
+## Building from source
 
-- `llmr`
-- `tilestream-pro` (`gl` branch)
+Make sure you have `boost`, `freetype`, and `protobuf` installed. With [Homebrew](http://brew.sh/), you can
+type `brew install boost --c++11 freetype protobuf --c++11`. The Makefile uses `pkg-config` to find these
+libraries and links dynamically to them, so make sure that `pkg-config` can find
+them.
+
+```
+npm install --build-from-source
+```
