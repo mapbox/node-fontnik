@@ -30,7 +30,6 @@
 // boost
 #include <boost/algorithm/string.hpp>
 #include <boost/filesystem.hpp>
-#include <boost/thread/locks.hpp>
 
 // stl
 #include <algorithm>
@@ -108,7 +107,7 @@ bool freetype_engine::is_font_file(std::string const& file_name)
 bool freetype_engine::register_font(std::string const& file_name)
 {
 // #ifdef MAPNIK_THREADSAFE
-    std::lock_guard<std::mutex> guard(mutex_);
+    mapnik::scoped_lock lock(mutex_);
 // #endif
     std::unique_ptr<FT_MemoryRec_> memory(new FT_MemoryRec_);
     FT_Library library = 0;
@@ -171,7 +170,7 @@ bool freetype_engine::register_font_impl(std::string const& file_name, FT_Librar
 bool freetype_engine::register_fonts(std::string const& dir, bool recurse)
 {
 // #ifdef MAPNIK_THREADSAFE
-    std::lock_guard<std::mutex> guard(mutex_);
+    mapnik::scoped_lock lock(mutex_);
 // #endif
     std::unique_ptr<FT_MemoryRec_> memory(new FT_MemoryRec_);
     FT_Library library = 0;
@@ -258,10 +257,10 @@ face_ptr freetype_engine::create_face(std::string const& family_name)
     if (itr != name2file_.end())
     {
 // #ifdef MAPNIK_THREADSAFE
-        std::lock_guard<std::mutex> guard(mutex_);
+        mapnik::scoped_lock lock(mutex_);
 // #endif
 
-        FT_Face ft_face;
+        FT_Face face;
         glyph_cache_ptr glyphs;
 
         // Find face shared glyphs cache or create it if it doesn't exist yet.
@@ -287,9 +286,9 @@ face_ptr freetype_engine::create_face(std::string const& family_name)
                                                 reinterpret_cast<FT_Byte const*>(mem_font_itr->second.c_str()),
                                                 static_cast<FT_Long>(mem_font_itr->second.size()), // size
                                                 itr->second.first, // face index
-                                                &ft_face);
+                                                &face);
 
-            if (!error) return std::make_shared<font_face>(ft_face, glyphs);
+            if (!error) return std::make_shared<font_face>(face, glyphs);
         }
         else
         {
@@ -303,8 +302,8 @@ face_ptr freetype_engine::create_face(std::string const& family_name)
                                                  reinterpret_cast<FT_Byte const*>(result.first->second.c_str()),
                                                  static_cast<FT_Long>(buffer.size()),
                                                  itr->second.first,
-                                                 &ft_face);
-            if (!error) return std::make_shared<font_face>(ft_face, glyphs);
+                                                 &face);
+            if (!error) return std::make_shared<font_face>(face, glyphs);
             else
             {
                 // we can't load font, erase it.
@@ -333,13 +332,6 @@ face_ptr face_manager<T>::get_face(std::string const& name)
         }
         return face;
     }
-}
-
-template <typename T>
-face_set_ptr face_manager<T>::get_face_set()
-{
-    face_set_ptr face_set = std::make_shared<font_face_set>();
-    return face_set;
 }
 
 template <typename T>
@@ -383,6 +375,19 @@ face_set_ptr face_manager<T>::get_face_set(font_set const& fset)
 // #endif
     }
     return face_set;
+}
+
+template <typename T>
+face_set_ptr face_manager<T>::get_face_set(const std::string &name, boost::optional<font_set> fset)
+{
+    if (fset && fset->size() > 0)
+    {
+        return get_face_set(*fset);
+    }
+    else
+    {
+        return get_face_set(name);
+    }
 }
 
 // #ifdef MAPNIK_THREADSAFE

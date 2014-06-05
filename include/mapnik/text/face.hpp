@@ -91,15 +91,15 @@ inline bool operator==(face_ptr const& lhs, face_ptr const& rhs) {
 class MAPNIK_DECL font_face_set : private mapnik::noncopyable
 {
 public:
-    typedef std::vector<face_ptr>::const_iterator iterator;
+    typedef std::vector<face_ptr>::iterator iterator;
     font_face_set(void) : faces_(){}
 
     void add(face_ptr face);
     void set_character_sizes(double size);
 
     unsigned size() const { return faces_.size(); }
-    iterator begin() { return faces_.cbegin(); }
-    iterator end() { return faces_.cend(); }
+    iterator begin() { return faces_.begin(); }
+    iterator end() { return faces_.end(); }
 private:
     std::vector<face_ptr> faces_;
 };
