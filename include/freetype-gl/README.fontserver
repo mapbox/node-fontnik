@@ -1,0 +1,7 @@
+Name: freetype-gl
+URL: https://github.com/rougier/freetype-gl
+License: BSD 2-Clause
+Description: OpenGL text using one vertex buffer, one texture and FreeType
+Local Modifications:
+- Added C++ header file
+- Extracted make_distance_map function from demo-distance-field.c

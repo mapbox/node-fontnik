@@ -19,46 +19,53 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  *
  *****************************************************************************/
-
 // mapnik
-#include <mapnik/face.hpp>
+#include <mapnik/text/face.hpp>
+#include <mapnik/debug.hpp>
 
-#include "util/distmap.h"
+// freetype-gl
+#include <freetype-gl/distmap.h>
 
-namespace mapnik {
+extern "C"
+{
+#include FT_GLYPH_H
+}
 
-face::face(FT_Face ft_face)
-    : ft_face_(ft_face),
+namespace mapnik
+{
+
+font_face::font_face(FT_Face face)
+    : face_(face),
       glyphs_(std::make_shared<glyph_cache_type>()),
-      char_height_(0.0) {}
+      char_height_(0.0)
+{
+}
 
-face::face(FT_Face ft_face, glyph_cache_ptr glyphs)
-    : ft_face_(ft_face),
+font_face::font_face(FT_Face face, glyph_cache_ptr glyphs)
+    : face_(face),
       glyphs_(glyphs),
       char_height_(0.0) {}
 
-face::~face() {}
-
-double face::get_char_height() const {
+double font_face::get_char_height() const
+{
     if (char_height_ != 0.0) return char_height_;
-
     glyph_info tmp;
-    tmp.glyph_index = FT_Get_Char_Index(ft_face_, 'X');
+    tmp.glyph_index = FT_Get_Char_Index(face_, 'X');
     glyph_dimensions(tmp);
     char_height_ = tmp.height;
-
     return char_height_;
 }
 
-bool face::set_character_sizes(double size) {
+bool font_face::set_character_sizes(double size)
+{
     char_height_ = 0.0;
-    return !FT_Set_Char_Size(ft_face_, 0, (FT_F26Dot6)(size * (1<<6)), 0, 0);
+    return !FT_Set_Char_Size(face_,0,(FT_F26Dot6)(size * (1<<6)),0,0);
 }
 
-void face::glyph_dimensions(glyph_info &glyph) const {
-    // Check if char is already in cache.
-    iterator itr;
-    itr = glyphs_.get()->find(glyph.glyph_index);
+void font_face::glyph_dimensions(glyph_info & glyph) const
+{
+    //Check if char is already in cache
+    auto const& itr = glyphs_->find(glyph.glyph_index);
     if (itr != glyphs_.get()->cend()) {
         glyph = itr->second;
         return;
@@ -67,39 +74,33 @@ void face::glyph_dimensions(glyph_info &glyph) const {
     // TODO: remove hardcoded buffer size?
     int buffer = 3;
 
-    if (FT_Load_Glyph(ft_face_, glyph.glyph_index, FT_LOAD_NO_HINTING)) return;
+    if (FT_Load_Glyph (face_, glyph.glyph_index, FT_LOAD_NO_HINTING)) return;
 
-    FT_Glyph ft_glyph;
-    if (FT_Get_Glyph(ft_face_->glyph, &ft_glyph)) return;
+    FT_Glyph image;
+    if (FT_Get_Glyph(face_->glyph, &image)) return;
 
-    FT_BBox bbox;
-    FT_Glyph_Get_CBox(ft_glyph, FT_GLYPH_BBOX_PIXELS, &bbox);
+    glyph.line_height = face_->size->metrics.height / 64.0;
+    glyph.advance = face_->glyph->metrics.horiAdvance / 64.0;
+    glyph.ascender = face_->size->metrics.ascender / 64.0;
+    glyph.descender = face_->size->metrics.ascender / 64.0;
 
-    glyph.ymin = bbox.yMin;
-    glyph.ymax = bbox.yMax;
+    FT_Glyph_To_Bitmap(&image, FT_RENDER_MODE_NORMAL, 0, 1);
 
-    glyph.line_height = ft_face_->size->metrics.height / 64.0;
-    glyph.advance = ft_face_->glyph->metrics.horiAdvance / 64.0;
-
-    glyph.ascender = ft_face_->size->metrics.ascender / 64.0;
-    glyph.descender = ft_face_->size->metrics.ascender / 64.0;
-
-    FT_Glyph_To_Bitmap(&ft_glyph, FT_RENDER_MODE_NORMAL, 0, 1);
-
-    int width = ((FT_BitmapGlyph)ft_glyph)->bitmap.width;
-    int height = ((FT_BitmapGlyph)ft_glyph)->bitmap.rows;
+    int width = ((FT_BitmapGlyph)image)->bitmap.width;
+    int height = ((FT_BitmapGlyph)image)->bitmap.rows;
 
     glyph.width = width;
     glyph.height = height;
-    glyph.left = ((FT_BitmapGlyph)ft_glyph)->left;
-    glyph.top = ((FT_BitmapGlyph)ft_glyph)->top;
+    glyph.left = ((FT_BitmapGlyph)image)->left;
+    glyph.top = ((FT_BitmapGlyph)image)->top;
 
+    // TODO: move this out?
     // Create a signed distance field (SDF) for the glyph bitmap.
     if (width > 0) {
         unsigned int buffered_width = width + 2 * buffer;
         unsigned int buffered_height = height + 2 * buffer;
 
-        unsigned char *distance = make_distance_map((unsigned char *)((FT_BitmapGlyph)ft_glyph)->bitmap.buffer, width, height, buffer);
+        unsigned char *distance = make_distance_map((unsigned char *)((FT_BitmapGlyph)image)->bitmap.buffer, width, height, buffer);
 
         glyph.bitmap.resize(buffered_width * buffered_height);
         for (unsigned int y = 0; y < buffered_height; y++) {
@@ -108,9 +109,33 @@ void face::glyph_dimensions(glyph_info &glyph) const {
         free(distance);
     }
 
-    FT_Done_Glyph(ft_glyph);
+    FT_Done_Glyph(image);
 
     glyphs_.get()->emplace(glyph.glyph_index, glyph);
 }
 
+font_face::~font_face()
+{
+    MAPNIK_LOG_DEBUG(font_face) <<
+        "font_face: Clean up face \"" << family_name() <<
+        " " << style_name() << "\"";
+
+    FT_Done_Face(face_);
 }
+
+/******************************************************************************/
+
+void font_face_set::add(face_ptr face)
+{
+    faces_.push_back(face);
+}
+
+void font_face_set::set_character_sizes(double size)
+{
+    for (face_ptr const& face : faces_)
+    {
+        face->set_character_sizes(size);
+    }
+}
+
+}//ns mapnik

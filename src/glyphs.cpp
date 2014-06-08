@@ -1,39 +1,30 @@
 // fontserver
-#include <fontserver/glyphs.hpp>
-#include <mapnik/font_engine_freetype.hpp>
-#include <mapnik/face_set.hpp>
+#include <node_fontserver/glyphs.hpp>
 
 // node
 #include <node_buffer.h>
 
-// stl
-#include <algorithm>
-#include <memory>
-#include <sstream>
-
-// freetype2
-extern "C"
+namespace node_fontserver
 {
-#include <ft2build.h>
-#include FT_FREETYPE_H
-}
 
 struct RangeBaton {
     v8::Persistent<v8::Function> callback;
     Glyphs *glyphs;
     std::string fontstack;
     std::string range;
+    std::vector<std::uint32_t> chars;
     bool error;
     std::string error_name;
-    std::vector<std::uint32_t> chars;
 };
 
 v8::Persistent<v8::FunctionTemplate> Glyphs::constructor;
 
-Glyphs::Glyphs() : node::ObjectWrap() {}
+Glyphs::Glyphs() : node::ObjectWrap() {
+    glyphs = fontserver::Glyphs();
+}
 
 Glyphs::Glyphs(const char *data, size_t length) : node::ObjectWrap() {
-    glyphs.ParseFromArray(data, length);
+    glyphs = fontserver::Glyphs(data, length);
 }
 
 Glyphs::~Glyphs() {}
@@ -88,8 +79,7 @@ bool Glyphs::HasInstance(v8::Handle<v8::Value> val) {
 
 v8::Handle<v8::Value> Glyphs::Serialize(const v8::Arguments& args) {
     v8::HandleScope scope;
-    llmr::glyphs::glyphs& glyphs = node::ObjectWrap::Unwrap<Glyphs>(args.This())->glyphs;
-    std::string serialized = glyphs.SerializeAsString();
+    std::string serialized = node::ObjectWrap::Unwrap<Glyphs>(args.This())->glyphs.Serialize();
     return scope.Close(node::Buffer::New(serialized.data(), serialized.length())->handle_);
 }
 
@@ -149,66 +139,12 @@ v8::Handle<v8::Value> Glyphs::Range(const v8::Arguments& args) {
 void Glyphs::AsyncRange(uv_work_t* req) {
     RangeBaton* baton = static_cast<RangeBaton*>(req->data);
 
-    mapnik::freetype_engine font_engine_;
-    mapnik::face_manager_freetype font_manager(font_engine_);
-
-    mapnik::font_set font_set(baton->fontstack);
-    font_set.add_fontstack(baton->fontstack, ',');
-
-    mapnik::face_set_ptr face_set;
-
     try {
-        face_set = font_manager.get_face_set(font_set);
+        baton->glyphs->glyphs.Range(baton->fontstack, baton->range, baton->chars);
     } catch(const std::runtime_error &e) {
         baton->error = true;
         baton->error_name = e.what();
         return;
-    }
-
-    llmr::glyphs::glyphs& glyphs = baton->glyphs->glyphs;
-
-    llmr::glyphs::fontstack *mutable_fontstack = glyphs.add_stacks();
-    mutable_fontstack->set_name(baton->fontstack);
-    mutable_fontstack->set_range(baton->range);
-
-    fontserver::text_format format(baton->fontstack, 24);
-    const double scale_factor = 1.0;
-
-    // Set character sizes.
-    double size = format.text_size * scale_factor;
-    face_set->set_character_sizes(size);
-
-    for (std::vector<uint32_t>::size_type i = 0; i != baton->chars.size(); i++) {
-        FT_ULong char_code = baton->chars[i];
-        mapnik::glyph_info glyph;
-
-        for (auto const& face : *face_set) {
-            // Get FreeType face from face_ptr.
-            FT_Face ft_face = face->get_face();
-            FT_UInt char_index = FT_Get_Char_Index(ft_face, char_code);
-
-            // Try next font in fontset.
-            if (!char_index) continue;
-
-            glyph.glyph_index = char_index;
-            face->glyph_dimensions(glyph);
-
-            // Add glyph to fontstack.
-            llmr::glyphs::glyph *mutable_glyph = mutable_fontstack->add_glyphs();
-            mutable_glyph->set_id(char_code);
-            mutable_glyph->set_width(glyph.width);
-            mutable_glyph->set_height(glyph.height);
-            mutable_glyph->set_left(glyph.left);
-            mutable_glyph->set_top(glyph.top - glyph.ascender);
-            mutable_glyph->set_advance(glyph.advance);
-
-            if (glyph.width > 0) {
-                mutable_glyph->set_bitmap(glyph.bitmap);
-            }
-
-            // Glyph added, continue to next char_code.
-            break;
-        }
     }
 }
 
@@ -237,3 +173,5 @@ void Glyphs::RangeAfter(uv_work_t* req) {
     delete baton;
     delete req;
 }
+
+} // ns node_fontserver

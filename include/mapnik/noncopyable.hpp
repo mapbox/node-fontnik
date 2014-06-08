@@ -2,7 +2,7 @@
  *
  * This file is part of Mapnik (c++ mapping toolkit)
  *
- * Copyright (C) 2013 Artem Pavlenko
+ * Copyright (C) 2012 Artem Pavlenko
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -20,39 +20,26 @@
  *
  *****************************************************************************/
 
-#pragma once
-
-#include "face.hpp"
-
-// stl
-#include <memory>
-#include <vector>
-
-// freetype2
-extern "C"
-{
-#include <ft2build.h>
-#include FT_FREETYPE_H
-}
+#ifndef MAPNIK_NONCOPYABLE_HPP
+#define MAPNIK_NONCOPYABLE_HPP
 
 namespace mapnik {
 
-class face_set {
-public:
-    typedef std::vector<face_ptr>::const_iterator iterator;
+namespace non_copyable_
+{
 
-    face_set(void) : faces_() {}
-
-    void add(face_ptr face);
-    void set_character_sizes(double size);
-
-    unsigned size() const { return faces_.size(); }
-    iterator begin() { return faces_.cbegin(); }
-    iterator end() { return faces_.cend(); }
-private:
-    std::vector<face_ptr> faces_;
+class noncopyable
+{
+protected:
+    constexpr noncopyable() = default;
+    ~noncopyable() = default;
+    noncopyable( noncopyable const& ) = delete;
+    noncopyable& operator=(noncopyable const& ) = delete;
 };
-
-typedef std::shared_ptr<face_set> face_set_ptr;
-
 }
+
+typedef non_copyable_::noncopyable noncopyable;
+
+} // namespace mapnik
+
+#endif  // MAPNIK_NONCOPYABLE_HPP

@@ -20,40 +20,44 @@
  *
  *****************************************************************************/
 
-#ifndef MAPNIK_FONT_SET_HPP
-#define MAPNIK_FONT_SET_HPP
+#ifndef MAPNIK_CONFIG_HPP
+#define MAPNIK_CONFIG_HPP
 
-// mapnik
-#include <mapnik/config.hpp>
+// Windows DLL support
 
-// stl
-#include <string>
-#include <vector>
+#ifdef _WINDOWS
+#  define MAPNIK_EXP __declspec (dllexport)
+#  define MAPNIK_IMP __declspec (dllimport)
+#  ifdef MAPNIK_EXPORTS
+#    define MAPNIK_DECL __declspec (dllexport)
+#  else
+#    define MAPNIK_DECL __declspec (dllimport)
+#  endif
+#  pragma warning( disable: 4251 )
+#  pragma warning( disable: 4275 )
+#  if (_MSC_VER >= 1400) // vc8
+#    pragma warning(disable : 4996) //_CRT_SECURE_NO_DEPRECATE
+#  endif
+#else
+#  if __GNUC__ >= 4
+#  define MAPNIK_EXP __attribute__ ((visibility ("default")))
+#  define MAPNIK_DECL __attribute__ ((visibility ("default")))
+#  define MAPNIK_IMP __attribute__ ((visibility ("default")))
+#  else
+#  define MAPNIK_EXP
+#  define MAPNIK_DECL
+#  define MAPNIK_IMP
+#  endif
+#endif
+
+#define PROJ_ENVELOPE_POINTS 20
+
+#include <boost/thread/locks.hpp>
+#include <mutex>
 
 namespace mapnik
 {
-class MAPNIK_DECL font_set
-{
-public:
-    // ctor/copy/move/dtor
-    font_set(std::string const& name);
-    font_set(font_set const& rhs);
-    font_set(font_set &&);
-    font_set& operator=(font_set rhs);
-    ~font_set();
-    // comparison
-    bool operator==(font_set const& rhs) const;
-    std::size_t size() const;
-    void set_name(std::string const& name);
-    std::string const& get_name() const;
-    void add_face_name(std::string face_name);
-    std::vector<std::string> const& get_face_names() const;
-
-private:
-    friend void swap(font_set & lhs, font_set & rhs);
-    std::string name_;
-    std::vector<std::string> face_names_;
-};
+typedef boost::unique_lock<std::mutex> scoped_lock;
 }
 
-#endif // MAPNIK_FONT_SET_HPP
+#endif // MAPNIK_CONFIG_HPP

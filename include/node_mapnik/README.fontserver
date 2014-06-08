@@ -1,0 +1,8 @@
+Name: node-mapnik
+URL: https://github.com/mapnik/node-mapnik
+Version: 1.4.5
+License: BSD 3-Clause
+Description: Bindings to mapnik for Node.js
+Local Modifications:
+- Pulled TOSTR define up from utils.hpp to avoid unecessary dependencies
+- Removed MAPNIK_VERSION < 200100 support, as bundled Mapnik source files are from v3.x

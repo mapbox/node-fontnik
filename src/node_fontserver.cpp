@@ -2,10 +2,13 @@
 #include <node_mapnik/mapnik_fonts.hpp>
 
 // fontserver
-#include <fontserver/glyphs.hpp>
+#include <node_fontserver/glyphs.hpp>
 
 // node
 #include <node.h>
+
+namespace node_fontserver
+{
 
 void RegisterModule(v8::Handle<v8::Object> target) {
     NODE_SET_METHOD(target, "register_fonts", node_mapnik::register_fonts);
@@ -16,3 +19,5 @@ void RegisterModule(v8::Handle<v8::Object> target) {
 }
 
 NODE_MODULE(fontserver, RegisterModule);
+
+} // ns node_fontserver

@@ -1,6 +1,6 @@
 {
   "name": "fontserver",
-  "version": "0.1.0",
+  "version": "0.1.2",
   "main": "index.js",
   "private": true,
   "dependencies": {
@@ -13,6 +13,9 @@
   "devDependencies": {
     "mocha": "^1.20.0",
     "pbf": "0.0.1"
+  },
+  "bin": {
+    "build-glyphs": "./bin/build-glyphs"
   },
   "scripts": {
     "install": "node-pre-gyp install --fallback-to-build",
