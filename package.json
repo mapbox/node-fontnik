@@ -5,7 +5,8 @@
   "private": true,
   "dependencies": {
     "queue-async": "1.0.x",
-    "node-pre-gyp": "^0.5.15"
+    "node-pre-gyp": "^0.5.15",
+    "nan": "~1.2.0"
   },
   "bundledDependencies": [
     "node-pre-gyp"

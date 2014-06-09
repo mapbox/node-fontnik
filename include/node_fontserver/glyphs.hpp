@@ -4,6 +4,7 @@
 #include <fontserver/glyphs.hpp>
 
 #include <node.h>
+#include <nan.h>
 
 namespace node_fontserver
 {

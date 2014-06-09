@@ -6,6 +6,7 @@
 
 // node
 #include <node.h>
+#include <nan.h>
 
 namespace node_fontserver
 {

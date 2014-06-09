@@ -37,7 +37,8 @@
         './include',
         '<(SHARED_INTERMEDIATE_DIR)/',
         '<!@(pkg-config freetype2 --cflags-only-I | sed s/-I//g)',
-        '<!@(pkg-config protobuf --cflags-only-I | sed s/-I//g)'
+        '<!@(pkg-config protobuf --cflags-only-I | sed s/-I//g)',
+        "<!(node -e \"require('nan')\")"
       ],
       'libraries': [
         '-lboost_system',
