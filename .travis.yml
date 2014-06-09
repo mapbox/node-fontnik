@@ -5,10 +5,10 @@ env:
   matrix:
   - NODE_NVM_VERSION="0.10"
   global:
-  - BUILD: '/tmp/fontserver-build'
-  - PKG_CONFIG_PATH: '/tmp/fontserver-build/lib/pkgconfig'
-  - secure: "oW2YPGtJk6Nex8klCz+tkuwHyr0Sr6okbCHymrts3k4kvN7AIpX3QHW0eSfkrR55U5glURbggz9HrnhE56Y0aaLx8pMhhy0W2kvhAK0zWLhTbMKxjyI/B5i09dYLNHwDXANDYsf/RzGtkTDecO3H0v3tiYWgDiQiknzeNSeRQsY="
-  - secure: "cVE4mNbMdga1YI8dmQFJgpmntnGCDdbePE5EJpBxx9LQmoJx7yph/UGMpXyfy7bL354mo/ZwGRKu86jt/RWvJb2QILhQoTDv40cg64RakZx87o4q9xhAZ5lZj3vlpdbyEWFR76mLqhobsHODkfNXOSck8y+Wc56SZWJ93ePiEeY="
+  - BUILD: '/tmp/fontnik-build'
+  - PKG_CONFIG_PATH: '/tmp/fontnik-build/lib/pkgconfig'
+  - secure: "a0yUjLd9GcCEsD3jgOZRBD6iY3slQQKbAchd7umLZwOQPO3VmShxCNm7/4Sl4Emmo+gS54X1uJ66VjhXKE2LalYI0//gsuyqoTSsFrE17kBARwY47LMuhX+TOCWNgPjzZhUjPkmiiLnwDuQ0rUXGT/2loRrIumPho/PpK+FlUrk="
+  - secure: "WIvRH9Tj4Je1k/c7dSM18DcEmTmxL23v3uX2H2TnghSXqdKcwvQZ4nw/Z+xwfkoUHving06sId8oTmjXIuG2vFtBK7OiXcCjls8EB6SgDt/4OkmFkTdkYFBE0SABsDeEnYI4K3z+7rnUjc0QhjvaFtBh70Yf2zMHzlh/+6VJQDo="
 before_install:
 - export platform=$(uname -s | sed "y/ABCDEFGHIJKLMNOPQRSTUVWXYZ/abcdefghijklmnopqrstuvwxyz/")
 - export PATH="$BUILD/bin:$PATH"
