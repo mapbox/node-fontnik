@@ -1,13 +1,13 @@
 // node-mapnik
 #include <node_mapnik/mapnik_fonts.hpp>
 
-// fontserver
-#include <node_fontserver/glyphs.hpp>
+// fontnik
+#include <node_fontnik/glyphs.hpp>
 
 // node
 #include <node.h>
 
-namespace node_fontserver
+namespace node_fontnik
 {
 
 void RegisterModule(v8::Handle<v8::Object> target) {
@@ -18,6 +18,6 @@ void RegisterModule(v8::Handle<v8::Object> target) {
     Glyphs::Init(target);
 }
 
-NODE_MODULE(fontserver, RegisterModule);
+NODE_MODULE(fontnik, RegisterModule);
 
-} // ns node_fontserver
+} // ns node_fontnik

@@ -1,17 +1,17 @@
 var zlib = require('zlib');
 var path = require('path');
 var util = require('util');
-var fontserver = require('./lib/fontserver.node');
+var fontnik = require('./lib/fontnik.node');
 
-// Fontserver directories must be set in the conf file prior to require.
-// Allow these to be passed in via FONTSERVER_FONTS env var.
+// Fontnik directories must be set in the conf file prior to require.
+// Allow these to be passed in via FONTNIK_FONTS env var.
 var env_options = {};
-if (process.env['FONTSERVER_FONTS']) env_options.fonts = process.env['FONTSERVER_FONTS'].split(';');
+if (process.env['FONTNIK_FONTS']) env_options.fonts = process.env['FONTNIK_FONTS'].split(';');
 
-// Fontserver conf setup. Synchronous at require time.
+// Fontnik conf setup. Synchronous at require time.
 conf(env_options);
 
-module.exports = fontserver;
+module.exports = fontnik;
 module.exports.range = range;
 module.exports.getRange = getRange;
 
@@ -21,7 +21,7 @@ function range(options, callback) {
     options = options || {};
     options.fontstack = options.fontstack || 'Open Sans Regular';
 
-    var glyphs = new fontserver.Glyphs();
+    var glyphs = new fontnik.Glyphs();
     glyphs.range(options.fontstack, options.start + '-' + options.end, getRange(options.start, options.end), deflate);
 
     function deflate(err) {
@@ -37,7 +37,7 @@ function conf(options) {
     options.fonts = options.fonts || [path.resolve(__dirname + '/fonts')];
 
     options.fonts.forEach(function(d) {
-        fontserver.register_fonts(d, {recurse: true});
+        fontnik.register_fonts(d, {recurse: true});
     });
 }
 

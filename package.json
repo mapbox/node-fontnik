@@ -1,5 +1,5 @@
 {
-  "name": "fontserver",
+  "name": "fontnik",
   "version": "0.1.2",
   "main": "index.js",
   "private": true,
@@ -22,7 +22,7 @@
     "test": "node_modules/.bin/mocha -R spec"
   },
   "binary": {
-    "module_name": "fontserver",
+    "module_name": "fontnik",
     "module_path": "./lib/",
     "host": "https://mapbox-node-binary.s3.amazonaws.com",
     "remote_path": "./{name}/v{version}",

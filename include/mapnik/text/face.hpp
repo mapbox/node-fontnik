@@ -27,8 +27,8 @@
 #include <mapnik/config.hpp>
 #include <mapnik/noncopyable.hpp>
 
-// fontserver
-#include <fontserver/guarded_map.hpp>
+// fontnik
+#include <fontnik/guarded_map.hpp>
 
 // freetype2
 extern "C"

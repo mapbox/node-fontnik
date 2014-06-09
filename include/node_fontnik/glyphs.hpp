@@ -1,11 +1,11 @@
-#ifndef NODE_FONTSERVER_GLYPHS_HPP
-#define NODE_FONTSERVER_GLYPHS_HPP
+#ifndef NODE_FONTNIK_GLYPHS_HPP
+#define NODE_FONTNIK_GLYPHS_HPP
 
-#include <fontserver/glyphs.hpp>
+#include <fontnik/glyphs.hpp>
 
 #include <node.h>
 
-namespace node_fontserver
+namespace node_fontnik
 {
 
 class Glyphs : public node::ObjectWrap {
@@ -24,9 +24,9 @@ protected:
     static void AsyncRange(uv_work_t* req);
     static void RangeAfter(uv_work_t* req);
 
-    fontserver::Glyphs glyphs;
+    fontnik::Glyphs glyphs;
 };
 
-} // ns node_fontserver
+} // ns node_fontnik
 
-#endif // NODE_FONTSERVER_GLYPHS_HPP
+#endif // NODE_FONTNIK_GLYPHS_HPP
