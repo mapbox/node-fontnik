@@ -1,4 +1,4 @@
-[![Build Status](https://magnum.travis-ci.com/mapbox/fontnik.png?token=ctvz1otCksqcmNzRzzxa&branch=master)](https://magnum.travis-ci.com/mapbox/fontnik)
+[![Build Status](https://magnum.travis-ci.com/mapbox/node-fontnik.png?token=ctvz1otCksqcmNzRzzxa&branch=master)](https://magnum.travis-ci.com/mapbox/node-fontnik)
 
 # node-fontnik
 
