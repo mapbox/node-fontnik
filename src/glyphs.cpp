@@ -1,11 +1,11 @@
-// fontserver
-#include <node_fontserver/glyphs.hpp>
+// fontnik
+#include <node_fontnik/glyphs.hpp>
 
 // node
 #include <node_buffer.h>
 #include <nan.h>
 
-namespace node_fontserver
+namespace node_fontnik
 {
 
 struct RangeBaton {
@@ -21,11 +21,11 @@ struct RangeBaton {
 v8::Persistent<v8::FunctionTemplate> Glyphs::constructor;
 
 Glyphs::Glyphs() : node::ObjectWrap() {
-    glyphs = fontserver::Glyphs();
+    glyphs = fontnik::Glyphs();
 }
 
 Glyphs::Glyphs(const char *data, size_t length) : node::ObjectWrap() {
-    glyphs = fontserver::Glyphs(data, length);
+    glyphs = fontnik::Glyphs(data, length);
 }
 
 Glyphs::~Glyphs() {}
@@ -171,4 +171,4 @@ void Glyphs::RangeAfter(uv_work_t* req) {
     delete req;
 }
 
-} // ns node_fontserver
+} // ns node_fontnik

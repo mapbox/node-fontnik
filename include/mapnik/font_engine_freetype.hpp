@@ -29,8 +29,8 @@
 #include <mapnik/font_set.hpp>
 #include <mapnik/noncopyable.hpp>
 
-// fontserver
-#include <fontserver/guarded_map.hpp>
+// fontnik
+#include <fontnik/guarded_map.hpp>
 
 // boost
 #include <boost/optional.hpp>

@@ -21,10 +21,10 @@
       'target_name': '<(module_name)',
       'dependencies': [ 'action_before_build' ],
       'sources': [
-        'src/node_fontserver.cpp',
+        'src/node_fontnik.cpp',
         'src/glyphs.cpp',
         'src/edtaa/edtaa4func.c',
-        'src/fontserver/glyphs.cpp',
+        'src/fontnik/glyphs.cpp',
         'src/freetype-gl/distmap.c',
         'src/mapnik/debug.cpp',
         'src/mapnik/font_engine_freetype.cpp',

@@ -1,11 +1,11 @@
-#ifndef FONTSERVER_GLYPHS_HPP
-#define FONTSERVER_GLYPHS_HPP
+#ifndef FONTNIK_GLYPHS_HPP
+#define FONTNIK_GLYPHS_HPP
 
 #include <node.h>
 
 #include "glyphs.pb.h"
 
-namespace fontserver
+namespace fontnik
 {
 
 class Glyphs
@@ -28,6 +28,6 @@ public:
 
 };
 
-} // ns fontserver
+} // ns fontnik
 
-#endif // FONTSERVER_GLYPHS_HPP
+#endif // FONTNIK_GLYPHS_HPP

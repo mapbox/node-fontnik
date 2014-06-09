@@ -4,9 +4,9 @@ set -e
 
 # Inspect binary.
 if [ $platform == "linux" ]; then
-    ldd ./lib/fontserver.node
+    ldd ./lib/fontnik.node
 else
-    otool -L ./lib/fontserver.node
+    otool -L ./lib/fontnik.node
 fi
 
 COMMIT_MESSAGE=$(git show -s --format=%B $TRAVIS_COMMIT | tr -d '\n')
