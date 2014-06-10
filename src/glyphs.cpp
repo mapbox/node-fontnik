@@ -31,7 +31,7 @@ Glyphs::Glyphs(const char *data, size_t length) : node::ObjectWrap() {
 Glyphs::~Glyphs() {}
 
 void Glyphs::Init(v8::Handle<v8::Object> target) {
-    v8::HandleScope scope;
+    NanScope();
 
     v8::Local<v8::FunctionTemplate> tpl = NanNew<v8::FunctionTemplate>(New);
     v8::Local<v8::String> name = NanNew<v8::String>("Glyphs");
@@ -78,14 +78,14 @@ bool Glyphs::HasInstance(v8::Handle<v8::Value> val) {
     return constructor->HasInstance(val->ToObject());
 }
 
-v8::Handle<v8::Value> Glyphs::Serialize(const v8::Arguments& args) {
-    v8::HandleScope scope;
+NAN_METHOD(Glyphs::Serialize) {
+    NanScope();
     std::string serialized = node::ObjectWrap::Unwrap<Glyphs>(args.This())->glyphs.Serialize();
     return scope.Close(node::Buffer::New(serialized.data(), serialized.length())->handle_);
 }
 
-v8::Handle<v8::Value> Glyphs::Range(const v8::Arguments& args) {
-    v8::HandleScope scope;
+NAN_METHOD(Glyphs::Range) {
+    NanScope();
 
     // Validate arguments.
     if (args.Length() < 1 || !args[0]->IsString()) {
@@ -146,19 +146,20 @@ void Glyphs::AsyncRange(uv_work_t* req) {
 }
 
 void Glyphs::RangeAfter(uv_work_t* req) {
-    v8::HandleScope scope;
+    NanScope();
     RangeBaton* baton = static_cast<RangeBaton*>(req->data);
 
     const unsigned argc = 1;
 
     v8::TryCatch try_catch;
+    v8::Local<v8::Context> ctx = NanGetCurrentContext();
 
     if (baton->error) {
-        v8::Local<v8::Value> argv[argc] = { v8::Exception::Error(v8::String::New(baton->error_name.c_str())) };
-        baton->callback->Call(v8::Context::GetCurrent()->Global(), argc, argv);
+        v8::Local<v8::Value> argv[argc] = { v8::Exception::Error(NanNew<v8::String>(baton->error_name.c_str())) };
+        baton->callback->Call(ctx->Global(), argc, argv);
     } else {
-        v8::Local<v8::Value> argv[argc] = { v8::Local<v8::Value>::New(v8::Null()) };
-        baton->callback->Call(v8::Context::GetCurrent()->Global(), argc, argv);
+        v8::Local<v8::Value> argv[argc] = { v8::Local<v8::Value>::New(NanNull()) };
+        baton->callback->Call(ctx->Global(), argc, argv);
     }
 
     if (try_catch.HasCaught()) {
