@@ -2,7 +2,7 @@
 
 # node-fontnik
 
-A library that delivers a range of characters rendered as SDFs (signed distance fields) in a protobuf.
+A library that delivers a range of glyphs rendered as SDFs (signed distance fields) in a protobuf.
 
 ## Installing
 
