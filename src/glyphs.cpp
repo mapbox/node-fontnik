@@ -81,7 +81,7 @@ bool Glyphs::HasInstance(v8::Handle<v8::Value> val) {
 NAN_METHOD(Glyphs::Serialize) {
     NanScope();
     std::string serialized = node::ObjectWrap::Unwrap<Glyphs>(args.This())->glyphs.Serialize();
-    return scope.Close(node::Buffer::New(serialized.data(), serialized.length())->handle_);
+    return scope.Close(NanNewBufferHandle(serialized.data(), serialized.length()));
 }
 
 NAN_METHOD(Glyphs::Range) {
