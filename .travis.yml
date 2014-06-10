@@ -3,9 +3,9 @@ compiler:
 - gcc
 env:
   matrix:
-  - NODE_NVM_VERSION="0.8"
+  - NODE_NVM_VERSION="0.8.26"
   - NODE_NVM_VERSION="0.10"
-  - NODE_NVM_VERSION="0.12"
+  - NODE_NVM_VERSION="0.11.13"
   global:
   - BUILD: '/tmp/fontnik-build'
   - PKG_CONFIG_PATH: '/tmp/fontnik-build/lib/pkgconfig'
