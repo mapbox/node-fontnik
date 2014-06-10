@@ -7,8 +7,8 @@ env:
   global:
   - BUILD: '/tmp/fontnik-build'
   - PKG_CONFIG_PATH: '/tmp/fontnik-build/lib/pkgconfig'
-  - secure: "I2wLyeT1lgwZT1shYxR/vwUriGW4NG9TVGdjvDNfQUAM3vANsYxQgoDKNl4EA8ruku+qxMT/R5BM98beCg93m9cO1Uih/Cl5tPX/C/w18ImCC9TpbKjWy84OuJp2Rv7t4nbR8TFscjNkavqUuYrsWhrChWGnc658QICTf+GZdsM="
-  - secure: "SbIX4ttnAk57pLDO1ulUYyNK2HViFI7gzPyF4iT624K/og3AmZK6XUSZ8cZemGlT6nGSPhNt8MW5o2yqqWnxm0hRwb2ND5VTxClPwxmkavijlGtiTls7M+qeaWh+ifXLbRYevCceryCNdwG7oK9JKyepmPT/r/LDFgNix/M8r5c="
+  - secure: "ft3khHSWI62fgn5V8vMMwU5ZGadAV3Ch7OSF8UfRMT+w1WU+b3JvoscrDW/LQeGOmM6pZ4vfgISQU4DENKUkryyUxzugu4b4JgHgCWEfmaeYpmDQoexh79XgPvcOytUq4ARqQFTllUnGm8exxvloxrnVtMzTssHDqF0Dv+rNc40="
+  - secure: "IbPFay7ztwHe6+Vb8CmpFQ9ML9wH6OTRsN3DfujU/5goQ/OLLMUXeQaZWG26v/U1WtkynzjmdGc7ZUU6LGqey2i3sraRh7LmwFacFyCLWt9jReEMCF1qb37MVakPm4ZiS5CH9aziPqD0ea3cnmJquXhFo0+lFW2VQxXWIZHvTlE="
 before_install:
 - export platform=$(uname -s | sed "y/ABCDEFGHIJKLMNOPQRSTUVWXYZ/abcdefghijklmnopqrstuvwxyz/")
 - export PATH="$BUILD/bin:$PATH"
