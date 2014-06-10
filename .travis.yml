@@ -4,6 +4,7 @@ compiler:
 env:
   matrix:
   - NODE_NVM_VERSION="0.10"
+  - NODE_NVM_VERSION="0.12"
   global:
   - BUILD: '/tmp/fontnik-build'
   - PKG_CONFIG_PATH: '/tmp/fontnik-build/lib/pkgconfig'
