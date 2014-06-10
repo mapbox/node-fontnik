@@ -51,7 +51,7 @@ void Glyphs::Init(v8::Handle<v8::Object> target) {
     target->Set(name, constructor->GetFunction());
 }
 
-v8::Handle<v8::Value> Glyphs::New(const v8::Arguments& args) {
+NAN_METHOD(Glyphs::New) {
     if (!args.IsConstructCall()) {
         return NanThrowTypeError("Constructor must be called with new keyword");
     }
