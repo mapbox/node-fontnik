@@ -36,15 +36,15 @@ void Glyphs::Init(v8::Handle<v8::Object> target) {
     v8::Local<v8::FunctionTemplate> tpl = NanNew<v8::FunctionTemplate>(New);
     v8::Local<v8::String> name = NanNew<v8::String>("Glyphs");
 
-    constructor = v8::Persistent<v8::FunctionTemplate>::New(tpl);
+    NanAssignPersistent(Glyphs::constructor, tpl);
 
     // node::ObjectWrap uses the first internal field to store the wrapped pointer.
-    constructor->InstanceTemplate()->SetInternalFieldCount(1);
-    constructor->SetClassName(name);
+    tpl->InstanceTemplate()->SetInternalFieldCount(1);
+    tpl->SetClassName(name);
 
     // Add all prototype methods, getters and setters here.
-    NODE_SET_PROTOTYPE_METHOD(constructor, "serialize", Serialize);
-    NODE_SET_PROTOTYPE_METHOD(constructor, "range", Range);
+    NODE_SET_PROTOTYPE_METHOD(tpl, "serialize", Serialize);
+    NODE_SET_PROTOTYPE_METHOD(tpl, "range", Range);
 
     // This has to be last, otherwise the properties won't show up on the
     // object in JavaScript.
