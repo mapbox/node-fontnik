@@ -52,6 +52,8 @@ void Glyphs::Init(v8::Handle<v8::Object> target) {
 }
 
 NAN_METHOD(Glyphs::New) {
+    NanScope();
+
     if (!args.IsConstructCall()) {
         return NanThrowTypeError("Constructor must be called with new keyword");
     }
@@ -70,7 +72,7 @@ NAN_METHOD(Glyphs::New) {
 
     glyphs->Wrap(args.This());
 
-    return args.This();
+    NanReturnValue(args.This());
 }
 
 bool Glyphs::HasInstance(v8::Handle<v8::Value> val) {
@@ -81,7 +83,7 @@ bool Glyphs::HasInstance(v8::Handle<v8::Value> val) {
 NAN_METHOD(Glyphs::Serialize) {
     NanScope();
     std::string serialized = node::ObjectWrap::Unwrap<Glyphs>(args.This())->glyphs.Serialize();
-    return scope.Close(NanNewBufferHandle(serialized.data(), serialized.length()));
+    NanReturnValue(NanNewBufferHandle(serialized.data(), serialized.length()));
 }
 
 NAN_METHOD(Glyphs::Range) {
@@ -155,10 +157,14 @@ void Glyphs::RangeAfter(uv_work_t* req) {
     v8::Local<v8::Context> ctx = NanGetCurrentContext();
 
     if (baton->error) {
-        v8::Local<v8::Value> argv[argc] = { v8::Exception::Error(NanNew<v8::String>(baton->error_name.c_str())) };
+        v8::Local<v8::Value> argv[argc] = {
+            v8::Exception::Error(NanNew<v8::String>(baton->error_name.c_str()))
+        };
         baton->callback->Call(ctx->Global(), argc, argv);
     } else {
-        v8::Local<v8::Value> argv[argc] = { v8::Local<v8::Value>::New(NanNull()) };
+        v8::Local<v8::Value> argv[argc] = {
+            NanNull()
+        };
         baton->callback->Call(ctx->Global(), argc, argv);
     }
 
