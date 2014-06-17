@@ -29,3 +29,8 @@ them.
 ```
 npm install --build-from-source
 ```
+
+## Background reading
+- [State of Text Rendering](http://behdad.org/text/)
+- [Pango vs HarfBuzz](http://mces.blogspot.com/2009/11/pango-vs-harfbuzz.html)
+- [An Introduction to Writing Systems & Unicode](http://rishida.net/docs/unicode-tutorial/)
