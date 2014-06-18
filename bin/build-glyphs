@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-var fontserver = require('../index.js');
+var fontnik = require('../index.js');
 var path = require('path');
 var fs = require('fs');
 var queue = require('queue-async');
@@ -38,7 +38,7 @@ q.defer(writeGlyphs, {
 });
 
 function writeGlyphs(opts, done) {
-    fontserver.range(opts, function(err, zdata) {
+    fontnik.range(opts, function(err, zdata) {
         if (err) {
             console.warn(err.toString());
             process.exit(1);

@@ -27,8 +27,8 @@
 #include <mapnik/config.hpp>
 #include <mapnik/noncopyable.hpp>
 
-// fontserver
-#include <fontserver/guarded_map.hpp>
+// fontnik
+#include <fontnik/guarded_map.hpp>
 
 // freetype2
 extern "C"
@@ -45,7 +45,7 @@ extern "C"
 namespace mapnik
 {
 
-typedef guarded_map<glyph_index_t, glyph_info> glyph_cache_type;
+typedef fontnik::guarded_map<glyph_index_t, glyph_info> glyph_cache_type;
 typedef std::shared_ptr<glyph_cache_type> glyph_cache_ptr;
 
 class font_face : mapnik::noncopyable

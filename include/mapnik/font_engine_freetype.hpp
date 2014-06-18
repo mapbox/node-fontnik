@@ -29,8 +29,8 @@
 #include <mapnik/font_set.hpp>
 #include <mapnik/noncopyable.hpp>
 
-// fontserver
-#include <fontserver/guarded_map.hpp>
+// fontnik
+#include <fontnik/guarded_map.hpp>
 
 // boost
 #include <boost/optional.hpp>
@@ -48,7 +48,7 @@ struct FT_MemoryRec_;
 namespace mapnik
 {
 
-typedef guarded_map<glyph_index_t, glyph_info> glyph_cache_type;
+typedef fontnik::guarded_map<glyph_index_t, glyph_info> glyph_cache_type;
 typedef std::shared_ptr<glyph_cache_type> glyph_cache_ptr;
 class font_face_set;
 typedef std::shared_ptr<font_face_set> face_set_ptr;

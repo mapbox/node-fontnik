@@ -1,5 +1,5 @@
-// fontserver
-#include <fontserver/glyphs.hpp>
+// fontnik
+#include <fontnik/glyphs.hpp>
 #include <mapnik/font_engine_freetype.hpp>
 #include <mapnik/text/face.hpp>
 
@@ -15,7 +15,7 @@ extern "C"
 #include FT_FREETYPE_H
 }
 
-namespace fontserver
+namespace fontnik
 {
 
 Glyphs::Glyphs() {}
@@ -111,4 +111,4 @@ std::string Glyphs::Trim(std::string str, std::string whitespace)
     return str.substr(strBegin, strRange);
 }
 
-} // ns fontserver
+} // ns fontnik
