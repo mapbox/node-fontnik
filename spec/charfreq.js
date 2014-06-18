@@ -17,13 +17,13 @@ function csvRanges() {
 
 function osmRanges() {
     var fs = require('fs');
-    if (!fs.existsSync(__dirname + '/china-latest.osm.pbf')) {
+    if (!fs.existsSync(__dirname + '/data/china-latest.osm.pbf')) {
         console.warn('Requires china-latest.osm.pbf from geofabrik.de');
         process.exit(1);
     }
 
     var osmium = require('osmium');
-    var file = new osmium.File(__dirname + '/china-latest.osm.pbf');
+    var file = new osmium.File(__dirname + '/data/china-latest.osm.pbf');
     var reader = new osmium.Reader(file);
     var handler = new osmium.Handler();
     handler.on('node', getChars);
