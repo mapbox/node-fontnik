@@ -1,5 +1,5 @@
-var modern = require('./cjk-modern.json');
-var osm = require('./cjk-osm.json');
+var modern = require('./expected/cjk-modern.json');
+var osm = require('./expected/cjk-osm.json');
 
 var diff = 0;
 for (var k in osm) if (!modern[k]) diff++

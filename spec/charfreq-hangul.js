@@ -62,7 +62,7 @@ function osmRanges() {
         sorted.slice(0,512).forEach(function(a,i) {
             hangul[a.char] = 'hangul-common-' + Math.floor(i/256);
         });
-        require('fs').writeFileSync(__dirname + '/hangul-osm.json', JSON.stringify(hangul, null, 2));
+        require('fs').writeFileSync(__dirname + '/expected/hangul-osm.json', JSON.stringify(hangul, null, 2));
     }
 }
 

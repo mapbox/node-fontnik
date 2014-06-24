@@ -6,13 +6,13 @@ csvRanges();
 osmRanges();
 
 function csvRanges() {
-    var csv = require('fs').readFileSync(__dirname + '/charfreq-modern.csv','utf8').split('\n').slice(0,4096);
+    var csv = require('fs').readFileSync(__dirname + '/data/charfreq-modern.csv','utf8').split('\n').slice(0,4096);
     var cjk = {};
     csv.forEach(function(line, i) {
         var char = line.split(',')[1].charCodeAt(0);
         cjk[char] = 'cjk-common-' + Math.floor(i/256);
     });
-    require('fs').writeFileSync(__dirname + '/cjk-modern.json', JSON.stringify(cjk, null, 2));
+    require('fs').writeFileSync(__dirname + '/expected/cjk-modern.json', JSON.stringify(cjk, null, 2));
 }
 
 function osmRanges() {
@@ -57,7 +57,7 @@ function osmRanges() {
         sorted.slice(0,4096).forEach(function(a,i) {
             cjk[a.char] = 'cjk-common-' + Math.floor(i/256);
         });
-        require('fs').writeFileSync(__dirname + '/cjk-osm.json', JSON.stringify(cjk, null, 2));
+        require('fs').writeFileSync(__dirname + '/expected/cjk-osm.json', JSON.stringify(cjk, null, 2));
     }
 }
 

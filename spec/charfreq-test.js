@@ -1,22 +1,22 @@
 var cjk = {
     none: {},
-    osm: require('./cjk-osm.json'),
-    modern: require('./cjk-modern.json')
+    osm: require('./expected/cjk-osm.json'),
+    modern: require('./expected/cjk-modern.json')
 };
 
 var tiles = [
-    require('./fixtures/14.13718.6692.json'),
-    require('./fixtures/14.13718.6693.json'),
-    require('./fixtures/14.13719.6692.json'),
-    require('./fixtures/14.13719.6693.json'),
-    require('./fixtures/14.13345.7109.json'),
-    require('./fixtures/14.13346.7109.json'),
-    require('./fixtures/14.13345.7110.json'),
-    require('./fixtures/14.13346.7110.json'),
-    require('./fixtures/14.13486.6207.json'),
-    require('./fixtures/14.13487.6207.json'),
-    require('./fixtures/14.13486.6208.json'),
-    require('./fixtures/14.13487.6208.json'),
+    require('./fixtures/china/14.13718.6692.json'),
+    require('./fixtures/china/14.13718.6693.json'),
+    require('./fixtures/china/14.13719.6692.json'),
+    require('./fixtures/china/14.13719.6693.json'),
+    require('./fixtures/china/14.13345.7109.json'),
+    require('./fixtures/china/14.13346.7109.json'),
+    require('./fixtures/china/14.13345.7110.json'),
+    require('./fixtures/china/14.13346.7110.json'),
+    require('./fixtures/china/14.13486.6207.json'),
+    require('./fixtures/china/14.13487.6207.json'),
+    require('./fixtures/china/14.13486.6208.json'),
+    require('./fixtures/china/14.13487.6208.json'),
 ];
 
 var ranges = { none:{}, osm:{}, modern:{} };
