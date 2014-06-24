@@ -1,63 +1,117 @@
 // Generate common CJK character tables of size 4096.
-// - cjk-modern.json uses charfreq-modern.csv (http://lingua.mtsu.edu/chinese-computing/statistics/)
-// - cjk-osm.json uses an OpenStreetMap China extract.
+// - cjk-osm.json uses OpenStreetMap extracts.
 
-csvRanges();
-osmRanges();
+var fs = require('fs');
+var osmium = require('osmium');
+var queue = require('queue-async');
 
-function csvRanges() {
-    var csv = require('fs').readFileSync(__dirname + '/data/charfreq-modern.csv','utf8').split('\n').slice(0,4096);
-    var cjk = {};
-    csv.forEach(function(line, i) {
-        var char = line.split(',')[1].charCodeAt(0);
-        cjk[char] = 'cjk-common-' + Math.floor(i/256);
-    });
-    require('fs').writeFileSync(__dirname + '/expected/cjk-modern.json', JSON.stringify(cjk, null, 2));
-}
+var data = {
+    'china': 'china-latest.osm.pbf',
+    'hong-kong': 'hong-kong.osm.pbf',
+    'taiwan': 'taiwan-latest.osm.pbf',
+    'japan': 'japan-latest.osm.pbf',
+    'korea': 'korea.osm.pbf'
+};
 
-function osmRanges() {
-    var fs = require('fs');
-    if (!fs.existsSync(__dirname + '/data/china-latest.osm.pbf')) {
-        console.warn('Requires china-latest.osm.pbf from geofabrik.de');
+var ranges = {
+    'cjk-radicals': [0x2E80, 0x2EFF],
+    'cjk-symbols': [0x3000, 0x303F],
+    'cjk-enclosed': [0x3200, 0x32FF],
+    'cjk-compat': [0x3300, 0x33FF],
+    'cjk-unified-extension-a': [0x3400, 0x4DBF],
+    'cjk-unified': [0x4E00, 0x9FFF],
+    'cjk-compat-ideograph': [0xF900, 0xFAFF],
+    'cjk-compat-forms': [0xFE30, 0xFE4F],
+    'cjk-unified-extension-b': [0x20000, 0x2A6DF],
+    'cjk-compat-ideograph-supplement': [0x2F800, 0x2FA1F],
+    'hiragana': [0x3040, 0x309F],
+    'katakana': [0x30A0, 0x30FF],
+    'hangul': [0xAC00, 0xD7AF]
+};
+
+var rangeKeys = Object.keys(ranges);
+
+var sorted = {};
+
+Object.keys(data).forEach(function(name) {
+    console.time(name);
+    console.log('Parsing ' + name + '...');
+    var path = __dirname + '/data/' + data[name];
+
+    if (!fs.existsSync(path)) {
+        console.warn('Requires ' + name + ' OSM extract from geofabrik.de, extract.bbbike.org or Overpass API');
         process.exit(1);
     }
 
-    var osmium = require('osmium');
-    var file = new osmium.File(__dirname + '/data/china-latest.osm.pbf');
-    var reader = new osmium.Reader(file);
-    var handler = new osmium.Handler();
-    handler.on('node', getChars);
-    handler.on('way', getChars);
-    handler.on('relation', getChars);
-    handler.on('done', done);
     var charToRange = {};
 
-    reader.apply(handler);
+    function readFile(path, callback) {
+        var file = new osmium.File(path);
+        var reader = new osmium.Reader(file);
+        var handler = new osmium.Handler();
+        handler.on('node', getChars);
+        handler.on('way', getChars);
+        handler.on('relation', getChars);
+        handler.on('done', callback);
+        reader.apply(handler);
+    }
 
     function getChars(obj) {
         var name = obj.tags().name;
         if (!name) return;
         for (var i = 0; i < name.length; i++) {
             var charCode = name.charCodeAt(i);
-            if (charCode < 0x4E00) continue;
-            if (charCode > 0x9FFF) continue;
-            type = 'cjk';
-            charToRange[charCode] = charToRange[charCode] || { char:charCode, count:0};
-            charToRange[charCode].count++;
+            for (var j = 0; j < rangeKeys.length; j++) {
+                var range = ranges[rangeKeys[j]];
+                if (charCode < range[0]) continue;
+                if (charCode > range[1]) continue;
+                charToRange[charCode] = charToRange[charCode] || { index: charCode, count: 0, script: rangeKeys[j] };
+                charToRange[charCode].count++;
+                break; //charCode range match
+            }
         }
     }
 
-    function done() {
-        var sorted = [];
-        for (var key in charToRange) sorted.push(charToRange[key]);
-        sorted.sort(function(a, b) {
+    readFile(path, function done() {
+        sorted[name] = [];
+        for (var key in charToRange) sorted[name].push(charToRange[key]);
+        sorted[name].sort(function(a, b) {
             return -1 * (a.count - b.count);
+            // return b.count - a.count;
         });
-        var cjk = {};
-        sorted.slice(0,4096).forEach(function(a,i) {
-            cjk[a.char] = 'cjk-common-' + Math.floor(i/256);
+        var sliced = {};
+        sorted[name].forEach(function(a,i) {
+            sliced[a.index] = 'common-' + a.script + '-' + Math.floor(i/256);
         });
-        require('fs').writeFileSync(__dirname + '/expected/cjk-osm.json', JSON.stringify(cjk, null, 2));
-    }
+        fs.writeFileSync(__dirname + '/expected/' + name + '-osm.json', JSON.stringify(sliced, null, 2));
+        console.timeEnd(name);
+    });
+});
+
+function freqSort(glyphs) {
+    var frequency = [];
+    for (var key in glyphs) frequency.push(glyphs[key]);
+    frequency.sort(function(a, b) {
+        return b.count - a.count;
+    });
+    return frequency;
 }
 
+function composite() {
+    var merged = Object.keys(sorted).reduce(function(prev, locale) {
+        for (var i = 0; i < sorted[locale].length; i++) {
+            var glyph = sorted[locale][i];
+            prev.hasOwnProperty(glyph.index) ? prev[glyph.index].count += glyph.count : prev[glyph.index] = glyph;
+        }
+        return prev;
+    }, {});
+
+    var sliced = {};
+    var composite = freqSort(merged).slice(0, 8192);
+    composite.forEach(function(a,i) {
+        sliced[a.index] = 'common-' + a.script + '-' + Math.floor(i/256);
+    });
+    fs.writeFileSync(__dirname + '/expected/cjk-osm.json', JSON.stringify(sliced, null, 2));
+}
+
+composite();

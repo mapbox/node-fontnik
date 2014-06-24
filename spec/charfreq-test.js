@@ -5,7 +5,7 @@ var cjk = {
 };
 
 var tiles = {
-    'cjk-modern': [
+    'cjk-simplified': [
         require('./fixtures/china/14.13718.6692.json'),
         require('./fixtures/china/14.13718.6693.json'),
         require('./fixtures/china/14.13719.6692.json'),
@@ -47,32 +47,35 @@ var tiles = {
 
 var ranges = { none:{}, osm:{}, modern:{} };
 
-tiles['cjk-traditional'].forEach(function(layers) {
-    layers.forEach(function(l) {
-        l.features.forEach(function(f) {
-            if (!f.properties.name) return;
-            var name = f.properties.name;
-            for (var i = 0; i < name.length; i++) {
-                var char = name.charCodeAt(i);
-                ['none','osm','modern'].forEach(function(type) {
-                    if (cjk[type][char]) {
-                        ranges[type][cjk[type][char]] = true;
-                    } else {
-                        var start = Math.floor(char/256) * 256;
-                        var range = start + '-' + (start + 255);
-                        ranges[type][range] = true;
-                    }
-                });
-            }
+Object.keys(tiles).forEach(function(script) {
+    tiles[script].forEach(function(layers) {
+        layers.forEach(function(l) {
+            l.features.forEach(function(f) {
+                if (!f.properties.name) return;
+                var name = f.properties.name;
+                for (var i = 0; i < name.length; i++) {
+                    var char = name.charCodeAt(i);
+                    ['none','osm','modern'].forEach(function(type) {
+                        if (cjk[type][char]) {
+                            ranges[type][cjk[type][char]] = true;
+                        } else {
+                            var start = Math.floor(char/256) * 256;
+                            var range = start + '-' + (start + 255);
+                            ranges[type][range] = true;
+                        }
+                    });
+                }
+            });
         });
     });
+
+    console.log('\n' + script);
+    console.log('none (%s ranges)', Object.keys(ranges.none).length);
+    // console.log(Object.keys(ranges.none).sort());
+
+    console.log('osm (%s ranges)', Object.keys(ranges.osm).length);
+    console.log(Object.keys(ranges.osm).sort());
+
+    console.log('modern (%s ranges)', Object.keys(ranges.modern).length);
+    // console.log(Object.keys(ranges.modern).sort());
 });
-
-console.log('none (%s ranges)', Object.keys(ranges.none).length);
-console.log(Object.keys(ranges.none).sort());
-
-console.log('osm (%s ranges)', Object.keys(ranges.osm).length);
-console.log(Object.keys(ranges.osm).sort());
-
-console.log('modern (%s ranges)', Object.keys(ranges.modern).length);
-console.log(Object.keys(ranges.modern).sort());
