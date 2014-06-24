@@ -81,7 +81,7 @@ Object.keys(data).forEach(function(name) {
         });
         var sliced = {};
         sorted[name].forEach(function(a,i) {
-            sliced[a.index] = 'common-' + a.script + '-' + Math.floor(i/256);
+            sliced[a.index] = a.script + '-' + Math.floor(i/256);
         });
         fs.writeFileSync(__dirname + '/expected/' + name + '-osm.json', JSON.stringify(sliced, null, 2));
         console.timeEnd(name);
@@ -107,9 +107,9 @@ function composite() {
     }, {});
 
     var sliced = {};
-    var composite = freqSort(merged).slice(0, 8192);
+    var composite = freqSort(merged); //.slice(0, 4096);
     composite.forEach(function(a,i) {
-        sliced[a.index] = 'common-' + a.script + '-' + Math.floor(i/256);
+        sliced[a.index] = 'cjk-common-' + Math.floor(i/256);
     });
     fs.writeFileSync(__dirname + '/expected/cjk-osm.json', JSON.stringify(sliced, null, 2));
 }
