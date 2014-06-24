@@ -4,24 +4,50 @@ var cjk = {
     modern: require('./expected/cjk-modern.json')
 };
 
-var tiles = [
-    require('./fixtures/china/14.13718.6692.json'),
-    require('./fixtures/china/14.13718.6693.json'),
-    require('./fixtures/china/14.13719.6692.json'),
-    require('./fixtures/china/14.13719.6693.json'),
-    require('./fixtures/china/14.13345.7109.json'),
-    require('./fixtures/china/14.13346.7109.json'),
-    require('./fixtures/china/14.13345.7110.json'),
-    require('./fixtures/china/14.13346.7110.json'),
-    require('./fixtures/china/14.13486.6207.json'),
-    require('./fixtures/china/14.13487.6207.json'),
-    require('./fixtures/china/14.13486.6208.json'),
-    require('./fixtures/china/14.13487.6208.json'),
-];
+var tiles = {
+    'cjk-modern': [
+        require('./fixtures/china/14.13718.6692.json'),
+        require('./fixtures/china/14.13718.6693.json'),
+        require('./fixtures/china/14.13719.6692.json'),
+        require('./fixtures/china/14.13719.6693.json'),
+        require('./fixtures/china/14.13345.7109.json'),
+        require('./fixtures/china/14.13346.7109.json'),
+        require('./fixtures/china/14.13345.7110.json'),
+        require('./fixtures/china/14.13346.7110.json'),
+        require('./fixtures/china/14.13486.6207.json'),
+        require('./fixtures/china/14.13487.6207.json'),
+        require('./fixtures/china/14.13486.6208.json'),
+        require('./fixtures/china/14.13487.6208.json')
+    ],
+    'cjk-traditional': [
+        require('./fixtures/taiwan/14.13662.7116.json'),
+        require('./fixtures/taiwan/14.13722.7014.json'),
+        require('./fixtures/taiwan/14.13723.7013.json'),
+        require('./fixtures/taiwan/14.13723.7015.json'),
+        require('./fixtures/taiwan/14.13723.7017.json'),
+        require('./fixtures/hong-kong/14.13387.7151.json'),
+        require('./fixtures/hong-kong/14.13388.7150.json'),
+        require('./fixtures/hong-kong/14.13388.7151.json'),
+        require('./fixtures/hong-kong/14.13389.7148.json'),
+        require('./fixtures/macau/14.13359.7155.json')
+    ],
+    'hangul': [
+        require('./fixtures/north-korea/14.13915.6259.json'),
+        require('./fixtures/north-korea/14.13915.6260.json'),
+        require('./fixtures/north-korea/14.13916.6260.json'),
+        require('./fixtures/south-korea/14.13968.6481.json'),
+        require('./fixtures/south-korea/14.13971.6344.json'),
+        require('./fixtures/south-korea/14.13974.6343.json'),
+        require('./fixtures/south-korea/14.13977.6388.json'),
+        require('./fixtures/south-korea/14.13989.6414.json'),
+        require('./fixtures/south-korea/14.13991.6415.json'),
+        require('./fixtures/south-korea/14.14044.6441.json')
+    ]
+};
 
 var ranges = { none:{}, osm:{}, modern:{} };
 
-tiles.forEach(function(layers) {
+tiles['cjk-traditional'].forEach(function(layers) {
     layers.forEach(function(l) {
         l.features.forEach(function(f) {
             if (!f.properties.name) return;
