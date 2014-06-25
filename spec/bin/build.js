@@ -1,24 +1,36 @@
 #!/usr/bin/env node
 
 var fs = require('fs');
+var ranges = require('../ranges.js');
 var osmium = require('osmium');
 
-var osm = require('../osm.json')
-var ranges = require('../ranges.js')
+var data = {
+    'cjk': {
+        'china': 'china-latest.osm.pbf',
+        'hong-kong': 'hong-kong.osm.pbf',
+        'taiwan': 'taiwan-latest.osm.pbf',
+        'japan': 'japan-latest.osm.pbf'
+    },
+    'hangul': {
+        'korea': 'korea.osm.pbf'
+    }
+};
 
-var sorted = {};
+Object.keys(ranges).forEach(function(range) {
+    var sorted = {};
 
-Object.keys(osm).forEach(function(name) {
-    build(name);
+    Object.keys(data[range]).forEach(function(name) {
+        build(range, name, sorted);
+    });
+
+    fs.writeFileSync(__dirname + '/../expected/' + range + '-osm.json', JSON.stringify(sorted, null, 2));
 });
 
-fs.writeFileSync(__dirname + '/../expected/sorted-osm.json', JSON.stringify(sorted, null, 2));
+function build(range, name, sorted) {
+    console.time(range + '-' + name);
+    console.log('Parsing ' + range + '-' + name + '...');
 
-function build(name) {
-    console.time(name);
-    console.log('Parsing ' + name + '...');
-
-    var path = __dirname + '/../data/' + osm[name];
+    var path = __dirname + '/../data/' + data[range][name];
     var charToRange = {};
 
     if (!fs.existsSync(path)) {
@@ -40,7 +52,7 @@ function build(name) {
 
         fs.writeFileSync(__dirname + '/../expected/' + name + '-osm.json', JSON.stringify(sliced, null, 2));
 
-        console.timeEnd(name);
+        console.timeEnd(range + '-' + name);
     });
 
     function readFile(path, callback) {
@@ -59,14 +71,10 @@ function build(name) {
         if (!name) return;
         for (var i = 0; i < name.length; i++) {
             var charCode = name.charCodeAt(i);
-            for (var j = 0; j < ranges.length; j++) {
-                var range = ranges[j];
-                if (charCode < range[0]) continue;
-                if (charCode > range[1]) continue;
-                charToRange[charCode] = charToRange[charCode] || { index: charCode, count: 0, sortIndex: j };
-                charToRange[charCode].count++;
-                break; //charCode range match
-            }
+            if (charCode < ranges[range][0]) continue;
+            if (charCode > ranges[range][1]) continue;
+            charToRange[charCode] = charToRange[charCode] || { index: charCode, count: 0 };
+            charToRange[charCode].count++;
         }
     }
 }
