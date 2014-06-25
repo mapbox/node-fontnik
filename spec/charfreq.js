@@ -1,5 +1,4 @@
-// Generate common CJK character tables of size 4096.
-// - cjk-osm.json uses OpenStreetMap extracts.
+// Generate common CJK character tables from OpenStreetMap extracts.
 
 var fs = require('fs');
 var osmium = require('osmium');
@@ -25,16 +24,6 @@ var ranges = {
     'hiragana': [0x3040, 0x309F, 8],
     'katakana': [0x30A0, 0x30FF, 9],
     'hangul-syllables': [0xAC00, 0xD7AF, 10]
-
-    // Unused Ranges
-    // 'hangul-jamo': [0x1100, 0x11FF, 0],
-    // 'cjk-radicals': [0x2E80, 0x2EFF, 1],
-    // 'cjk-compat': [0x3300, 0x33FF, 4],
-    // 'katakana-phoenetic': [0x31F0, 0x31FF, 9],
-    // 'bopomofo-extended': [0x31A0, 0x31BF, 12],
-    // 'cjk-compat-forms': [0xFE30, 0xFE4F, 15],
-    // 'cjk-unified-extension-b': [0x20000, 0x2A6DF, 17],
-    // 'cjk-compat-ideograph-supplement': [0x2F800, 0x2FA1F, 18]
 };
 
 var rangeKeys = Object.keys(ranges);
@@ -112,14 +101,7 @@ function composite() {
     }, {});
 
     var sliced = {};
-    var composite = freqSort(merged); //.slice(0, 6869);
-    // 6869, 6300, 5949, 5689, 5514, 5344, 5217, 5078, 4947
-
-    var frequency = composite.map(function(a,i) {
-        return a.count;
-    });
-
-    fs.writeFileSync(__dirname + '/expected/cjk-frequency.json', JSON.stringify(frequency, null, 2));
+    var composite = freqSort(merged); //.slice(0, 4096);
 
     // Sort by range, then frequency, then Unicode index
     composite.sort(function(a, b) {
@@ -131,8 +113,6 @@ function composite() {
             return a.sortIndex - b.sortIndex;
         }
     });
-
-    fs.writeFileSync(__dirname + '/expected/cjk-sorted.json', JSON.stringify(composite, null, 2));
 
     composite.forEach(function(a,i) {
         sliced[a.index] = 'cjk-common-' + Math.floor(i/256);
