@@ -14,7 +14,6 @@ Object.keys(ranges).forEach(function(range) {
         return prev;
     }, {});
 
-    var sliced = {};
     var composite = freqSort(merged); //.slice(0, 4096);
 
     // Sort by range, then frequency, then Unicode index
@@ -26,11 +25,16 @@ Object.keys(ranges).forEach(function(range) {
         }
     });
 
+    var sliced = {};
+    var glyphs = {};
+
     composite.forEach(function(a,i) {
         sliced[a.index] = range + '-common';
+        glyphs[a.count + '-' + a.index] = String.fromCharCode(a.index);
     });
 
     fs.writeFileSync(__dirname + '/../expected/' + range + '-common.json', JSON.stringify(sliced, null, 2));
+    fs.writeFileSync(__dirname + '/../expected/' + range + '-glyphs.json', JSON.stringify(glyphs, null, 2));
 });
 
 
