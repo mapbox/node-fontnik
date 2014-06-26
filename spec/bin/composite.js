@@ -27,7 +27,7 @@ Object.keys(ranges).forEach(function(range) {
     });
 
     composite.forEach(function(a,i) {
-        sliced[a.index] = range + '-common-' + Math.floor(i/256);
+        sliced[a.index] = range + '-common';
     });
 
     fs.writeFileSync(__dirname + '/../expected/' + range + '-common.json', JSON.stringify(sliced, null, 2));
