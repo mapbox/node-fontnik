@@ -36,6 +36,19 @@ var tiles = {
     'macau': [
         require('./fixtures/macau/14.13359.7155.json')
     ],
+    'japan': [
+        require('./fixtures/japan/14.14358.6506.json'),
+        require('./fixtures/japan/14.14358.6508.json'),
+        require('./fixtures/japan/14.14359.6506.json'),
+        require('./fixtures/japan/14.14359.6508.json'),
+        require('./fixtures/japan/14.14421.6480.json'),
+        require('./fixtures/japan/14.14422.6480.json'),
+        require('./fixtures/japan/14.14422.6481.json'),
+        require('./fixtures/japan/14.14550.6452.json'),
+        require('./fixtures/japan/14.14551.6453.json'),
+        require('./fixtures/japan/14.14552.6450.json'),
+        require('./fixtures/japan/14.14552.6452.json')
+    ],
     'north-korea': [
         require('./fixtures/north-korea/14.13915.6259.json'),
         require('./fixtures/north-korea/14.13915.6260.json'),
@@ -81,8 +94,15 @@ Object.keys(tiles).forEach(function(locale) {
 
     console.log('\n' + locale);
 
+    var minRange;
     Object.keys(cjk).forEach(function(type) {
-        console.log(type + ' (%s ranges)', Object.keys(ranges[type]).length);
-        // console.log(Object.keys(ranges[type]).sort());
+        if (!minRange) minRange = type;
+
+        var length = Object.keys(ranges[type]).length;
+        if (length < Object.keys(ranges[minRange]).length) minRange = type;
+
+        console.log(type + ' (%s ranges)', length);
     });
+
+    console.log('ranges', Object.keys(ranges[minRange]).sort());
 });
