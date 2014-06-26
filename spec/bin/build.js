@@ -7,12 +7,12 @@ var osmium = require('osmium');
 var data = {
     'cjk': {
         'china': 'china-latest.osm.pbf',
-        'hong-kong': 'hong-kong.osm.pbf',
         'taiwan': 'taiwan-latest.osm.pbf',
         'japan': 'japan-latest.osm.pbf'
     },
     'hangul': {
-        'korea': 'korea.osm.pbf'
+        'north-korea': 'north-korea-latest.osm.pbf',
+        'south-korea': 'south-korea-latest.osm.pbf'
     }
 };
 
