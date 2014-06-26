@@ -64,12 +64,12 @@ Object.keys(tiles).forEach(function(locale) {
                 if (!f.properties.name) return;
                 var name = f.properties.name;
                 for (var i = 0; i < name.length; i++) {
-                    var char = name.charCodeAt(i);
+                    var charCode = name.charCodeAt(i);
                     Object.keys(cjk).forEach(function(type) {
-                        if (cjk[type][char]) {
-                            ranges[type][cjk[type][char]] = true;
+                        if (cjk[type][charCode]) {
+                            ranges[type][cjk[type][charCode]] = true;
                         } else {
-                            var start = Math.floor(char/256) * 256;
+                            var start = Math.floor(charCode/256) * 256;
                             var range = start + '-' + (start + 255);
                             ranges[type][range] = true;
                         }
