@@ -27,8 +27,12 @@ function range(options, callback) {
     function deflate(err) {
         if (err) return callback(err);
         var after = glyphs.serialize();
-        // zlib.deflate(after, callback);
-        callback(null, after);
+
+        if (options.deflate) {
+            zlib.deflate(after, callback);
+        } else {
+            callback(null, after);
+        }
     }
 }
 
