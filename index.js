@@ -11,18 +11,34 @@ if (process.env['FONTNIK_FONTS']) env_options.fonts = process.env['FONTNIK_FONTS
 // Fontnik conf setup. Synchronous at require time.
 conf(env_options);
 
-module.exports = fontnik;
+module.exports.serialize = serialize;
 module.exports.range = range;
 module.exports.getRange = getRange;
 
+function serialize(data) {
+    'use strict';
+    var glyphs = new fontnik.Glyphs(data);
+    return glyphs.serialize();
+}
 // Retrieve a range of glyphs as a pbf.
 function range(options, callback) {
     'use strict';
     options = options || {};
-    options.fontstack = options.fontstack || 'Open Sans Regular';
+    options.fontstack = options.hasOwnProperty('fontstack') ? options.fontstack : 'Open Sans Regular';
+    options.deflate = options.hasOwnProperty('deflate') ?
+        options.deflate : true;
+
+    if (options.hasOwnProperty('start') && options.hasOwnProperty('end')) {
+        options.name = options.start + '-' + options.end;
+        options.range = getRange(options.start, options.end);
+    }
+
+    if (typeof callback !== 'function') {
+        throw new Error('callback must be a function');
+    }
 
     var glyphs = new fontnik.Glyphs();
-    glyphs.range(options.fontstack, options.start + '-' + options.end, getRange(options.start, options.end), deflate);
+    glyphs.range(options.fontstack, options.name, options.range, deflate);
 
     function deflate(err) {
         if (err) return callback(err);

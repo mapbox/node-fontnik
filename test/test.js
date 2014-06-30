@@ -18,12 +18,17 @@ function jsonEqual(key, json) {
 
 describe('glyphs', function() {
     var data;
+    var opts;
     before(function(done) {
         zlib.inflate(zdata, function(err, d) {
             assert.ifError(err);
             data = d;
             done();
         });
+    });
+    beforeEach(function(done) {
+        opts = {};
+        done();
     });
 
     it('serialize', function(done) {
@@ -39,39 +44,74 @@ describe('glyphs', function() {
             done();
         });
         */
-        var glyphs = new fontnik.Glyphs(data);
-        var vt = new Glyphs(new Protobuf(new Uint8Array(glyphs.serialize())));
+        var vt = new Glyphs(new Protobuf(new Uint8Array(fontnik.serialize(data))));
         var json = JSON.parse(JSON.stringify(vt, nobuffer));
         jsonEqual('range', json);
         done();
     });
 
     it('range', function(done) {
-        var glyphs = new fontnik.Glyphs();
-        glyphs.range('Open Sans Regular', '0-256', fontnik.getRange(0, 256), function(err) {
+        opts.start = 0;
+        opts.end = 256;
+        opts.deflate = false;
+        fontnik.range(opts, function(err, data) {
             assert.ifError(err);
-            var vt = new Glyphs(new Protobuf(new Uint8Array(glyphs.serialize())));
+            var vt = new Glyphs(new Protobuf(new Uint8Array(data)));
             var json = JSON.parse(JSON.stringify(vt, nobuffer));
             jsonEqual('range', json);
             done();
         });
     });
 
+    it('range deflated', function(done) {
+        opts.start = 0;
+        opts.end = 256;
+        opts.deflate = true;
+        fontnik.range(opts, function(err, zdata) {
+            assert.ifError(err);
+            zlib.inflate(zdata, function(err, data) {
+                assert.ifError(err);
+                var vt = new Glyphs(new Protobuf(new Uint8Array(data)));
+                var json = JSON.parse(JSON.stringify(vt, nobuffer));
+                jsonEqual('range', json);
+                done();
+            });
+        });
+    });
+
+    it('range (default deflated)', function(done) {
+        opts.start = 0;
+        opts.end = 256;
+        fontnik.range(opts, function(err, zdata) {
+            assert.ifError(err);
+            zlib.inflate(zdata, function(err, data) {
+                assert.ifError(err);
+                var vt = new Glyphs(new Protobuf(new Uint8Array(data)));
+                var json = JSON.parse(JSON.stringify(vt, nobuffer));
+                jsonEqual('range', json);
+                done();
+            });
+        });
+    });
+
     // Render a long range of characters which can cause segfaults
     // with V8 arrays ... not sure yet why.
     it('longrange', function(done) {
-        var glyphs = new fontnik.Glyphs();
-        glyphs.range('Open Sans Regular', '0-1024', fontnik.getRange(0, 1024), function(err) {
+        opts.start = 0;
+        opts.end = 1024;
+        fontnik.range(opts, function(err) {
             assert.ifError(err);
             done();
         });
     });
 
-    it('range (chars input)', function(done) {
-        var glyphs = new fontnik.Glyphs();
-        glyphs.range('Open Sans Regular', 'a-and-z', [('a').charCodeAt(0), ('z').charCodeAt(0)], function(err) {
+    it('sparse range (chars input)', function(done) {
+        opts.name = 'a-and-z';
+        opts.range = [('a').charCodeAt(0), ('z').charCodeAt(0)];
+        opts.deflate = false;
+        fontnik.range(opts, function(err, data) {
             assert.ifError(err);
-            var vt = new Glyphs(new Protobuf(new Uint8Array(glyphs.serialize())));
+            var vt = new Glyphs(new Protobuf(new Uint8Array(data)));
             var json = JSON.parse(JSON.stringify(vt, nobuffer));
             jsonEqual('chars', json);
             done();
@@ -79,40 +119,45 @@ describe('glyphs', function() {
     });
 
     it('range typeerror fontstack', function(done) {
-        var glyphs = new fontnik.Glyphs();
+        opts.fontstack = 0;
         assert.throws(function() {
-            glyphs.range(0, '0-256', fontnik.getRange(0, 256), function() {});
+            fontnik.range(opts, function() {});
         }, /fontstack must be a string/);
         done();
     });
 
     it('range typeerror range', function(done) {
-        var glyphs = new fontnik.Glyphs();
+        opts.name = 0;
+        opts.range = fontnik.getRange(0, 256);
         assert.throws(function() {
-            glyphs.range('Open Sans Regular', 0, fontnik.getRange(0, 256), function() {});
+            fontnik.range(opts, function() {});
         }, /range must be a string/);
         done();
     });
 
     it('range typeerror chars', function(done) {
-        var glyphs = new fontnik.Glyphs();
+        opts.name = '0-256';
+        opts.range = 'foo';
         assert.throws(function() {
-            glyphs.range('Open Sans Regular', '0-256', 'foo', function() {});
+            fontnik.range(opts, function() {});
         }, /chars must be an array/);
         done();
     });
 
     it('range typeerror callback', function(done) {
-        var glyphs = new fontnik.Glyphs();
+        opts.start = 0;
+        opts.end = 256;
         assert.throws(function() {
-            glyphs.range('Open Sans Regular', '0-256', fontnik.getRange(0, 256), '');
+            fontnik.range(opts, '');
         }, /callback must be a function/);
         done();
     });
 
     it('range for fontstack with 0 matching fonts', function(done) {
-        var glyphs = new fontnik.Glyphs();
-        glyphs.range('doesnotexist', '0-256', fontnik.getRange(0, 256), function(err) {
+        opts.fontstack = 'doesnotexist';
+        opts.start = 0;
+        opts.end = 256;
+        fontnik.range(opts, function(err) {
             assert.ok(err);
             assert.equal('Error: Failed to find face doesnotexist', err.toString());
             done();
@@ -120,12 +165,20 @@ describe('glyphs', function() {
     });
 
     it('range for fontstack with 1 bad font', function(done) {
-        var glyphs = new fontnik.Glyphs();
-        glyphs.range('Open Sans Regular, doesnotexist', '0-256', fontnik.getRange(0, 256), function(err) {
+        opts.fontstack = 'Open Sans Regular, doesnotexist';
+        opts.start = 0;
+        opts.end = 256;
+        fontnik.range(opts, function(err) {
             assert.ok(err);
             assert.equal('Error: Failed to find face doesnotexist', err.toString());
             done();
         });
+    });
+
+    it('getRange', function(done) {
+        var json = JSON.parse(JSON.stringify(fontnik.getRange(0, 256)));
+        jsonEqual('getRange', json);
+        done();
     });
 
     // Should error because start is < 0
