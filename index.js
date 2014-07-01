@@ -14,6 +14,7 @@ conf(env_options);
 module.exports.serialize = serialize;
 module.exports.range = range;
 module.exports.getRange = getRange;
+module.exports.faces = fontnik.faces;
 
 function serialize(data) {
     'use strict';
