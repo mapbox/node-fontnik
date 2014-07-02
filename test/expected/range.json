@@ -1529,18 +1529,10 @@
           "left": 0,
           "top": -8,
           "advance": 12
-        },
-        "256": {
-          "id": 256,
-          "width": 16,
-          "height": 21,
-          "left": 0,
-          "top": -5,
-          "advance": 15
         }
       },
       "name": "Open Sans Regular",
-      "range": "0-256"
+      "range": "0-255"
     }
   }
 }

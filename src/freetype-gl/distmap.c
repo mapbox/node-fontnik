@@ -110,7 +110,7 @@ make_distance_map(unsigned char *img,
         if (outside[i] > 255) {
             outside[i] = 255;
         }
-        out[i] = 255 - (unsigned char) outside[i];
+        out[i] = ((255 - (unsigned char) outside[i])/8) * 8;
         //out[i] = (unsigned char) outside[i];
     }
 
