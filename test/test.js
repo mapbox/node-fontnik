@@ -2,7 +2,7 @@ var fontnik = require('../index.js');
 var assert = require('assert');
 var zlib = require('zlib');
 var fs = require('fs');
-var zdata = fs.readFileSync(__dirname + '/fixtures/range.0.256.pbf');
+var zdata = fs.readFileSync(__dirname + '/fixtures/0-255.pbf');
 var Protobuf = require('pbf');
 var Glyphs = require('./format/glyphs');
 var UPDATE = process.env.UPDATE;
@@ -37,14 +37,16 @@ describe('glyphs', function() {
         fontnik.range({
             fontstack:'Open Sans Regular',
             start: 0,
-            end: 256
+            end: 255
         }, function(err, zdata) {
             if (err) throw err;
-            fs.writeFileSync(__dirname + '/fixtures/range.0.256.pbf', zdata);
+            fs.writeFileSync(__dirname + '/fixtures/0-255.pbf', zdata);
             done();
         });
         */
         var vt = new Glyphs(new Protobuf(new Uint8Array(fontnik.serialize(data))));
+        // Update range.json expected result
+        // fs.writeFileSync(__dirname + '/expected/range.json', JSON.stringify(vt, nobuffer));
         var json = JSON.parse(JSON.stringify(vt, nobuffer));
         jsonEqual('range', json);
         done();
@@ -52,7 +54,7 @@ describe('glyphs', function() {
 
     it('range', function(done) {
         opts.start = 0;
-        opts.end = 256;
+        opts.end = 255;
         opts.deflate = false;
         fontnik.range(opts, function(err, data) {
             assert.ifError(err);
@@ -65,7 +67,7 @@ describe('glyphs', function() {
 
     it('range deflated', function(done) {
         opts.start = 0;
-        opts.end = 256;
+        opts.end = 255;
         opts.deflate = true;
         fontnik.range(opts, function(err, zdata) {
             assert.ifError(err);
@@ -81,7 +83,7 @@ describe('glyphs', function() {
 
     it('range (default deflated)', function(done) {
         opts.start = 0;
-        opts.end = 256;
+        opts.end = 255;
         fontnik.range(opts, function(err, zdata) {
             assert.ifError(err);
             zlib.inflate(zdata, function(err, data) {
@@ -128,7 +130,7 @@ describe('glyphs', function() {
 
     it('range typeerror range', function(done) {
         opts.name = 0;
-        opts.range = fontnik.getRange(0, 256);
+        opts.range = fontnik.getRange(0, 255);
         assert.throws(function() {
             fontnik.range(opts, function() {});
         }, /range must be a string/);
@@ -136,7 +138,7 @@ describe('glyphs', function() {
     });
 
     it('range typeerror chars', function(done) {
-        opts.name = '0-256';
+        opts.name = '0-255';
         opts.range = 'foo';
         assert.throws(function() {
             fontnik.range(opts, function() {});
@@ -146,7 +148,7 @@ describe('glyphs', function() {
 
     it('range typeerror callback', function(done) {
         opts.start = 0;
-        opts.end = 256;
+        opts.end = 255;
         assert.throws(function() {
             fontnik.range(opts, '');
         }, /callback must be a function/);
@@ -156,7 +158,7 @@ describe('glyphs', function() {
     it('range for fontstack with 0 matching fonts', function(done) {
         opts.fontstack = 'doesnotexist';
         opts.start = 0;
-        opts.end = 256;
+        opts.end = 255;
         fontnik.range(opts, function(err) {
             assert.ok(err);
             assert.equal('Error: Failed to find face doesnotexist', err.toString());
@@ -167,7 +169,7 @@ describe('glyphs', function() {
     it('range for fontstack with 1 bad font', function(done) {
         opts.fontstack = 'Open Sans Regular, doesnotexist';
         opts.start = 0;
-        opts.end = 256;
+        opts.end = 255;
         fontnik.range(opts, function(err) {
             assert.ok(err);
             assert.equal('Error: Failed to find face doesnotexist', err.toString());
@@ -176,7 +178,10 @@ describe('glyphs', function() {
     });
 
     it('getRange', function(done) {
-        var json = JSON.parse(JSON.stringify(fontnik.getRange(0, 256)));
+        var range = fontnik.getRange(0, 255)
+        // Update getRange test fixture.
+        // fs.writeFileSync(__dirname + '/expected/getRange.json', JSON.stringify(range));
+        var json = JSON.parse(JSON.stringify(range));
         jsonEqual('getRange', json);
         done();
     });
@@ -184,14 +189,14 @@ describe('glyphs', function() {
     // Should error because start is < 0
     it('getRange error start < 0', function() {
         assert.throws(function() {
-            fontnik.getRange(-128, 256);
+            fontnik.getRange(-1, 255);
         }, 'Error: start must be a number from 0-65533');
     });
 
     // Should error because end < start
     it('getRange error end < start', function() {
         assert.throws(function() {
-            fontnik.getRange(256, 0);
+            fontnik.getRange(255, 0);
         }, 'Error: start must be less than or equal to end');
     });
 
