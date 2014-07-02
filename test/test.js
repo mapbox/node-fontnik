@@ -45,8 +45,7 @@ describe('glyphs', function() {
         });
         */
         var vt = new Glyphs(new Protobuf(new Uint8Array(fontnik.serialize(data))));
-        // Update range.json expected result
-        // fs.writeFileSync(__dirname + '/expected/range.json', JSON.stringify(vt, nobuffer));
+        if (UPDATE) fs.writeFileSync(__dirname + '/expected/range.json', JSON.stringify(vt, nobuffer));
         var json = JSON.parse(JSON.stringify(vt, nobuffer));
         jsonEqual('range', json);
         done();
@@ -179,8 +178,7 @@ describe('glyphs', function() {
 
     it('getRange', function(done) {
         var range = fontnik.getRange(0, 255)
-        // Update getRange test fixture.
-        // fs.writeFileSync(__dirname + '/expected/getRange.json', JSON.stringify(range));
+        if (UPDATE) fs.writeFileSync(__dirname + '/expected/getRange.json', JSON.stringify(range));
         var json = JSON.parse(JSON.stringify(range));
         jsonEqual('getRange', json);
         done();
