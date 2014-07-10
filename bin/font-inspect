@@ -1,0 +1,45 @@
+#!/usr/bin/env node
+
+var path = require('path');
+var fs = require('fs');
+var queue = require('queue-async');
+var argv = require('minimist')(process.argv.slice(2), {
+    boolean: ['verbose', 'help']
+});
+
+if (argv.help) {
+    console.log('usage: font-inspect --register=FONTDIRECTORY');
+    console.log('option: --verbose');
+    console.log('option: --register=FONTDIRECTORY');
+    console.log('option: --face=SPECIFICFONTFACE');
+    return;
+}
+
+if (argv.register && !process.env.FONTNIK_FONTS) {
+    process.env.FONTNIK_FONTS = path.resolve(argv.register);
+}
+
+var fontnik = require('../index.js');
+var faces = [];
+
+if (argv.face) {
+    faces = [argv.face];
+} else {
+    faces = fontnik.faces();
+}
+
+if (argv.verbose) {
+    console.error('resolved ', faces);
+}
+
+var coverages = [];
+faces.forEach(function(face) {
+    var glyphs = new fontnik.Glyphs();
+    var codepoints = glyphs.codepoints(face);
+    coverages.push({
+        face: face,
+        coverage: codepoints
+    });
+});
+
+process.stdout.write(JSON.stringify(coverages, null, 2));

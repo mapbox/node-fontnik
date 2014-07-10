@@ -13,8 +13,8 @@
   "bugs": "https://github.com/mapbox/node-fontnik/issues",
   "main": "index.js",
   "repository": {
-    "type" : "git",
-    "url"  : "git://github.com/mapbox/node-fontnik.git"
+    "type": "git",
+    "url": "git://github.com/mapbox/node-fontnik.git"
   },
   "licenses": [
     {
@@ -25,7 +25,8 @@
   "dependencies": {
     "queue-async": "1.0.x",
     "node-pre-gyp": "0.5.15",
-    "nan": "~1.2.0"
+    "nan": "~1.2.0",
+    "minimist": "~0.2.0"
   },
   "bundledDependencies": [
     "node-pre-gyp"
@@ -35,7 +36,8 @@
     "pbf": "0.0.1"
   },
   "bin": {
-    "build-glyphs": "./bin/build-glyphs"
+    "build-glyphs": "./bin/build-glyphs",
+    "font-inspect": "./bin/font-inspect"
   },
   "scripts": {
     "install": "node-pre-gyp install --fallback-to-build",
