@@ -45,6 +45,7 @@ void Glyphs::Init(v8::Handle<v8::Object> target) {
     // Add all prototype methods, getters and setters here.
     NODE_SET_PROTOTYPE_METHOD(tpl, "serialize", Serialize);
     NODE_SET_PROTOTYPE_METHOD(tpl, "range", Range);
+    NODE_SET_PROTOTYPE_METHOD(tpl, "codepoints", Codepoints);
 
     // This has to be last, otherwise the properties won't show up on the
     // object in JavaScript.
@@ -133,6 +134,28 @@ NAN_METHOD(Glyphs::Range) {
     assert(status == 0);
 
     NanReturnUndefined();
+}
+
+NAN_METHOD(Glyphs::Codepoints) {
+    NanScope();
+
+    // Validate arguments.
+    if (args.Length() < 1 || !args[0]->IsString()) {
+        return NanThrowTypeError("fontstack must be a string");
+    }
+
+    v8::String::Utf8Value param1(args[0]->ToString());
+    std::string from = std::string(*param1);
+
+    std::vector<int> points = fontnik::Glyphs::Codepoints(from);
+
+    v8::Handle<v8::Array> result = v8::Array::New(points.size());
+
+    for (size_t i = 0; i < points.size(); i++) {
+        result->Set(i, NanNew<v8::Number>(points[i]));
+    }
+
+    NanReturnValue(result);
 }
 
 void Glyphs::AsyncRange(uv_work_t* req) {

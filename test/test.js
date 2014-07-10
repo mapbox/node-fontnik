@@ -150,3 +150,10 @@ describe('glyphs', function() {
     });
 });
 
+describe('codepoints', function() {
+    it('basic scanning', function() {
+        var glyphs = new fontnik.Glyphs();
+        var cp = glyphs.codepoints('Open Sans Regular');
+        assert.equal(cp.length, 882);
+    });
+});
