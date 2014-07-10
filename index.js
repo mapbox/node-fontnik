@@ -14,7 +14,6 @@ conf(env_options);
 module.exports = fontnik;
 module.exports.range = range;
 module.exports.getRange = getRange;
-module.exports.getCodepoints = getCodepoints;
 
 // Retrieve a range of glyphs as a pbf.
 function range(options, callback) {
@@ -30,16 +29,6 @@ function range(options, callback) {
         var after = glyphs.serialize();
         zlib.deflate(after, callback);
     }
-}
-
-// Retrieve a range of glyphs as a pbf.
-function getCodepoints(options, callback) {
-    'use strict';
-    options = options || {};
-    options.fontstack = options.fontstack || 'Open Sans Regular';
-
-    var glyphs = new fontnik.Glyphs();
-    glyphs.codepoints(options.fontstack, callback);
 }
 
 // Register fonts in FreeType.
