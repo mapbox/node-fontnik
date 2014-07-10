@@ -6,7 +6,6 @@
 // stl
 #include <algorithm>
 #include <memory>
-#include <vector>
 #include <sstream>
 
 // freetype2

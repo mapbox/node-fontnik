@@ -24,7 +24,6 @@
 #define FONTNIK_GLYPHS_HPP
 
 #include <node.h>
-#include <vector>
 #include "glyphs.pb.h"
 
 namespace fontnik
