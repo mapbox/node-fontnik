@@ -19,9 +19,9 @@ protected:
     Glyphs(const char *data, size_t length);
     ~Glyphs();
 
-    static v8::Handle<v8::Value> New(const v8::Arguments& args);
-    static v8::Handle<v8::Value> Serialize(const v8::Arguments& args);
-    static v8::Handle<v8::Value> Range(const v8::Arguments& args);
+    static NAN_METHOD(New);
+    static NAN_METHOD(Serialize);
+    static NAN_METHOD(Range);
     static void AsyncRange(uv_work_t* req);
     static void RangeAfter(uv_work_t* req);
 

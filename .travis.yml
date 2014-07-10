@@ -3,6 +3,7 @@ compiler:
 - gcc
 env:
   matrix:
+  - NODE_NVM_VERSION="0.8.26"
   - NODE_NVM_VERSION="0.10"
   global:
   - BUILD: '/tmp/fontnik-build'
