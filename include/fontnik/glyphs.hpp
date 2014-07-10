@@ -24,7 +24,6 @@
 #define FONTNIK_GLYPHS_HPP
 
 #include <node.h>
-
 #include "glyphs.pb.h"
 
 namespace fontnik
@@ -42,6 +41,8 @@ public:
     void Range(std::string fontstack,
                std::string range,
                std::vector<std::uint32_t> chars);
+
+    static std::vector<int> Codepoints(std::string fontstack);
 
     static std::string Trim(std::string str, std::string whitespace);
 

@@ -6,7 +6,7 @@ var fontnik = require('./lib/fontnik.node');
 // Fontnik directories must be set in the conf file prior to require.
 // Allow these to be passed in via FONTNIK_FONTS env var.
 var env_options = {};
-if (process.env['FONTNIK_FONTS']) env_options.fonts = process.env['FONTNIK_FONTS'].split(';');
+if (process.env.FONTNIK_FONTS) env_options.fonts = process.env.FONTNIK_FONTS.split(';');
 
 // Fontnik conf setup. Synchronous at require time.
 conf(env_options);

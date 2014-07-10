@@ -97,6 +97,39 @@ void Glyphs::Range(std::string fontstack,
     }
 }
 
+std::vector<int> Glyphs::Codepoints(std::string fontstack)
+{
+    std::vector<int> points;
+    mapnik::freetype_engine font_engine_;
+    mapnik::face_manager_freetype font_manager(font_engine_);
+
+    mapnik::font_set font_set(fontstack);
+    std::stringstream stream(fontstack);
+    std::string face_name;
+
+    while (std::getline(stream, face_name, ',')) {
+        font_set.add_face_name(Trim(face_name, " \t"));
+    }
+
+    mapnik::face_set_ptr face_set;
+
+    // This may throw.
+    face_set = font_manager.get_face_set(font_set);
+    for (auto const& face : *face_set) {
+        FT_Face ft_face = face->get_face();
+        FT_ULong  charcode;
+        FT_UInt   gindex;
+        charcode = FT_Get_First_Char(ft_face, &gindex);
+        while (gindex != 0) {
+            charcode = FT_Get_Next_Char(ft_face, charcode, &gindex);
+            if (charcode != 0) points.push_back(charcode);
+        }
+        break;
+    }
+
+    return points;
+}
+
 std::string Glyphs::Trim(std::string str, std::string whitespace)
 {
     const auto strBegin = str.find_first_not_of(whitespace);
