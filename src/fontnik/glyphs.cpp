@@ -86,6 +86,7 @@ void Glyphs::Range(std::string fontstack,
             mutable_glyph->set_left(glyph.left);
             mutable_glyph->set_top(glyph.top - glyph.ascender);
             mutable_glyph->set_advance(glyph.advance);
+            mutable_glyph->set_ascender(glyph.ascender);
 
             if (glyph.width > 0) {
                 mutable_glyph->set_bitmap(glyph.bitmap);
