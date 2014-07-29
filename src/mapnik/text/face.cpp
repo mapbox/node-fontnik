@@ -114,6 +114,53 @@ void font_face::glyph_dimensions(glyph_info & glyph) const
     glyphs_.get()->emplace(glyph.glyph_index, glyph);
 }
 
+int move_to(const FT_Vector *to, void *user) {}
+
+int line_to(const FT_Vector *to, void *user) {}
+
+int conic_to(const FT_Vector *control,
+             const FT_Vector *to,
+             void *user) {}
+
+int cubic_to(const FT_Vector *c1,
+             const FT_Vector *c2,
+             const FT_Vector *to,
+             void *user) {}
+
+
+void font_face::glyph_outlines(glyph_info & glyph) const
+{
+    //Check if char is already in cache
+    auto const& itr = glyphs_->find(glyph.glyph_index);
+    if (itr != glyphs_.get()->cend()) {
+        glyph = itr->second;
+        return;
+    }
+
+    if (FT_Load_Glyph (face_, glyph.glyph_index, FT_LOAD_NO_HINTING)) return;
+
+    FT_Glyph ft_glyph;
+    if (FT_Get_Glyph(face_->glyph, &ft_glyph)) return;
+
+    FT_Outline_Funcs func_interface = {
+        .move_to = *move_to,
+        .line_to = *line_to,
+        .conic_to = *conic_to,
+        .cubic_to = *cubic_to,
+        .shift = 0,
+        .delta = 0
+    };
+
+    struct user {};
+
+    // Decompose outline into bezier curves and line segments
+    if (FT_Outline_Decompose((FT_OutlineGlyph)ft_glyph, &func_interface, &user)) return;
+
+    FT_Done_Glyph(ft_glyph);
+
+    glyphs_.get()->emplace(glyph.glyph_index, glyph);
+}
+
 font_face::~font_face()
 {
     MAPNIK_LOG_DEBUG(font_face) <<

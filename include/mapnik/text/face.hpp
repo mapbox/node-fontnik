@@ -35,6 +35,7 @@ extern "C"
 {
 #include <ft2build.h>
 #include FT_FREETYPE_H
+#include FT_OUTLINE_H
 }
 
 //stl
@@ -75,12 +76,24 @@ public:
 
     void glyph_dimensions(glyph_info &glyph) const;
 
+    void glyph_outlines(glyph_info &glyph) const;
+
     ~font_face();
 
 private:
     FT_Face face_;
     mutable glyph_cache_ptr glyphs_;
     mutable double char_height_;
+
+    int move_to(const FT_Vector *to, void *user);
+    int line_to(const FT_Vector *to, void *user);
+    int conic_to(const FT_Vector *control,
+                 const FT_Vector *to,
+                 void *user);
+    int cubic_to(const FT_Vector *c1,
+                 const FT_Vector *c2,
+                 const FT_Vector *to,
+                 void *user);
 };
 typedef std::shared_ptr<font_face> face_ptr;
 
