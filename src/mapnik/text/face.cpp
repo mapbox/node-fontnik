@@ -118,7 +118,6 @@ void font_face::close_ring(Points *ring) {
     FT_Vector first = ring->front();
     FT_Vector last = ring->back();
 
-    // don't close line segments
     if (first.x != last.x || first.y != last.y) {
         ring->push_back(first);
     }
@@ -146,12 +145,10 @@ int font_face::conic_to(const FT_Vector *control,
                         void *ptr) {
     User *user = (User*)ptr;
 
-    if (!user->ring.empty()) {
-        FT_Vector prev = user->ring.back();
-        user->ring.pop_back();
+    FT_Vector prev = user->ring.back();
+    // user->ring.pop_back();
 
-        std::cout << prev.x << ", " << prev.y << '\n';
-    }
+    std::cout << prev.x << ", " << prev.y << '\n';
 
     /*
     curve3_div(prev.x, prev.y,
