@@ -23,7 +23,6 @@
       'sources': [
         'src/node_fontnik.cpp',
         'src/glyphs.cpp',
-        'src/agg/agg_curves.cpp',
         'src/edtaa/edtaa4func.c',
         'src/fontnik/glyphs.cpp',
         'src/freetype-gl/distmap.c',

@@ -26,9 +26,6 @@
 // freetype-gl
 #include <freetype-gl/distmap.h>
 
-// agg
-#include <agg/agg_curves.h>
-
 extern "C"
 {
 #include FT_GLYPH_H
@@ -153,11 +150,11 @@ int font_face::conic_to(const FT_Vector *control,
 
     std::cout << prev.x << ", " << prev.y << '\n';
 
-    agg::curve3_div curve(prev.x, prev.y,
-                          control->x, control->y,
-                          to->x, to->y);
-
     /*
+    curve3_div(prev.x, prev.y,
+               control->x, control->y,
+               to->x, to->y);
+
     Points points;
 
     // preallocate memory then concat
