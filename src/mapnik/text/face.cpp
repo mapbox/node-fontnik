@@ -129,15 +129,13 @@ int font_face::move_to(const FT_Vector *to, void *ptr) {
         close_ring(user->ring);
         user->rings.push_back(user->ring);
     }
-    Points ring = { std::make_pair(to->x, to->y) };
-    user->ring = ring;
+    user->ring = { std::make_pair(to->x, to->y) };
     return 0;
 }
 
 int font_face::line_to(const FT_Vector *to, void *ptr) {
     User *user = (User*)ptr;
-    Point point = std::make_pair(to->x, to->y);
-    user->ring.push_back(point);
+    user->ring.emplace_back(to->x, to->y);
     return 0;
 }
 
@@ -145,15 +143,24 @@ int font_face::conic_to(const FT_Vector *control,
              const FT_Vector *to,
              void *ptr) {
     User *user = (User*)ptr;
-    Point point = user->ring.back();
-    user->ring.pop_back();
 
-    Points points;
-    // curve3div
+    if (!user->ring.empty()) {
+        Point point = user->ring.back();
+        user->ring.pop_back();
 
-    // preallocate memory then concat
-    user->ring.reserve(user->ring.size() + points.size());
-    user->ring.insert(user->ring.end(), points.begin(), points.end());
+        // curve3div
+
+        /*
+        Points points;
+
+        // preallocate memory then concat
+        if (!points.empty()) {
+            user->ring.reserve(user->ring.size() + points.size());
+            user->ring.insert(user->ring.end(), points.begin(), points.end());
+        }
+        */
+    }
+
     return 0;
 }
 
@@ -162,7 +169,9 @@ int font_face::cubic_to(const FT_Vector *c1,
              const FT_Vector *to,
              void *ptr) {
     User *user = (User*)ptr;
+
     // curve4div
+
     return 0;
 }
 
