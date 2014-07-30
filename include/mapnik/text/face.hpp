@@ -49,6 +49,10 @@ namespace mapnik
 typedef fontnik::guarded_map<glyph_index_t, glyph_info> glyph_cache_type;
 typedef std::shared_ptr<glyph_cache_type> glyph_cache_ptr;
 
+typedef std::pair<uint32_t, uint32_t> Point;
+typedef std::vector<Point> Points;
+typedef std::vector<Points> Rings;
+
 class font_face : mapnik::noncopyable
 {
 public:
@@ -88,15 +92,22 @@ private:
     mutable glyph_cache_ptr glyphs_;
     mutable double char_height_;
 
-    int move_to(const FT_Vector *to, void *user);
-    int line_to(const FT_Vector *to, void *user);
-    int conic_to(const FT_Vector *control,
-                 const FT_Vector *to,
-                 void *user);
-    int cubic_to(const FT_Vector *c1,
-                 const FT_Vector *c2,
-                 const FT_Vector *to,
-                 void *user);
+    static void close_ring(Points ring);
+
+    static int move_to(const FT_Vector *to, void *ptr);
+    static int line_to(const FT_Vector *to, void *ptr);
+    static int conic_to(const FT_Vector *control,
+                        const FT_Vector *to,
+                        void *ptr);
+    static int cubic_to(const FT_Vector *c1,
+                        const FT_Vector *c2,
+                        const FT_Vector *to,
+                        void *ptr);
+
+    struct User {
+        Rings rings;
+        Points ring;
+    } User_;
 };
 typedef std::shared_ptr<font_face> face_ptr;
 

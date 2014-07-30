@@ -114,16 +114,7 @@ void font_face::glyph_dimensions(glyph_info & glyph) const
     glyphs_.get()->emplace(glyph.glyph_index, glyph);
 }
 
-typedef std::pair<uint32_t, uint32_t> Point;
-typedef std::vector<Point> Points;
-typedef std::vector<Points> Rings;
-
-struct User {
-    Rings rings;
-    Points ring;
-} User_;
-
-void close_ring(Points ring) {
+void font_face::close_ring(Points ring) {
     Point first = ring.front();
     Point last = ring.back();
     // if (first !== last) { // would this be preferable?
@@ -132,7 +123,8 @@ void close_ring(Points ring) {
     }
 }
 
-int move_to(const FT_Vector *to, User *user) {
+int font_face::move_to(const FT_Vector *to, void *ptr) {
+    User *user = (User*)ptr;
     if (!user->ring.empty()) {
         close_ring(user->ring);
         user->rings.push_back(user->ring);
@@ -142,15 +134,17 @@ int move_to(const FT_Vector *to, User *user) {
     return 0;
 }
 
-int line_to(const FT_Vector *to, User *user) {
+int font_face::line_to(const FT_Vector *to, void *ptr) {
+    User *user = (User*)ptr;
     Point point = std::make_pair(to->x, to->y);
     user->ring.push_back(point);
     return 0;
 }
 
-int conic_to(const FT_Vector *control,
+int font_face::conic_to(const FT_Vector *control,
              const FT_Vector *to,
-             User *user) {
+             void *ptr) {
+    User *user = (User*)ptr;
     Point point = user->ring.back();
     user->ring.pop_back();
 
@@ -163,10 +157,11 @@ int conic_to(const FT_Vector *control,
     return 0;
 }
 
-int cubic_to(const FT_Vector *c1,
+int font_face::cubic_to(const FT_Vector *c1,
              const FT_Vector *c2,
              const FT_Vector *to,
-             User *user) {
+             void *ptr) {
+    User *user = (User*)ptr;
     // curve4div
     return 0;
 }
@@ -192,10 +187,10 @@ void font_face::glyph_outlines(glyph_info &glyph,
     if (FT_Get_Glyph(face_->glyph, &ft_glyph)) return;
 
     FT_Outline_Funcs func_interface = {
-        .move_to = *move_to,
-        .line_to = *line_to,
-        .conic_to = *conic_to,
-        .cubic_to = *cubic_to,
+        .move_to = &move_to,
+        .line_to = &line_to,
+        .conic_to = &conic_to,
+        .cubic_to = &cubic_to,
         .shift = 0,
         .delta = 0
     };
