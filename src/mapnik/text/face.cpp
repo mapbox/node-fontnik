@@ -114,21 +114,48 @@ void font_face::glyph_dimensions(glyph_info & glyph) const
     glyphs_.get()->emplace(glyph.glyph_index, glyph);
 }
 
-int move_to(const FT_Vector *to, void *user) {}
+typedef std::pair<uint32_t, uint32_t> Point;
+typedef std::vector<Point> Points;
+typedef std::vector<Points> Ring;
+typedef std::vector<Ring> Rings;
 
-int line_to(const FT_Vector *to, void *user) {}
+int move_to(const FT_Vector *to, void *user) {
+    if (user->ring.length) {
+        closeRing(ring);
+        user->rings.push_back(ring);
+    }
+    user->ring = Ring({ Points({ to.x, to.y }) });
+}
+
+int line_to(const FT_Vector *to, void *user) {
+    Points points = { to->x, to->y };
+    user->ring.push_back(points);
+}
 
 int conic_to(const FT_Vector *control,
              const FT_Vector *to,
-             void *user) {}
+             void *user) {
+  // curve3div
+  Point point = user->ring.back();
+  user->ring.pop_back();
+
+  // preallocate memory then concat
+  user->ring.reserve(user->ring.size() + points.size());
+  user->ring.insert(user->ring.end(), points.begin(), points.end());
+}
 
 int cubic_to(const FT_Vector *c1,
              const FT_Vector *c2,
              const FT_Vector *to,
-             void *user) {}
+             void *user) {
+  // curve4div
+}
 
 
-void font_face::glyph_outlines(glyph_info & glyph) const
+void font_face::glyph_outlines(glyph_info & glyph,
+                               int size,
+                               int buffer,
+                               float cutoff) const
 {
     //Check if char is already in cache
     auto const& itr = glyphs_->find(glyph.glyph_index);
@@ -136,6 +163,9 @@ void font_face::glyph_outlines(glyph_info & glyph) const
         glyph = itr->second;
         return;
     }
+
+    float scale = face_->units_per_EM / size;
+    int ascender = face_->ascender / scale;
 
     if (FT_Load_Glyph (face_, glyph.glyph_index, FT_LOAD_NO_HINTING)) return;
 
@@ -151,7 +181,10 @@ void font_face::glyph_outlines(glyph_info & glyph) const
         .delta = 0
     };
 
-    struct user {};
+    struct user {
+        Rings rings;
+        Ring ring;
+    };
 
     // Decompose outline into bezier curves and line segments
     if (FT_Outline_Decompose((FT_OutlineGlyph)ft_glyph, &func_interface, &user)) return;
