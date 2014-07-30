@@ -49,8 +49,7 @@ namespace mapnik
 typedef fontnik::guarded_map<glyph_index_t, glyph_info> glyph_cache_type;
 typedef std::shared_ptr<glyph_cache_type> glyph_cache_ptr;
 
-typedef std::pair<uint32_t, uint32_t> Point;
-typedef std::vector<Point> Points;
+typedef std::vector<FT_Vector> Points;
 typedef std::vector<Points> Rings;
 
 class font_face : mapnik::noncopyable

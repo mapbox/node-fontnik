@@ -115,11 +115,11 @@ void font_face::glyph_dimensions(glyph_info & glyph) const
 }
 
 void font_face::close_ring(Points ring) {
-    Point first = ring.front();
-    Point last = ring.back();
+    FT_Vector first = ring.front();
+    FT_Vector last = ring.back();
     // if (first !== last) { // would this be preferable?
-    if (first.first != last.first || first.second != last.second) {
-        ring.push_back(Point(first.first, first.second));
+    if (first.x != last.x || first.y != last.y) {
+        ring.push_back(first);
     }
 }
 
@@ -128,46 +128,51 @@ int font_face::move_to(const FT_Vector *to, void *ptr) {
     if (!user->ring.empty()) {
         close_ring(user->ring);
         user->rings.push_back(user->ring);
+        user->ring.clear();
     }
-    user->ring = { std::make_pair(to->x, to->y) };
+    user->ring.emplace_back(*to);
     return 0;
 }
 
 int font_face::line_to(const FT_Vector *to, void *ptr) {
     User *user = (User*)ptr;
-    user->ring.emplace_back(to->x, to->y);
+    user->ring.emplace_back(*to);
     return 0;
 }
 
 int font_face::conic_to(const FT_Vector *control,
-             const FT_Vector *to,
-             void *ptr) {
+                        const FT_Vector *to,
+                        void *ptr) {
     User *user = (User*)ptr;
 
     if (!user->ring.empty()) {
-        Point point = user->ring.back();
+        FT_Vector prev = user->ring.back();
         user->ring.pop_back();
 
-        // curve3div
-
-        /*
-        Points points;
-
-        // preallocate memory then concat
-        if (!points.empty()) {
-            user->ring.reserve(user->ring.size() + points.size());
-            user->ring.insert(user->ring.end(), points.begin(), points.end());
-        }
-        */
+        std::cout << prev.x << ", " << prev.y << '\n';
     }
+
+    /*
+    curve3_div(prev.first, prev.second,
+               control->x, control->y,
+               to->x, to->y);
+
+    Points points;
+
+    // preallocate memory then concat
+    if (!points.empty()) {
+        user->ring.reserve(user->ring.size() + points.size());
+        user->ring.insert(user->ring.end(), points.begin(), points.end());
+    }
+    */
 
     return 0;
 }
 
 int font_face::cubic_to(const FT_Vector *c1,
-             const FT_Vector *c2,
-             const FT_Vector *to,
-             void *ptr) {
+                        const FT_Vector *c2,
+                        const FT_Vector *to,
+                        void *ptr) {
     User *user = (User*)ptr;
 
     // curve4div
