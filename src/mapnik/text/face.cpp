@@ -119,10 +119,19 @@ typedef std::vector<Point> Points;
 typedef std::vector<Points> Ring;
 typedef std::vector<Ring> Rings;
 
+void close_ring(Ring ring) {
+    Point first = ring.front();
+    Point last = ring.back();
+    // if (first !== last) { // would this be preferable?
+    if (first.first() !== last.first() || first.second() !== last.second()) {
+        ring.push_back(Point(first.first(), first.second()));
+    }
+}
+
 int move_to(const FT_Vector *to, void *user) {
-    if (user->ring.length) {
-        closeRing(ring);
-        user->rings.push_back(ring);
+    if (!user->ring.empty()) {
+        close_ring(user->ring);
+        user->rings.push_back(user->ring);
     }
     user->ring = Ring({ Points({ to.x, to.y }) });
 }
@@ -135,22 +144,21 @@ int line_to(const FT_Vector *to, void *user) {
 int conic_to(const FT_Vector *control,
              const FT_Vector *to,
              void *user) {
-  // curve3div
-  Point point = user->ring.back();
-  user->ring.pop_back();
+    // curve3div
+    Point point = user->ring.back();
+    user->ring.pop_back();
 
-  // preallocate memory then concat
-  user->ring.reserve(user->ring.size() + points.size());
-  user->ring.insert(user->ring.end(), points.begin(), points.end());
+    // preallocate memory then concat
+    user->ring.reserve(user->ring.size() + points.size());
+    user->ring.insert(user->ring.end(), points.begin(), points.end());
 }
 
 int cubic_to(const FT_Vector *c1,
              const FT_Vector *c2,
              const FT_Vector *to,
              void *user) {
-  // curve4div
+    // curve4div
 }
-
 
 void font_face::glyph_outlines(glyph_info & glyph,
                                int size,
@@ -188,6 +196,13 @@ void font_face::glyph_outlines(glyph_info & glyph,
 
     // Decompose outline into bezier curves and line segments
     if (FT_Outline_Decompose((FT_OutlineGlyph)ft_glyph, &func_interface, &user)) return;
+
+    if (!user.ring.empty()) {
+        close_ring(user.ring);
+        user.rings.push(user.ring);
+    }
+
+    if (user.rings.empty()) return;
 
     FT_Done_Glyph(ft_glyph);
 
