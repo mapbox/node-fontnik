@@ -91,7 +91,7 @@ private:
     mutable glyph_cache_ptr glyphs_;
     mutable double char_height_;
 
-    static void close_ring(Points ring);
+    static void close_ring(Points *ring);
 
     static int move_to(const FT_Vector *to, void *ptr);
     static int line_to(const FT_Vector *to, void *ptr);

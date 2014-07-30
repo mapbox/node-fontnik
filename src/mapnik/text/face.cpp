@@ -114,19 +114,20 @@ void font_face::glyph_dimensions(glyph_info & glyph) const
     glyphs_.get()->emplace(glyph.glyph_index, glyph);
 }
 
-void font_face::close_ring(Points ring) {
-    FT_Vector first = ring.front();
-    FT_Vector last = ring.back();
-    // if (first !== last) { // would this be preferable?
+void font_face::close_ring(Points *ring) {
+    FT_Vector first = ring->front();
+    FT_Vector last = ring->back();
+
+    // don't close line segments
     if (first.x != last.x || first.y != last.y) {
-        ring.push_back(first);
+        ring->push_back(first);
     }
 }
 
 int font_face::move_to(const FT_Vector *to, void *ptr) {
     User *user = (User*)ptr;
     if (!user->ring.empty()) {
-        close_ring(user->ring);
+        close_ring(&(user->ring));
         user->rings.push_back(user->ring);
         user->ring.clear();
     }
@@ -153,7 +154,7 @@ int font_face::conic_to(const FT_Vector *control,
     }
 
     /*
-    curve3_div(prev.first, prev.second,
+    curve3_div(prev.x, prev.y,
                control->x, control->y,
                to->x, to->y);
 
@@ -175,7 +176,12 @@ int font_face::cubic_to(const FT_Vector *c1,
                         void *ptr) {
     User *user = (User*)ptr;
 
-    // curve4div
+    /*
+    curve4_div(prev.x, prev.y,
+               c1->x, c1->y,
+               c2->x, c2->y,
+               to->x, to->y);
+    */
 
     return 0;
 }
@@ -216,7 +222,7 @@ void font_face::glyph_outlines(glyph_info &glyph,
     if (FT_Outline_Decompose(&outline, &func_interface, &user)) return;
 
     if (!user.ring.empty()) {
-        close_ring(user.ring);
+        close_ring(&(user.ring));
         user.rings.push_back(user.ring);
     }
 
