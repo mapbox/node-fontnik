@@ -116,51 +116,62 @@ void font_face::glyph_dimensions(glyph_info & glyph) const
 
 typedef std::pair<uint32_t, uint32_t> Point;
 typedef std::vector<Point> Points;
-typedef std::vector<Points> Ring;
-typedef std::vector<Ring> Rings;
+typedef std::vector<Points> Rings;
 
-void close_ring(Ring ring) {
+struct User {
+    Rings rings;
+    Points ring;
+} User_;
+
+void close_ring(Points ring) {
     Point first = ring.front();
     Point last = ring.back();
     // if (first !== last) { // would this be preferable?
-    if (first.first() !== last.first() || first.second() !== last.second()) {
-        ring.push_back(Point(first.first(), first.second()));
+    if (first.first != last.first || first.second != last.second) {
+        ring.push_back(Point(first.first, first.second));
     }
 }
 
-int move_to(const FT_Vector *to, void *user) {
+int move_to(const FT_Vector *to, User *user) {
     if (!user->ring.empty()) {
         close_ring(user->ring);
         user->rings.push_back(user->ring);
     }
-    user->ring = Ring({ Points({ to.x, to.y }) });
+    Points ring = { std::make_pair(to->x, to->y) };
+    user->ring = ring;
+    return 0;
 }
 
-int line_to(const FT_Vector *to, void *user) {
-    Points points = { to->x, to->y };
-    user->ring.push_back(points);
+int line_to(const FT_Vector *to, User *user) {
+    Point point = std::make_pair(to->x, to->y);
+    user->ring.push_back(point);
+    return 0;
 }
 
 int conic_to(const FT_Vector *control,
              const FT_Vector *to,
-             void *user) {
-    // curve3div
+             User *user) {
     Point point = user->ring.back();
     user->ring.pop_back();
+
+    Points points;
+    // curve3div
 
     // preallocate memory then concat
     user->ring.reserve(user->ring.size() + points.size());
     user->ring.insert(user->ring.end(), points.begin(), points.end());
+    return 0;
 }
 
 int cubic_to(const FT_Vector *c1,
              const FT_Vector *c2,
              const FT_Vector *to,
-             void *user) {
+             User *user) {
     // curve4div
+    return 0;
 }
 
-void font_face::glyph_outlines(glyph_info & glyph,
+void font_face::glyph_outlines(glyph_info &glyph,
                                int size,
                                int buffer,
                                float cutoff) const
@@ -189,17 +200,15 @@ void font_face::glyph_outlines(glyph_info & glyph,
         .delta = 0
     };
 
-    struct user {
-        Rings rings;
-        Ring ring;
-    };
+    User user;
 
     // Decompose outline into bezier curves and line segments
-    if (FT_Outline_Decompose((FT_OutlineGlyph)ft_glyph, &func_interface, &user)) return;
+    FT_Outline outline = ((FT_OutlineGlyph)ft_glyph)->outline;
+    if (FT_Outline_Decompose(&outline, &func_interface, &user)) return;
 
     if (!user.ring.empty()) {
         close_ring(user.ring);
-        user.rings.push(user.ring);
+        user.rings.push_back(user.ring);
     }
 
     if (user.rings.empty()) return;

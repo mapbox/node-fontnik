@@ -76,7 +76,10 @@ public:
 
     void glyph_dimensions(glyph_info &glyph) const;
 
-    void glyph_outlines(glyph_info &glyph) const;
+    void glyph_outlines(glyph_info &glyph,
+                        int size,
+                        int buffer,
+                        float cutoff) const;
 
     ~font_face();
 
