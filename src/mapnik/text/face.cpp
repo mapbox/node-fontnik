@@ -309,14 +309,19 @@ void font_face::glyph_outlines(glyph_info &glyph,
     int radius = 8;
 
     for (auto ring : user.rings) {
-        for (auto point = ring.begin(); point != ring.end(); point++) {
-            if (point != ring.begin()) {
-                auto prev = point - 1;
-                tree.insert(Box {
-                    Point {prev->x, prev->y},
-                    Point {point->x, point->y}
-                });
-            }
+        auto next = ring.begin();
+        next++;
+
+        for (auto it = ring.begin(); next != ring.end(); it++, next++) {
+            int xMin = std::min(it->x, next->x);
+            int xMax = std::max(it->x, next->x);
+            int yMin = std::min(it->y, next->y);
+            int yMax = std::max(it->y, next->y);
+
+            tree.insert(Box {
+                Point {xMin, yMin},
+                Point {xMax, yMax}
+            });
         }
     }
 
