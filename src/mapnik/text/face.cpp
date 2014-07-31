@@ -51,7 +51,9 @@ namespace bgm = bg::model;
 namespace bgi = bg::index;
 typedef bgm::point<float, 2, bg::cs::cartesian> Point;
 typedef bgm::box<Point> Box;
-typedef bgi::rtree<Box, bgi::rstar<16>> Tree;
+typedef std::pair<Point, Point> SegmentPair;
+typedef std::pair<Box, SegmentPair> SegmentValue;
+typedef bgi::rtree<SegmentValue, bgi::rstar<16>> Tree;
 
 font_face::font_face(FT_Face face)
     : face_(face),
@@ -217,6 +219,49 @@ int font_face::cubic_to(const FT_Vector *c1,
     return 0;
 }
 
+double squaredDistance(Point v, Point w) {
+    double a = v.get<0>() - w.get<0>();
+    double b = v.get<1>() - w.get<1>();
+    return a * a + b * b;
+}
+
+Point projectPointOnLineSegment(Point p, Point v, Point w) {
+  double l2 = squaredDistance(v, w);
+  if (l2 == 0) return v;
+  double t = ((p.get<0>() - v.get<0>()) * (w.get<0>() - v.get<0>()) + (p.get<1>() - v.get<1>()) * (w.get<1>() - v.get<1>())) / l2;
+  if (t < 0) return v;
+  if (t > 1) return w;
+
+  return Point {
+      v.get<0>() + t * (w.get<0>() - v.get<0>()),
+      v.get<1>() + t * (w.get<1>() - v.get<1>())
+  };
+}
+
+double squaredDistanceToLineSegment(Point p, Point v, Point w) {
+    Point s = projectPointOnLineSegment(p, v, w);
+    return squaredDistance(p, s);
+}
+
+double minDistanceToLineSegment(Tree tree, Point p, int radius) {
+    int squaredRadius = radius * radius;
+
+    std::vector<SegmentValue> results;
+    tree.query(bgi::nearest(p, radius), std::back_inserter(results));
+
+    double squaredDistance = std::numeric_limits<double>::infinity();
+    for (auto value : results) {
+        SegmentPair segment = value.second;
+        Point v = segment.first;
+        Point w = segment.second;
+        double dist = squaredDistanceToLineSegment(p, v, w);
+        if (dist < squaredDistance && dist < squaredRadius) {
+            squaredDistance = dist;
+        }
+    }
+    return sqrt(squaredDistance);
+}
+
 void font_face::glyph_outlines(glyph_info &glyph,
                                int size,
                                int buffer,
@@ -302,8 +347,6 @@ void font_face::glyph_outlines(glyph_info &glyph,
     glyph.ascender = face_->size->metrics.ascender;
     glyph.descender = face_->size->metrics.descender;
 
-    glyph.bitmap.reserve(glyph.width * glyph.height);
-
     Tree tree;
     float offset = 0.5;
     int radius = 8;
@@ -318,10 +361,50 @@ void font_face::glyph_outlines(glyph_info &glyph,
             int yMin = std::min(it->y, next->y);
             int yMax = std::max(it->y, next->y);
 
-            tree.insert(Box {
-                Point {xMin, yMin},
-                Point {xMax, yMax}
+            tree.insert(SegmentValue {
+                Box {
+                    Point {xMin, yMin},
+                    Point {xMax, yMax}
+                },
+                SegmentPair {
+                    Point {it->x, it->y},
+                    Point {next->x, next->y}
+                }
             });
+        }
+    }
+
+    // Loop over every pixel and determine the positive/negative distance to the outline.
+    unsigned int buffered_width = glyph.width + 2 * buffer;
+    unsigned int buffered_height = glyph.height + 2 * buffer;
+    glyph.bitmap.resize(buffered_width * buffered_height);
+
+    for (unsigned int y = 0; y < buffered_height; y++) {
+        for (unsigned int x = 0; x < buffered_width; x++) {
+            unsigned int i = y * buffered_width + x;
+
+            Point p {x + offset, y + offset};
+
+            double d = minDistanceToLineSegment(tree, p, radius) * (256 / radius);
+
+            /*
+            // Invert if point is inside.
+            var inside = polyContainsPoint(rings, { x: x + offset, y: y + offset });
+            if (inside) {
+                d = -d;
+            }
+            */
+
+            // Shift the 0 so that we can fit a few negative values
+            // into our 8 bits.
+            d += cutoff * 256;
+
+            // Clamp to 0-255 to prevent overflows or underflows.
+            int n = d > 255 ? 255 : d;
+            n = n < 0 ? 0 : n;
+
+            std::string value(1, static_cast<char>(255 - n));
+            glyph.bitmap.insert(i, value);
         }
     }
 
