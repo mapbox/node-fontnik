@@ -19,6 +19,9 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  *
  *****************************************************************************/
+
+#include <cmath>
+
 // mapnik
 #include <mapnik/text/face.hpp>
 #include <mapnik/debug.hpp>
@@ -29,6 +32,12 @@
 // agg
 #include <agg/agg_curves.h>
 
+// boost
+#include <boost/geometry.hpp>
+#include <boost/geometry/geometries/point.hpp>
+#include <boost/geometry/geometries/box.hpp>
+#include <boost/geometry/index/rtree.hpp>
+
 extern "C"
 {
 #include FT_GLYPH_H
@@ -36,6 +45,13 @@ extern "C"
 
 namespace mapnik
 {
+
+namespace bg = boost::geometry;
+namespace bgm = bg::model;
+namespace bgi = bg::index;
+typedef bgm::point<float, 2, bg::cs::cartesian> Point;
+typedef bgm::box<Point> Box;
+typedef bgi::rtree<Box, bgi::rstar<16>> Tree;
 
 font_face::font_face(FT_Face face)
     : face_(face),
@@ -85,7 +101,7 @@ void font_face::glyph_dimensions(glyph_info & glyph) const
     glyph.line_height = face_->size->metrics.height / 64.0;
     glyph.advance = face_->glyph->metrics.horiAdvance / 64.0;
     glyph.ascender = face_->size->metrics.ascender / 64.0;
-    glyph.descender = face_->size->metrics.ascender / 64.0;
+    glyph.descender = face_->size->metrics.descender / 64.0;
 
     FT_Glyph_To_Bitmap(&image, FT_RENDER_MODE_NORMAL, 0, 1);
 
@@ -149,21 +165,24 @@ int font_face::conic_to(const FT_Vector *control,
     User *user = (User*)ptr;
 
     FT_Vector prev = user->ring.back();
-    // user->ring.pop_back();
+
+    // pop off last point, duplicate of first point in bezier curve
+    user->ring.pop_back();
 
     agg::curve3_div curve(prev.x, prev.y,
                           control->x, control->y,
                           to->x, to->y);
 
-    /*
-    Points points;
-
-    // preallocate memory then concat
-    if (!points.empty()) {
-        user->ring.reserve(user->ring.size() + points.size());
-        user->ring.insert(user->ring.end(), points.begin(), points.end());
+    curve.rewind(0);
+    double x, y;
+    unsigned cmd;
+    while (agg::path_cmd_stop != (cmd = curve.vertex(&x, &y))) {
+        FT_Vector point {
+            .x = static_cast<FT_Pos>(x),
+            .y = static_cast<FT_Pos>(y)
+        };
+        user->ring.push_back(point);
     }
-    */
 
     return 0;
 }
@@ -174,12 +193,26 @@ int font_face::cubic_to(const FT_Vector *c1,
                         void *ptr) {
     User *user = (User*)ptr;
 
-    /*
-    curve4_div(prev.x, prev.y,
-               c1->x, c1->y,
-               c2->x, c2->y,
-               to->x, to->y);
-    */
+    FT_Vector prev = user->ring.back();
+
+    // pop off last point, duplicate of first point in bezier curve
+    user->ring.pop_back();
+
+    agg::curve4_div curve(prev.x, prev.y,
+                          c1->x, c1->y,
+                          c2->x, c2->y,
+                          to->x, to->y);
+
+    curve.rewind(0);
+    double x, y;
+    unsigned cmd;
+    while (agg::path_cmd_stop != (cmd = curve.vertex(&x, &y))) {
+        FT_Vector point {
+            .x = static_cast<FT_Pos>(x),
+            .y = static_cast<FT_Pos>(y)
+        };
+        user->ring.push_back(point);
+    }
 
     return 0;
 }
@@ -196,8 +229,10 @@ void font_face::glyph_outlines(glyph_info &glyph,
         return;
     }
 
+    /*
     float scale = face_->units_per_EM / size;
     int ascender = face_->ascender / scale;
+    */
 
     if (FT_Load_Glyph (face_, glyph.glyph_index, FT_LOAD_NO_HINTING)) return;
 
@@ -225,6 +260,65 @@ void font_face::glyph_outlines(glyph_info &glyph,
     }
 
     if (user.rings.empty()) return;
+
+    // Calculate the real glyph bbox.
+    double xMin = std::numeric_limits<double>::infinity(),
+           yMin = std::numeric_limits<double>::infinity();
+
+    double xMax = -std::numeric_limits<double>::infinity(),
+           yMax = -std::numeric_limits<double>::infinity();
+
+    for (auto ring : user.rings) {
+        for (auto point : ring) {
+            if (point.x > xMax) xMax = point.x;
+            if (point.x < xMin) xMin = point.x;
+            if (point.y > yMax) yMax = point.y;
+            if (point.y < yMin) yMin = point.y;
+        }
+    }
+
+    xMin = round(xMin);
+    yMin = round(yMin);
+    xMax = round(xMax);
+    yMax = round(yMax);
+
+    // Offset so that glyph outlines are in the bounding box.
+    for (auto ring : user.rings) {
+        for (auto point : ring) {
+            point.x += -xMin + buffer;
+            point.y += -yMin + buffer;
+        }
+    }
+
+    if (xMax - xMin == 0 || yMax - yMin == 0) return;
+
+    glyph.left = xMin;
+    glyph.top = -yMin; // -yMin - ascender?
+    glyph.width = xMax - xMin;
+    glyph.height = yMax - yMin;
+
+    glyph.line_height = face_->size->metrics.height;
+    glyph.advance = face_->glyph->metrics.horiAdvance;
+    glyph.ascender = face_->size->metrics.ascender;
+    glyph.descender = face_->size->metrics.descender;
+
+    glyph.bitmap.reserve(glyph.width * glyph.height);
+
+    Tree tree;
+    float offset = 0.5;
+    int radius = 8;
+
+    for (auto ring : user.rings) {
+        for (auto point = ring.begin(); point != ring.end(); point++) {
+            if (point != ring.begin()) {
+                auto prev = point - 1;
+                tree.insert(Box {
+                    Point {prev->x, prev->y},
+                    Point {point->x, point->y}
+                });
+            }
+        }
+    }
 
     FT_Done_Glyph(ft_glyph);
 
