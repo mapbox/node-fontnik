@@ -218,42 +218,43 @@ bool polyContainsPoint(Rings *rings, Point p) {
     return c;
 }
 
-double squaredDistance(Point v, Point w) {
-    double a = v.get<0>() - w.get<0>();
-    double b = v.get<1>() - w.get<1>();
+double squaredDistance(Point *v, Point *w) {
+    double a = v->get<0>() - w->get<0>();
+    double b = v->get<1>() - w->get<1>();
     return a * a + b * b;
 }
 
-Point projectPointOnLineSegment(Point p, Point v, Point w) {
+Point* projectPointOnLineSegment(Point *p, Point *v, Point *w) {
   double l2 = squaredDistance(v, w);
   if (l2 == 0) return v;
-  double t = ((p.get<0>() - v.get<0>()) * (w.get<0>() - v.get<0>()) + (p.get<1>() - v.get<1>()) * (w.get<1>() - v.get<1>())) / l2;
+  double t = ((p->get<0>() - v->get<0>()) * (w->get<0>() - v->get<0>()) + (p->get<1>() - v->get<1>()) * (w->get<1>() - v->get<1>())) / l2;
   if (t < 0) return v;
   if (t > 1) return w;
 
-  return Point {
-      v.get<0>() + t * (w.get<0>() - v.get<0>()),
-      v.get<1>() + t * (w.get<1>() - v.get<1>())
+  Point q {
+      v->get<0>() + t * (w->get<0>() - v->get<0>()),
+      v->get<1>() + t * (w->get<1>() - v->get<1>())
   };
+
+  // TODO: returning ptr to temp is bad, how to fix?
+  return &q;
 }
 
-double squaredDistanceToLineSegment(Point p, Point v, Point w) {
-    Point s = projectPointOnLineSegment(p, v, w);
+double squaredDistanceToLineSegment(Point *p, Point *v, Point *w) {
+    Point *s = projectPointOnLineSegment(p, v, w);
     return squaredDistance(p, s);
 }
 
-double minDistanceToLineSegment(Tree tree, Point p, int radius) {
+double minDistanceToLineSegment(Tree *tree, Point p, int radius) {
     int squaredRadius = radius * radius;
 
     std::vector<SegmentValue> results;
-    tree.query(bgi::nearest(p, radius), std::back_inserter(results));
+    tree->query(bgi::nearest(&p, radius), std::back_inserter(results));
 
     double squaredDistance = std::numeric_limits<double>::infinity();
     for (auto value : results) {
         SegmentPair segment = value.second;
-        Point v = segment.first;
-        Point w = segment.second;
-        double dist = squaredDistanceToLineSegment(p, v, w);
+        double dist = squaredDistanceToLineSegment(&p, &segment.first, &segment.second);
         if (dist < squaredDistance && dist < squaredRadius) {
             squaredDistance = dist;
         }
@@ -382,9 +383,7 @@ void font_face::glyph_outlines(glyph_info &glyph,
         for (unsigned int x = 0; x < buffered_width; x++) {
             unsigned int i = y * buffered_width + x;
 
-            Point p {x + offset, y + offset};
-
-            double d = minDistanceToLineSegment(tree, p, radius) * (256 / radius);
+            double d = minDistanceToLineSegment(&tree, Point {x + offset, y + offset}, radius) * (256 / radius);
 
             // Invert if point is inside.
             bool inside = polyContainsPoint(&user.rings, Point { x + offset, y + offset });
