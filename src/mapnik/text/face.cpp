@@ -32,12 +32,6 @@
 // agg
 #include <agg/agg_curves.h>
 
-// boost
-#include <boost/geometry.hpp>
-#include <boost/geometry/geometries/point.hpp>
-#include <boost/geometry/geometries/box.hpp>
-#include <boost/geometry/index/rtree.hpp>
-
 extern "C"
 {
 #include FT_GLYPH_H
@@ -46,14 +40,10 @@ extern "C"
 namespace mapnik
 {
 
-namespace bg = boost::geometry;
-namespace bgm = bg::model;
-namespace bgi = bg::index;
-typedef bgm::point<float, 2, bg::cs::cartesian> Point;
-typedef bgm::box<Point> Box;
-typedef std::pair<Point, Point> SegmentPair;
-typedef std::pair<Box, SegmentPair> SegmentValue;
-typedef bgi::rtree<SegmentValue, bgi::rstar<16>> Tree;
+struct User {
+    Rings rings;
+    Points ring;
+};
 
 font_face::font_face(FT_Face face)
     : face_(face),
@@ -135,43 +125,43 @@ void font_face::glyph_dimensions(glyph_info & glyph) const
     glyphs_.get()->emplace(glyph.glyph_index, glyph);
 }
 
-void font_face::close_ring(Points *ring) {
-    FT_Vector first = ring->front();
-    FT_Vector last = ring->back();
+void close_ring(Points *ring) {
+    Point first = ring->front();
+    Point last = ring->back();
 
-    if (first.x != last.x || first.y != last.y) {
+    if (first.get<0>() != last.get<0>() || first.get<1>() != last.get<1>()) {
         ring->push_back(first);
     }
 }
 
-int font_face::move_to(const FT_Vector *to, void *ptr) {
+int move_to(const FT_Vector *to, void *ptr) {
     User *user = (User*)ptr;
     if (!user->ring.empty()) {
         close_ring(&(user->ring));
         user->rings.push_back(user->ring);
         user->ring.clear();
     }
-    user->ring.emplace_back(*to);
+    user->ring.push_back(Point {to->x, to->y});
     return 0;
 }
 
-int font_face::line_to(const FT_Vector *to, void *ptr) {
+int line_to(const FT_Vector *to, void *ptr) {
     User *user = (User*)ptr;
-    user->ring.emplace_back(*to);
+    user->ring.push_back(Point {to->x, to->y});
     return 0;
 }
 
-int font_face::conic_to(const FT_Vector *control,
-                        const FT_Vector *to,
-                        void *ptr) {
+int conic_to(const FT_Vector *control,
+             const FT_Vector *to,
+             void *ptr) {
     User *user = (User*)ptr;
 
-    FT_Vector prev = user->ring.back();
+    Point prev = user->ring.back();
 
     // pop off last point, duplicate of first point in bezier curve
     user->ring.pop_back();
 
-    agg::curve3_div curve(prev.x, prev.y,
+    agg::curve3_div curve(prev.get<0>(), prev.get<1>(),
                           control->x, control->y,
                           to->x, to->y);
 
@@ -179,28 +169,24 @@ int font_face::conic_to(const FT_Vector *control,
     double x, y;
     unsigned cmd;
     while (agg::path_cmd_stop != (cmd = curve.vertex(&x, &y))) {
-        FT_Vector point {
-            .x = static_cast<FT_Pos>(x),
-            .y = static_cast<FT_Pos>(y)
-        };
-        user->ring.push_back(point);
+        user->ring.push_back(Point {x, y});
     }
 
     return 0;
 }
 
-int font_face::cubic_to(const FT_Vector *c1,
-                        const FT_Vector *c2,
-                        const FT_Vector *to,
-                        void *ptr) {
+int cubic_to(const FT_Vector *c1,
+             const FT_Vector *c2,
+             const FT_Vector *to,
+             void *ptr) {
     User *user = (User*)ptr;
 
-    FT_Vector prev = user->ring.back();
+    Point prev = user->ring.back();
 
     // pop off last point, duplicate of first point in bezier curve
     user->ring.pop_back();
 
-    agg::curve4_div curve(prev.x, prev.y,
+    agg::curve4_div curve(prev.get<0>(), prev.get<1>(),
                           c1->x, c1->y,
                           c2->x, c2->y,
                           to->x, to->y);
@@ -209,14 +195,27 @@ int font_face::cubic_to(const FT_Vector *c1,
     double x, y;
     unsigned cmd;
     while (agg::path_cmd_stop != (cmd = curve.vertex(&x, &y))) {
-        FT_Vector point {
-            .x = static_cast<FT_Pos>(x),
-            .y = static_cast<FT_Pos>(y)
-        };
-        user->ring.push_back(point);
+        user->ring.push_back(Point {x, y});
     }
 
     return 0;
+}
+
+// point in polygon ray casting algorithm
+bool polyContainsPoint(Rings *rings, Point p) {
+    bool c = false;
+
+    for (auto ring : *rings) {
+        auto p1 = ring.begin();
+        auto p2 = ring.begin()++;
+        for (; p2 != ring.end(); p1++, p2++) {
+            if (((p1->get<1>() > p.get<1>()) != (p2->get<1>() > p.get<1>())) && (p.get<0>() < (p2->get<0>() - p1->get<0>()) * (p.get<1>() - p1->get<1>()) / (p2->get<1>() - p1->get<1>()) + p1->get<0>())) {
+                c = !c;
+            }
+        }
+    }
+
+    return c;
 }
 
 double squaredDistance(Point v, Point w) {
@@ -315,10 +314,10 @@ void font_face::glyph_outlines(glyph_info &glyph,
 
     for (auto ring : user.rings) {
         for (auto point : ring) {
-            if (point.x > xMax) xMax = point.x;
-            if (point.x < xMin) xMin = point.x;
-            if (point.y > yMax) yMax = point.y;
-            if (point.y < yMin) yMin = point.y;
+            if (point.get<0>() > xMax) xMax = point.get<0>();
+            if (point.get<0>() < xMin) xMin = point.get<0>();
+            if (point.get<1>() > yMax) yMax = point.get<1>();
+            if (point.get<1>() < yMin) yMin = point.get<1>();
         }
     }
 
@@ -330,8 +329,8 @@ void font_face::glyph_outlines(glyph_info &glyph,
     // Offset so that glyph outlines are in the bounding box.
     for (auto ring : user.rings) {
         for (auto point : ring) {
-            point.x += -xMin + buffer;
-            point.y += -yMin + buffer;
+            point.set<0>(point.get<0>() + -xMin + buffer);
+            point.set<1>(point.get<1>() + -yMin + buffer);
         }
     }
 
@@ -356,10 +355,10 @@ void font_face::glyph_outlines(glyph_info &glyph,
         next++;
 
         for (auto it = ring.begin(); next != ring.end(); it++, next++) {
-            int xMin = std::min(it->x, next->x);
-            int xMax = std::max(it->x, next->x);
-            int yMin = std::min(it->y, next->y);
-            int yMax = std::max(it->y, next->y);
+            int xMin = std::min(it->get<0>(), next->get<0>());
+            int xMax = std::max(it->get<0>(), next->get<0>());
+            int yMin = std::min(it->get<1>(), next->get<1>());
+            int yMax = std::max(it->get<1>(), next->get<1>());
 
             tree.insert(SegmentValue {
                 Box {
@@ -367,8 +366,8 @@ void font_face::glyph_outlines(glyph_info &glyph,
                     Point {xMax, yMax}
                 },
                 SegmentPair {
-                    Point {it->x, it->y},
-                    Point {next->x, next->y}
+                    Point {it->get<0>(), it->get<1>()},
+                    Point {next->get<0>(), next->get<1>()}
                 }
             });
         }
@@ -387,13 +386,11 @@ void font_face::glyph_outlines(glyph_info &glyph,
 
             double d = minDistanceToLineSegment(tree, p, radius) * (256 / radius);
 
-            /*
             // Invert if point is inside.
-            var inside = polyContainsPoint(rings, { x: x + offset, y: y + offset });
+            bool inside = polyContainsPoint(&user.rings, Point { x + offset, y + offset });
             if (inside) {
                 d = -d;
             }
-            */
 
             // Shift the 0 so that we can fit a few negative values
             // into our 8 bits.

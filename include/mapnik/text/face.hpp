@@ -38,6 +38,12 @@ extern "C"
 #include FT_OUTLINE_H
 }
 
+// boost
+#include <boost/geometry.hpp>
+#include <boost/geometry/geometries/point.hpp>
+#include <boost/geometry/geometries/box.hpp>
+#include <boost/geometry/index/rtree.hpp>
+
 //stl
 #include <memory>
 #include <string>
@@ -49,8 +55,16 @@ namespace mapnik
 typedef fontnik::guarded_map<glyph_index_t, glyph_info> glyph_cache_type;
 typedef std::shared_ptr<glyph_cache_type> glyph_cache_ptr;
 
-typedef std::vector<FT_Vector> Points;
+namespace bg = boost::geometry;
+namespace bgm = bg::model;
+namespace bgi = bg::index;
+typedef bgm::point<float, 2, bg::cs::cartesian> Point;
+typedef bgm::box<Point> Box;
+typedef std::vector<Point> Points;
 typedef std::vector<Points> Rings;
+typedef std::pair<Point, Point> SegmentPair;
+typedef std::pair<Box, SegmentPair> SegmentValue;
+typedef bgi::rtree<SegmentValue, bgi::rstar<16>> Tree;
 
 class font_face : mapnik::noncopyable
 {
@@ -90,23 +104,6 @@ private:
     FT_Face face_;
     mutable glyph_cache_ptr glyphs_;
     mutable double char_height_;
-
-    static void close_ring(Points *ring);
-
-    static int move_to(const FT_Vector *to, void *ptr);
-    static int line_to(const FT_Vector *to, void *ptr);
-    static int conic_to(const FT_Vector *control,
-                        const FT_Vector *to,
-                        void *ptr);
-    static int cubic_to(const FT_Vector *c1,
-                        const FT_Vector *c2,
-                        const FT_Vector *to,
-                        void *ptr);
-
-    struct User {
-        Rings rings;
-        Points ring;
-    } User_;
 };
 typedef std::shared_ptr<font_face> face_ptr;
 
