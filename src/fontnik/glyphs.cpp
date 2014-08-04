@@ -76,7 +76,7 @@ void Glyphs::Range(std::string fontstack,
             if (!char_index) continue;
 
             glyph.glyph_index = char_index;
-            face->glyph_outlines(glyph, 24, 3, 2/8);
+            face->glyph_outlines(glyph, 24, 3, 0.25);
 
             // Add glyph to fontstack.
             llmr::glyphs::glyph *mutable_glyph = mutable_fontstack->add_glyphs();
