@@ -90,10 +90,10 @@ void font_face::glyph_dimensions(glyph_info & glyph) const
     FT_Glyph image;
     if (FT_Get_Glyph(face_->glyph, &image)) return;
 
-    glyph.line_height = face_->size->metrics.height / 64.0;
-    glyph.advance = face_->glyph->metrics.horiAdvance / 64.0;
-    glyph.ascender = face_->size->metrics.ascender / 64.0;
-    glyph.descender = face_->size->metrics.descender / 64.0;
+    glyph.line_height = float(face_->size->metrics.height) / 64.0;
+    glyph.advance = float(face_->glyph->metrics.horiAdvance) / 64.0;
+    glyph.ascender = float(face_->size->metrics.ascender) / 64.0;
+    glyph.descender = float(face_->size->metrics.descender) / 64.0;
 
     FT_Glyph_To_Bitmap(&image, FT_RENDER_MODE_NORMAL, 0, 1);
 
@@ -125,29 +125,29 @@ void font_face::glyph_dimensions(glyph_info & glyph) const
     glyphs_.get()->emplace(glyph.glyph_index, glyph);
 }
 
-void close_ring(Points *ring) {
-    Point first = ring->front();
-    Point last = ring->back();
+void close_ring(Points &ring) {
+    const Point &first = ring.front();
+    const Point &last = ring.back();
 
     if (first.get<0>() != last.get<0>() || first.get<1>() != last.get<1>()) {
-        ring->push_back(first);
+        ring.push_back(first);
     }
 }
 
 int move_to(const FT_Vector *to, void *ptr) {
     User *user = (User*)ptr;
     if (!user->ring.empty()) {
-        close_ring(&(user->ring));
+        close_ring(user->ring);
         user->rings.push_back(user->ring);
         user->ring.clear();
     }
-    user->ring.push_back(Point {to->x, to->y});
+    user->ring.push_back(Point { float(to->x) / 64, float(to->y) / 64 });
     return 0;
 }
 
 int line_to(const FT_Vector *to, void *ptr) {
     User *user = (User*)ptr;
-    user->ring.push_back(Point {to->x, to->y});
+    user->ring.push_back(Point { float(to->x) / 64, float(to->y) / 64 });
     return 0;
 }
 
@@ -162,8 +162,8 @@ int conic_to(const FT_Vector *control,
     user->ring.pop_back();
 
     agg::curve3_div curve(prev.get<0>(), prev.get<1>(),
-                          control->x, control->y,
-                          to->x, to->y);
+                          float(control->x) / 64, float(control->y) / 64,
+                          float(to->x) / 64, float(to->y) / 64);
 
     curve.rewind(0);
     double x, y;
@@ -187,9 +187,9 @@ int cubic_to(const FT_Vector *c1,
     user->ring.pop_back();
 
     agg::curve4_div curve(prev.get<0>(), prev.get<1>(),
-                          c1->x, c1->y,
-                          c2->x, c2->y,
-                          to->x, to->y);
+                          float(c1->x) / 64, float(c1->y) / 64,
+                          float(c2->x) / 64, float(c2->y) / 64,
+                          float(to->x) / 64, float(to->y) / 64);
 
     curve.rewind(0);
     double x, y;
@@ -202,12 +202,12 @@ int cubic_to(const FT_Vector *c1,
 }
 
 // point in polygon ray casting algorithm
-bool polyContainsPoint(Rings *rings, Point p) {
+bool polyContainsPoint(const Rings &rings, const Point &p) {
     bool c = false;
 
-    for (auto ring : *rings) {
+    for (const auto &ring : rings) {
         auto p1 = ring.begin();
-        auto p2 = ring.begin()++;
+        auto p2 = p1 + 1;
         for (; p2 != ring.end(); p1++, p2++) {
             if (((p1->get<1>() > p.get<1>()) != (p2->get<1>() > p.get<1>())) && (p.get<0>() < (p2->get<0>() - p1->get<0>()) * (p.get<1>() - p1->get<1>()) / (p2->get<1>() - p1->get<1>()) + p1->get<0>())) {
                 c = !c;
@@ -218,48 +218,48 @@ bool polyContainsPoint(Rings *rings, Point p) {
     return c;
 }
 
-double squaredDistance(Point *v, Point *w) {
-    double a = v->get<0>() - w->get<0>();
-    double b = v->get<1>() - w->get<1>();
+double squaredDistance(const Point &v, const Point &w) {
+    const double a = v.get<0>() - w.get<0>();
+    const double b = v.get<1>() - w.get<1>();
     return a * a + b * b;
 }
 
-Point* projectPointOnLineSegment(Point *p, Point *v, Point *w) {
-  double l2 = squaredDistance(v, w);
+Point projectPointOnLineSegment(const Point &p, const Point &v, const Point &w) {
+  const double l2 = squaredDistance(v, w);
   if (l2 == 0) return v;
-  double t = ((p->get<0>() - v->get<0>()) * (w->get<0>() - v->get<0>()) + (p->get<1>() - v->get<1>()) * (w->get<1>() - v->get<1>())) / l2;
+  const double t = ((p.get<0>() - v.get<0>()) * (w.get<0>() - v.get<0>()) + (p.get<1>() - v.get<1>()) * (w.get<1>() - v.get<1>())) / l2;
   if (t < 0) return v;
   if (t > 1) return w;
 
-  Point q {
-      v->get<0>() + t * (w->get<0>() - v->get<0>()),
-      v->get<1>() + t * (w->get<1>() - v->get<1>())
+  return Point {
+      v.get<0>() + t * (w.get<0>() - v.get<0>()),
+      v.get<1>() + t * (w.get<1>() - v.get<1>())
   };
-
-  // TODO: returning ptr to temp is bad, how to fix?
-  return &q;
 }
 
-double squaredDistanceToLineSegment(Point *p, Point *v, Point *w) {
-    Point *s = projectPointOnLineSegment(p, v, w);
+double squaredDistanceToLineSegment(const Point &p, const Point &v, const Point &w) {
+    const Point s = projectPointOnLineSegment(p, v, w);
     return squaredDistance(p, s);
 }
 
-double minDistanceToLineSegment(Tree *tree, Point p, int radius) {
-    int squaredRadius = radius * radius;
+double minDistanceToLineSegment(Tree &tree, const Point &p, int radius) {
+    const int squaredRadius = radius * radius;
 
     std::vector<SegmentValue> results;
-    tree->query(bgi::nearest(&p, radius), std::back_inserter(results));
+    tree.query(
+        bgi::intersects(Box{Point{p.get<0>() - radius, p.get<1>() - radius},
+                            Point{p.get<0>() + radius, p.get<1>() + radius}}),
+        std::back_inserter(results));
 
     double squaredDistance = std::numeric_limits<double>::infinity();
-    for (auto value : results) {
-        SegmentPair segment = value.second;
-        double dist = squaredDistanceToLineSegment(&p, &segment.first, &segment.second);
+    for (const auto &value : results) {
+        const SegmentPair &segment = value.second;
+        const double dist = squaredDistanceToLineSegment(p, segment.first, segment.second);
         if (dist < squaredDistance && dist < squaredRadius) {
             squaredDistance = dist;
         }
     }
-    return sqrt(squaredDistance);
+    return std::sqrt(squaredDistance);
 }
 
 void font_face::glyph_outlines(glyph_info &glyph,
@@ -300,7 +300,7 @@ void font_face::glyph_outlines(glyph_info &glyph,
     if (FT_Outline_Decompose(&outline, &func_interface, &user)) return;
 
     if (!user.ring.empty()) {
-        close_ring(&(user.ring));
+        close_ring(user.ring);
         user.rings.push_back(user.ring);
     }
 
@@ -313,8 +313,8 @@ void font_face::glyph_outlines(glyph_info &glyph,
     double xMax = -std::numeric_limits<double>::infinity(),
            yMax = -std::numeric_limits<double>::infinity();
 
-    for (auto ring : user.rings) {
-        for (auto point : ring) {
+    for (const Points &ring : user.rings) {
+        for (const Point &point : ring) {
             if (point.get<0>() > xMax) xMax = point.get<0>();
             if (point.get<0>() < xMin) xMin = point.get<0>();
             if (point.get<1>() > yMax) yMax = point.get<1>();
@@ -322,14 +322,14 @@ void font_face::glyph_outlines(glyph_info &glyph,
         }
     }
 
-    xMin = round(xMin);
-    yMin = round(yMin);
-    xMax = round(xMax);
-    yMax = round(yMax);
+    xMin = std::round(xMin);
+    yMin = std::round(yMin);
+    xMax = std::round(xMax);
+    yMax = std::round(yMax);
 
     // Offset so that glyph outlines are in the bounding box.
-    for (auto ring : user.rings) {
-        for (auto point : ring) {
+    for (Points &ring : user.rings) {
+        for (Point &point : ring) {
             point.set<0>(point.get<0>() + -xMin + buffer);
             point.set<1>(point.get<1>() + -yMin + buffer);
         }
@@ -351,15 +351,15 @@ void font_face::glyph_outlines(glyph_info &glyph,
     float offset = 0.5;
     int radius = 8;
 
-    for (auto ring : user.rings) {
+    for (const Points &ring : user.rings) {
         auto next = ring.begin();
         next++;
 
         for (auto it = ring.begin(); next != ring.end(); it++, next++) {
-            int xMin = std::min(it->get<0>(), next->get<0>());
-            int xMax = std::max(it->get<0>(), next->get<0>());
-            int yMin = std::min(it->get<1>(), next->get<1>());
-            int yMax = std::max(it->get<1>(), next->get<1>());
+            const int xMin = std::min(it->get<0>(), next->get<0>());
+            const int xMax = std::max(it->get<0>(), next->get<0>());
+            const int yMin = std::min(it->get<1>(), next->get<1>());
+            const int yMax = std::max(it->get<1>(), next->get<1>());
 
             tree.insert(SegmentValue {
                 Box {
@@ -383,10 +383,10 @@ void font_face::glyph_outlines(glyph_info &glyph,
         for (unsigned int x = 0; x < buffered_width; x++) {
             unsigned int i = y * buffered_width + x;
 
-            double d = minDistanceToLineSegment(&tree, Point {x + offset, y + offset}, radius) * (256 / radius);
+            double d = minDistanceToLineSegment(tree, Point {x + offset, y + offset}, radius) * (256 / radius);
 
             // Invert if point is inside.
-            bool inside = polyContainsPoint(&user.rings, Point { x + offset, y + offset });
+            const bool inside = polyContainsPoint(user.rings, Point { x + offset, y + offset });
             if (inside) {
                 d = -d;
             }
@@ -399,8 +399,7 @@ void font_face::glyph_outlines(glyph_info &glyph,
             int n = d > 255 ? 255 : d;
             n = n < 0 ? 0 : n;
 
-            std::string value(1, static_cast<char>(255 - n));
-            glyph.bitmap.insert(i, value);
+            glyph.bitmap[i] = static_cast<char>(255 - n);
         }
     }
 
