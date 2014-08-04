@@ -20,8 +20,6 @@
  *
  *****************************************************************************/
 
-#include <cmath>
-
 // mapnik
 #include <mapnik/text/face.hpp>
 #include <mapnik/debug.hpp>
@@ -205,7 +203,7 @@ int cubic_to(const FT_Vector *c1,
 bool polyContainsPoint(const Rings &rings, const Point &p) {
     bool c = false;
 
-    for (const auto &ring : rings) {
+    for (const Points &ring : rings) {
         auto p1 = ring.begin();
         auto p2 = p1 + 1;
         for (; p2 != ring.end(); p1++, p2++) {
@@ -242,8 +240,8 @@ double squaredDistanceToLineSegment(const Point &p, const Point &v, const Point 
     return squaredDistance(p, s);
 }
 
-double minDistanceToLineSegment(Tree &tree, const Point &p, int radius) {
-    const int squaredRadius = radius * radius;
+double minDistanceToLineSegment(const Tree &tree, const Point &p, int radius) {
+    const int squared_radius = radius * radius;
 
     std::vector<SegmentValue> results;
     tree.query(
@@ -255,7 +253,7 @@ double minDistanceToLineSegment(Tree &tree, const Point &p, int radius) {
     for (const auto &value : results) {
         const SegmentPair &segment = value.second;
         const double dist = squaredDistanceToLineSegment(p, segment.first, segment.second);
-        if (dist < squaredDistance && dist < squaredRadius) {
+        if (dist < squaredDistance && dist < squared_radius) {
             squaredDistance = dist;
         }
     }
@@ -307,40 +305,40 @@ void font_face::glyph_outlines(glyph_info &glyph,
     if (user.rings.empty()) return;
 
     // Calculate the real glyph bbox.
-    double xMin = std::numeric_limits<double>::infinity(),
-           yMin = std::numeric_limits<double>::infinity();
+    double bbox_xmin = std::numeric_limits<double>::infinity(),
+           bbox_ymin = std::numeric_limits<double>::infinity();
 
-    double xMax = -std::numeric_limits<double>::infinity(),
-           yMax = -std::numeric_limits<double>::infinity();
+    double bbox_xmax = -std::numeric_limits<double>::infinity(),
+           bbox_ymax = -std::numeric_limits<double>::infinity();
 
     for (const Points &ring : user.rings) {
         for (const Point &point : ring) {
-            if (point.get<0>() > xMax) xMax = point.get<0>();
-            if (point.get<0>() < xMin) xMin = point.get<0>();
-            if (point.get<1>() > yMax) yMax = point.get<1>();
-            if (point.get<1>() < yMin) yMin = point.get<1>();
+            if (point.get<0>() > bbox_xmax) bbox_xmax = point.get<0>();
+            if (point.get<0>() < bbox_xmin) bbox_xmin = point.get<0>();
+            if (point.get<1>() > bbox_ymax) bbox_ymax = point.get<1>();
+            if (point.get<1>() < bbox_ymin) bbox_ymin = point.get<1>();
         }
     }
 
-    xMin = std::round(xMin);
-    yMin = std::round(yMin);
-    xMax = std::round(xMax);
-    yMax = std::round(yMax);
+    bbox_xmin = std::round(bbox_xmin);
+    bbox_ymin = std::round(bbox_ymin);
+    bbox_xmax = std::round(bbox_xmax);
+    bbox_ymax = std::round(bbox_ymax);
 
     // Offset so that glyph outlines are in the bounding box.
     for (Points &ring : user.rings) {
         for (Point &point : ring) {
-            point.set<0>(point.get<0>() + -xMin + buffer);
-            point.set<1>(point.get<1>() + -yMin + buffer);
+            point.set<0>(point.get<0>() + -bbox_xmin + buffer);
+            point.set<1>(point.get<1>() + -bbox_ymin + buffer);
         }
     }
 
-    if (xMax - xMin == 0 || yMax - yMin == 0) return;
+    if (bbox_xmax - bbox_xmin == 0 || bbox_ymax - bbox_ymin == 0) return;
 
-    glyph.left = xMin;
-    glyph.top = -yMin; // -yMin - ascender?
-    glyph.width = xMax - xMin;
-    glyph.height = yMax - yMin;
+    glyph.left = bbox_xmin;
+    glyph.top = -bbox_ymin; // -bbox_ymin - ascender?
+    glyph.width = bbox_xmax - bbox_xmin;
+    glyph.height = bbox_ymax - bbox_ymin;
 
     glyph.line_height = face_->size->metrics.height;
     glyph.advance = face_->glyph->metrics.horiAdvance;
@@ -352,23 +350,23 @@ void font_face::glyph_outlines(glyph_info &glyph,
     int radius = 8;
 
     for (const Points &ring : user.rings) {
-        auto next = ring.begin();
-        next++;
+        auto p1 = ring.begin();
+        auto p2 = p1 + 1;
 
-        for (auto it = ring.begin(); next != ring.end(); it++, next++) {
-            const int xMin = std::min(it->get<0>(), next->get<0>());
-            const int xMax = std::max(it->get<0>(), next->get<0>());
-            const int yMin = std::min(it->get<1>(), next->get<1>());
-            const int yMax = std::max(it->get<1>(), next->get<1>());
+        for (; p2 != ring.end(); p1++, p2++) {
+            const int segment_x1 = std::min(p1->get<0>(), p2->get<0>());
+            const int segment_x2 = std::max(p1->get<0>(), p2->get<0>());
+            const int segment_y1 = std::min(p1->get<1>(), p2->get<1>());
+            const int segment_y2 = std::max(p1->get<1>(), p2->get<1>());
 
             tree.insert(SegmentValue {
                 Box {
-                    Point {xMin, yMin},
-                    Point {xMax, yMax}
+                    Point {segment_x1, segment_y1},
+                    Point {segment_x2, segment_y2}
                 },
                 SegmentPair {
-                    Point {it->get<0>(), it->get<1>()},
-                    Point {next->get<0>(), next->get<1>()}
+                    Point {p1->get<0>(), p1->get<1>()},
+                    Point {p2->get<0>(), p2->get<1>()}
                 }
             });
         }
