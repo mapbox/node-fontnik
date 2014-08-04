@@ -30,6 +30,8 @@
 // agg
 #include <agg/agg_curves.h>
 
+#include <iostream>
+
 extern "C"
 {
 #include FT_GLYPH_H
@@ -249,15 +251,15 @@ double minDistanceToLineSegment(const Tree &tree, const Point &p, int radius) {
                             Point{p.get<0>() + radius, p.get<1>() + radius}}),
         std::back_inserter(results));
 
-    double squaredDistance = std::numeric_limits<double>::infinity();
+    double sqaured_distance = std::numeric_limits<double>::infinity();
     for (const auto &value : results) {
         const SegmentPair &segment = value.second;
         const double dist = squaredDistanceToLineSegment(p, segment.first, segment.second);
-        if (dist < squaredDistance && dist < squared_radius) {
-            squaredDistance = dist;
+        if (dist < sqaured_distance && dist < squared_radius) {
+            sqaured_distance = dist;
         }
     }
-    return std::sqrt(squaredDistance);
+    return std::sqrt(sqaured_distance);
 }
 
 void font_face::glyph_outlines(glyph_info &glyph,
@@ -272,15 +274,21 @@ void font_face::glyph_outlines(glyph_info &glyph,
         return;
     }
 
-    /*
-    float scale = face_->units_per_EM / size;
-    int ascender = face_->ascender / scale;
-    */
+    // float scale = face_->units_per_EM / size;
 
     if (FT_Load_Glyph (face_, glyph.glyph_index, FT_LOAD_NO_HINTING)) return;
 
     FT_Glyph ft_glyph;
     if (FT_Get_Glyph(face_->glyph, &ft_glyph)) return;
+
+    int advance = face_->glyph->metrics.horiAdvance / 64;
+    int ascender = face_->size->metrics.ascender / 64;
+    int descender = face_->size->metrics.descender / 64;
+
+    glyph.line_height = face_->size->metrics.height;
+    glyph.advance = advance;
+    glyph.ascender = ascender;
+    glyph.descender = descender;
 
     FT_Outline_Funcs func_interface = {
         .move_to = &move_to,
@@ -336,14 +344,9 @@ void font_face::glyph_outlines(glyph_info &glyph,
     if (bbox_xmax - bbox_xmin == 0 || bbox_ymax - bbox_ymin == 0) return;
 
     glyph.left = bbox_xmin;
-    glyph.top = -bbox_ymin; // -bbox_ymin - ascender?
+    glyph.top = bbox_ymax;
     glyph.width = bbox_xmax - bbox_xmin;
     glyph.height = bbox_ymax - bbox_ymin;
-
-    glyph.line_height = face_->size->metrics.height;
-    glyph.advance = face_->glyph->metrics.horiAdvance;
-    glyph.ascender = face_->size->metrics.ascender;
-    glyph.descender = face_->size->metrics.descender;
 
     Tree tree;
     float offset = 0.5;
@@ -375,11 +378,13 @@ void font_face::glyph_outlines(glyph_info &glyph,
     // Loop over every pixel and determine the positive/negative distance to the outline.
     unsigned int buffered_width = glyph.width + 2 * buffer;
     unsigned int buffered_height = glyph.height + 2 * buffer;
-    glyph.bitmap.resize(buffered_width * buffered_height);
+    unsigned int bitmap_size = buffered_width * buffered_height;
+    glyph.bitmap.resize(bitmap_size);
 
     for (unsigned int y = 0; y < buffered_height; y++) {
         for (unsigned int x = 0; x < buffered_width; x++) {
-            unsigned int i = y * buffered_width + x;
+            unsigned int ypos = buffered_height - y - 1;
+            unsigned int i = ypos * buffered_width + x;
 
             double d = minDistanceToLineSegment(tree, Point {x + offset, y + offset}, radius) * (256 / radius);
 
