@@ -28,17 +28,17 @@ describe('glyphs', function() {
 
     it('serialize', function(done) {
         // On disk fixture generated with the following code.
-        /*
-        fontnik.range({
-            fontstack:'Open Sans Regular',
-            start: 0,
-            end: 256
-        }, function(err, zdata) {
-            if (err) throw err;
-            fs.writeFileSync(__dirname + '/fixtures/range.0.256.pbf', zdata);
-            done();
-        });
-        */
+        if (UPDATE) {
+            fontnik.range({
+                fontstack:'Open Sans Regular',
+                start: 0,
+                end: 256
+            }, function(err, zdata) {
+                if (err) throw err;
+                fs.writeFileSync(__dirname + '/fixtures/range.0.256.pbf', zdata);
+                done();
+            });
+        }
         var glyphs = new fontnik.Glyphs(data);
         var vt = new Glyphs(new Protobuf(new Uint8Array(glyphs.serialize())));
         var json = JSON.parse(JSON.stringify(vt, nobuffer));

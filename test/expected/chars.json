@@ -4,17 +4,17 @@
       "glyphs": {
         "97": {
           "id": 97,
-          "width": 11,
-          "height": 15,
+          "width": 10,
+          "height": 13,
           "left": 1,
-          "top": -12,
+          "top": -13,
           "advance": 13
         },
         "122": {
           "id": 122,
-          "width": 11,
+          "width": 9,
           "height": 13,
-          "left": 0,
+          "left": 1,
           "top": -13,
           "advance": 11
         }
