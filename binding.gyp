@@ -37,6 +37,7 @@
         './include',
         './vendor/agg/include',
         './vendor/mapnik/include',
+        './vendor/node_mapnik/include',
         '<(SHARED_INTERMEDIATE_DIR)/',
         '<!@(pkg-config freetype2 --cflags-only-I | sed s/-I//g)',
         '<!@(pkg-config protobuf --cflags-only-I | sed s/-I//g)',

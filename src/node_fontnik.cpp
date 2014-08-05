@@ -1,5 +1,5 @@
 // node-mapnik
-#include <node_mapnik/mapnik_fonts.hpp>
+#include "mapnik_fonts.hpp"
 
 // fontnik
 #include <node_fontnik/glyphs.hpp>
