@@ -1,8 +1,10 @@
-[![Build Status](https://travis-ci.org/mapbox/node-fontnik.svg?branch=master)](https://travis-ci.org/mapbox/node-fontnik)
-
 # node-fontnik
 
 A library that delivers a range of glyphs rendered as SDFs (signed distance fields) in a protobuf.
+
+[![NPM](https://nodei.co/npm/fontnik.png)](https://nodei.co/npm/fontnik/)
+
+[![Build Status](https://travis-ci.org/mapbox/node-fontnik.svg?branch=master)](https://travis-ci.org/mapbox/node-fontnik)
 
 ## Installing
 
