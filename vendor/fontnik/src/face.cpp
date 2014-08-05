@@ -26,6 +26,8 @@
 // agg
 #include "agg_curves.h"
 
+#include <iostream>
+
 namespace fontnik
 {
 
@@ -228,8 +230,9 @@ void Face::RenderSDF(mapnik::glyph_info &glyph,
                      float cutoff) const
 {
     // Check if char is already in cache
-    auto const& itr = glyph_info_cache_.find(glyph.glyph_index);
-    if (itr != glyph_info_cache_.cend()) {
+    glyph_info_cache_type::const_iterator itr;
+    itr = glyph_info_cache_.find(glyph.glyph_index);
+    if (itr != glyph_info_cache_.end()) {
         glyph = itr->second;
         return;
     }

@@ -62,6 +62,8 @@ class Face
 {
 
 public:
+    using glyph_info_cache_type = std::unordered_map<mapnik::glyph_index_t, mapnik::glyph_info>;
+
     Face(FT_Face ft_face);
     ~Face();
 
@@ -80,7 +82,7 @@ public:
 
 private:
     FT_Face ft_face_;
-    mutable std::unordered_map<mapnik::glyph_index_t, mapnik::glyph_info> glyph_info_cache_;
+    mutable glyph_info_cache_type glyph_info_cache_;
     mutable double char_height_;
 };
 typedef std::shared_ptr<Face> face_ptr;
