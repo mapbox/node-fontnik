@@ -20,28 +20,41 @@
  *
  *****************************************************************************/
 
-#ifndef MAPNIK_FS_HPP
-#define MAPNIK_FS_HPP
+#ifndef MAPNIK_FACE_SET_HPP
+#define MAPNIK_FACE_SET_HPP
 
 // mapnik
 #include <mapnik/config.hpp>
+#include <mapnik/noncopyable.hpp>
+
+// fontnik
+#include <fontnik/face.hpp>
 
 // stl
-#include <string>
+#include <memory>
+#include <vector>
 
-namespace mapnik { namespace util {
+namespace mapnik
+{
 
-MAPNIK_DECL bool exists(std::string const& value);
-MAPNIK_DECL bool is_directory(std::string const& value);
-MAPNIK_DECL bool is_regular_file(std::string const& value);
-MAPNIK_DECL bool remove(std::string const& value);
-MAPNIK_DECL bool is_relative(std::string const& value);
-MAPNIK_DECL std::string make_relative(std::string const& filepath, std::string const& base);
-MAPNIK_DECL std::string make_absolute(std::string const& filepath, std::string const& base);
-MAPNIK_DECL std::string dirname(std::string const& value);
+class MAPNIK_DECL font_face_set : private mapnik::noncopyable
+{
+public:
+    using iterator = std::vector<fontnik::face_ptr>::iterator;
+    font_face_set(void) : faces_(){}
 
-}}
+    void add(fontnik::face_ptr face);
+    void set_character_sizes(double size);
+    void set_unscaled_character_sizes();
 
+    unsigned size() const { return faces_.size(); }
+    iterator begin() { return faces_.begin(); }
+    iterator end() { return faces_.end(); }
+private:
+    std::vector<fontnik::face_ptr> faces_;
+};
+using face_set_ptr = std::shared_ptr<font_face_set>;
 
+} // ns mapnik
 
-#endif
+#endif // FACE_SET_HPP

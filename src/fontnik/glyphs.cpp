@@ -1,7 +1,7 @@
 // fontnik
 #include <fontnik/glyphs.hpp>
 #include <mapnik/font_engine_freetype.hpp>
-#include <mapnik/text/face.hpp>
+#include <mapnik/text/face_set.hpp>
 
 // stl
 #include <algorithm>
@@ -76,7 +76,7 @@ void Glyphs::Range(std::string fontstack,
             if (!char_index) continue;
 
             glyph.glyph_index = char_index;
-            face->glyph_outlines(glyph, 24, 3, 0.25);
+            face->RenderSDF(glyph, 24, 3, 0.25);
 
             // Add glyph to fontstack.
             llmr::glyphs::glyph *mutable_glyph = mutable_fontstack->add_glyphs();

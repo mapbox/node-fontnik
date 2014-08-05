@@ -25,35 +25,33 @@
 
 // mapnik
 #include <mapnik/config.hpp>
-#include <mapnik/text/glyph_info.hpp>
 #include <mapnik/font_set.hpp>
 #include <mapnik/noncopyable.hpp>
 
-// fontnik
-#include <fontnik/guarded_map.hpp>
-
-// boost
-#include <boost/optional.hpp>
-
 // stl
 #include <memory>
-// #ifdef MAPNIK_THREADSAFE
-#include <thread>
-// #endif
+#include <map>
+#include <utility> // pair
 #include <vector>
+#include <mutex>
 
 struct FT_LibraryRec_;
 struct FT_MemoryRec_;
+namespace boost { template <class T> class optional; }
+
+namespace fontnik
+{
+
+class Face;
+using face_ptr = std::shared_ptr<Face>;
+
+}
 
 namespace mapnik
 {
 
-typedef fontnik::guarded_map<glyph_index_t, glyph_info> glyph_cache_type;
-typedef std::shared_ptr<glyph_cache_type> glyph_cache_ptr;
 class font_face_set;
-typedef std::shared_ptr<font_face_set> face_set_ptr;
-class font_face;
-typedef std::shared_ptr<font_face> face_ptr;
+using face_set_ptr = std::shared_ptr<font_face_set>;
 
 
 class MAPNIK_DECL freetype_engine
@@ -72,8 +70,8 @@ public:
      */
     static bool register_fonts(std::string const& dir, bool recurse = false);
     static std::vector<std::string> face_names();
-    static std::map<std::string,std::pair<int,std::string> > const& get_mapping();
-    face_ptr create_face(std::string const& family_name);
+    static std::map<std::string, std::pair<int,std::string> > const& get_mapping();
+    fontnik::face_ptr create_face(std::string const& family_name);
     virtual ~freetype_engine();
     freetype_engine();
 private:
@@ -81,26 +79,23 @@ private:
     static bool register_fonts_impl(std::string const& dir, FT_LibraryRec_ * library, bool recurse = false);
     FT_LibraryRec_ * library_;
     std::unique_ptr<FT_MemoryRec_> memory_;
-// #ifdef MAPNIK_THREADSAFE
     static std::mutex mutex_;
-// #endif
     static std::map<std::string, std::pair<int,std::string> > name2file_;
-    static std::map<std::string, std::string> memory_fonts_;
-    static std::map<const std::string, glyph_cache_ptr> glyph_cache_map_;
+    static std::map<std::string, std::pair<std::unique_ptr<char[]>, std::size_t> > memory_fonts_;
 };
 
 template <typename T>
 class MAPNIK_DECL face_manager : private mapnik::noncopyable
 {
-    typedef T font_engine_type;
-    typedef std::map<std::string, face_ptr> face_ptr_cache_type;
+    using font_engine_type = T;
+    using face_ptr_cache_type = std::map<std::string, fontnik::face_ptr>;
 
 public:
     face_manager(T & engine)
         : engine_(engine),
         face_ptr_cache_()  {}
 
-    face_ptr get_face(std::string const& name);
+    fontnik::face_ptr get_face(std::string const& name);
     face_set_ptr get_face_set(std::string const& name);
     face_set_ptr get_face_set(font_set const& fset);
     face_set_ptr get_face_set(std::string const& name, boost::optional<font_set> fset);
@@ -110,7 +105,7 @@ private:
     face_ptr_cache_type face_ptr_cache_;
 };
 
-typedef face_manager<freetype_engine> face_manager_freetype;
+using face_manager_freetype = face_manager<freetype_engine>;
 
 }
 

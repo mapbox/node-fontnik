@@ -23,18 +23,24 @@
 #define MAPNIK_GLYPH_INFO_HPP
 
 //mapnik
-#include <mapnik/text/char_properties_ptr.hpp>
+#include <mapnik/text/evaluated_format_properties_ptr.hpp>
 #include <mapnik/pixel_position.hpp>
 
 #include <memory>
+#include <cmath>
+
+namespace fontnik
+{
+
+class Face;
+typedef std::shared_ptr<Face> face_ptr;
+
+}
 
 namespace mapnik
 {
 
-class font_face;
-typedef std::shared_ptr<font_face> face_ptr;
-
-typedef uint32_t glyph_index_t;
+using glyph_index_t = unsigned;
 
 struct glyph_info
 {
@@ -43,10 +49,10 @@ struct glyph_info
           face(nullptr),
           bitmap(""),
           char_index(0),
-          width(0),
-          height(0),
           left(0),
           top(0),
+          width(0),
+          height(0),
           advance(0.0),
           line_height(0.0),
           ascender(0.0),
@@ -54,14 +60,14 @@ struct glyph_info
           offset(),
           format() {}
     glyph_index_t glyph_index;
-    face_ptr face;
+    fontnik::face_ptr face;
     std::string bitmap;
     // Position in the string of all characters i.e. before itemizing
     unsigned char_index;
-    uint32_t width;
-    uint32_t height;
     int32_t left;
     int32_t top;
+    uint32_t width;
+    uint32_t height;
     double advance;
     // Line height returned by FreeType, includes normal font
     // line spacing, but not additional user defined spacing
@@ -70,7 +76,7 @@ struct glyph_info
     double ascender;
     double descender;
     pixel_position offset;
-    char_properties_ptr format;
+    evaluated_format_properties_ptr format;
 };
 
 inline bool operator<(glyph_info const& lhs, glyph_info const& rhs) {

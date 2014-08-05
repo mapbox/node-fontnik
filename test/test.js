@@ -114,7 +114,7 @@ describe('glyphs', function() {
         var glyphs = new fontnik.Glyphs();
         glyphs.range('doesnotexist', '0-256', fontnik.getRange(0, 256), function(err) {
             assert.ok(err);
-            assert.equal('Error: Failed to find face doesnotexist', err.toString());
+            assert.equal("Error: Failed to find face 'doesnotexist' in font set 'doesnotexist'", err.toString());
             done();
         });
     });
@@ -123,7 +123,7 @@ describe('glyphs', function() {
         var glyphs = new fontnik.Glyphs();
         glyphs.range('Open Sans Regular, doesnotexist', '0-256', fontnik.getRange(0, 256), function(err) {
             assert.ok(err);
-            assert.equal('Error: Failed to find face doesnotexist', err.toString());
+            assert.equal("Error: Failed to find face 'doesnotexist' in font set 'Open Sans Regular, doesnotexist'", err.toString());
             done();
         });
     });

@@ -5,28 +5,21 @@ License: LGPL 2.1
 Description: Mapnik is an open source toolkit for developing mapping applications
 Local Modifications:
 - font_engine_freetype.hpp
-  - Added shared glyph cache map
   - Assume MAPNIK_THREADSAFE
-  - Removed FT_Stroker
-- text/face.hpp
-  - Added constructor with shared guarded_map glyph cache argument
-  - Added operator== overload
-  - Removed FT_Stroker
+  - Remove FT_Stroker
+- text/face_set.hpp
+  - Split out font_face_set class from face.hpp
+  - Replace mapnik::face_ptr with fontnik::face_ptr
 - text/glyph_info.hpp
   - Store signed distance field in std::string bitmap
-  - Set height from FT_GlyphBitmap instead of calculating from FT_BBox
-  - Add left, top, advance, ascender and descender metrics
+  - Add left, top, width, height, advance, ascender and descender metrics
+  - Set metrics directly rather than calculating from unscaled values
   - Add operator< overload for sorting
 - font_engine_freetype.cpp
   - More verbose error logging
-  - Assume MAPNIK_THREADSAFE
-  - Create font_faces with shared guarded_map glyph cache
-  - Removed FT_Stroker
-- text/face.cpp
-  - Implement shared glyph cache
-  - Remove unnecessary FT_Set_Transform
-  - Remove FT_BBox height calculation
-  - Set glyph_info width, height, top and left from FT_BitmapGlyph
-  - Set glyph_info ascender and descender from face metrics
-  - Create signed distance fields when adding glyphs to cache
+  - Assume MAPNIK_THREADSAFE and MAPNIK_LOG
+  - Replace mapnik::face_ptr with fontnik::face_ptr
   - Remove FT_Stroker
+- text/face_set.cpp
+  - Split out font_face_set class from face.cpp
+  - Replace mapnik::face_ptr with fontnik::face_ptr

@@ -1,8 +1,8 @@
 /*****************************************************************************
  *
- * This file is part of Mapnik (c++ mapping toolkit)
+ * Copyright (C) 2014 Mapbox
  *
- * Copyright (C) 2013 Artem Pavlenko
+ * This file is part of Fontnik.
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -20,24 +20,13 @@
  *
  *****************************************************************************/
 
-// mapnik
-#include <mapnik/text/face.hpp>
-#include <mapnik/debug.hpp>
-
-// freetype-gl
-#include <freetype-gl/distmap.h>
+// fontnik
+#include <fontnik/face.hpp>
 
 // agg
 #include <agg/agg_curves.h>
 
-#include <iostream>
-
-extern "C"
-{
-#include FT_GLYPH_H
-}
-
-namespace mapnik
+namespace fontnik
 {
 
 struct User {
@@ -45,99 +34,46 @@ struct User {
     Points ring;
 };
 
-font_face::font_face(FT_Face face)
-    : face_(face),
-      glyphs_(std::make_shared<glyph_cache_type>()),
+Face::Face(FT_Face ft_face)
+    : ft_face_(ft_face),
       char_height_(0.0)
 {
 }
 
-font_face::font_face(FT_Face face, glyph_cache_ptr glyphs)
-    : face_(face),
-      glyphs_(glyphs),
-      char_height_(0.0) {}
-
-double font_face::get_char_height() const
+Face::~Face()
 {
-    if (char_height_ != 0.0) return char_height_;
-    glyph_info tmp;
-    tmp.glyph_index = FT_Get_Char_Index(face_, 'X');
-    glyph_dimensions(tmp);
-    char_height_ = tmp.height;
-    return char_height_;
+    FT_Done_Face(ft_face_);
 }
 
-bool font_face::set_character_sizes(double size)
+bool Face::set_character_sizes(double size)
 {
     char_height_ = 0.0;
-    return !FT_Set_Char_Size(face_,0,(FT_F26Dot6)(size * (1<<6)),0,0);
+    return !FT_Set_Char_Size(ft_face_,0,(FT_F26Dot6)(size * (1<<6)),0,0);
 }
 
-void font_face::glyph_dimensions(glyph_info & glyph) const
+bool Face::set_unscaled_character_sizes()
 {
-    //Check if char is already in cache
-    auto const& itr = glyphs_->find(glyph.glyph_index);
-    if (itr != glyphs_.get()->cend()) {
-        glyph = itr->second;
-        return;
-    }
-
-    // TODO: remove hardcoded buffer size?
-    int buffer = 3;
-
-    if (FT_Load_Glyph (face_, glyph.glyph_index, FT_LOAD_NO_HINTING)) return;
-
-    FT_Glyph image;
-    if (FT_Get_Glyph(face_->glyph, &image)) return;
-
-    glyph.line_height = float(face_->size->metrics.height) / 64.0;
-    glyph.advance = float(face_->glyph->metrics.horiAdvance) / 64.0;
-    glyph.ascender = float(face_->size->metrics.ascender) / 64.0;
-    glyph.descender = float(face_->size->metrics.descender) / 64.0;
-
-    FT_Glyph_To_Bitmap(&image, FT_RENDER_MODE_NORMAL, 0, 1);
-
-    int width = ((FT_BitmapGlyph)image)->bitmap.width;
-    int height = ((FT_BitmapGlyph)image)->bitmap.rows;
-
-    glyph.width = width;
-    glyph.height = height;
-    glyph.left = ((FT_BitmapGlyph)image)->left;
-    glyph.top = ((FT_BitmapGlyph)image)->top;
-
-    // TODO: move this out?
-    // Create a signed distance field (SDF) for the glyph bitmap.
-    if (width > 0) {
-        unsigned int buffered_width = width + 2 * buffer;
-        unsigned int buffered_height = height + 2 * buffer;
-
-        unsigned char *distance = make_distance_map((unsigned char *)((FT_BitmapGlyph)image)->bitmap.buffer, width, height, buffer);
-
-        glyph.bitmap.resize(buffered_width * buffered_height);
-        for (unsigned int y = 0; y < buffered_height; y++) {
-            memcpy((unsigned char *)glyph.bitmap.data() + buffered_width * y, distance + y * distmap_size, buffered_width);
-        }
-        free(distance);
-    }
-
-    FT_Done_Glyph(image);
-
-    glyphs_.get()->emplace(glyph.glyph_index, glyph);
+    char_height_ = 0.0;
+    return !FT_Set_Char_Size(ft_face_,0,ft_face_->units_per_EM,0,0);
 }
 
-void close_ring(Points &ring) {
+void CloseRing(Points &ring)
+{
     const Point &first = ring.front();
     const Point &last = ring.back();
 
-    if (first.get<0>() != last.get<0>() || first.get<1>() != last.get<1>()) {
+    if (first.get<0>() != last.get<0>() ||
+        first.get<1>() != last.get<1>())
+    {
         ring.push_back(first);
     }
 }
 
-int move_to(const FT_Vector *to, void *ptr) {
+int MoveTo(const FT_Vector *to, void *ptr)
+{
     User *user = (User*)ptr;
     if (!user->ring.empty()) {
-        close_ring(user->ring);
+        CloseRing(user->ring);
         user->rings.push_back(user->ring);
         user->ring.clear();
     }
@@ -145,15 +81,17 @@ int move_to(const FT_Vector *to, void *ptr) {
     return 0;
 }
 
-int line_to(const FT_Vector *to, void *ptr) {
+int LineTo(const FT_Vector *to, void *ptr)
+{
     User *user = (User*)ptr;
     user->ring.push_back(Point { float(to->x) / 64, float(to->y) / 64 });
     return 0;
 }
 
-int conic_to(const FT_Vector *control,
-             const FT_Vector *to,
-             void *ptr) {
+int ConicTo(const FT_Vector *control,
+            const FT_Vector *to,
+            void *ptr)
+{
     User *user = (User*)ptr;
 
     Point prev = user->ring.back();
@@ -168,6 +106,7 @@ int conic_to(const FT_Vector *control,
     curve.rewind(0);
     double x, y;
     unsigned cmd;
+
     while (agg::path_cmd_stop != (cmd = curve.vertex(&x, &y))) {
         user->ring.push_back(Point {x, y});
     }
@@ -175,10 +114,11 @@ int conic_to(const FT_Vector *control,
     return 0;
 }
 
-int cubic_to(const FT_Vector *c1,
-             const FT_Vector *c2,
-             const FT_Vector *to,
-             void *ptr) {
+int CubicTo(const FT_Vector *c1,
+            const FT_Vector *c2,
+            const FT_Vector *to,
+            void *ptr)
+{
     User *user = (User*)ptr;
 
     Point prev = user->ring.back();
@@ -194,6 +134,7 @@ int cubic_to(const FT_Vector *c1,
     curve.rewind(0);
     double x, y;
     unsigned cmd;
+
     while (agg::path_cmd_stop != (cmd = curve.vertex(&x, &y))) {
         user->ring.push_back(Point {x, y});
     }
@@ -202,12 +143,14 @@ int cubic_to(const FT_Vector *c1,
 }
 
 // point in polygon ray casting algorithm
-bool polyContainsPoint(const Rings &rings, const Point &p) {
+bool PolyContainsPoint(const Rings &rings, const Point &p)
+{
     bool c = false;
 
     for (const Points &ring : rings) {
         auto p1 = ring.begin();
         auto p2 = p1 + 1;
+
         for (; p2 != ring.end(); p1++, p2++) {
             if (((p1->get<1>() > p.get<1>()) != (p2->get<1>() > p.get<1>())) && (p.get<0>() < (p2->get<0>() - p1->get<0>()) * (p.get<1>() - p1->get<1>()) / (p2->get<1>() - p1->get<1>()) + p1->get<0>())) {
                 c = !c;
@@ -218,15 +161,20 @@ bool polyContainsPoint(const Rings &rings, const Point &p) {
     return c;
 }
 
-double squaredDistance(const Point &v, const Point &w) {
+double SquaredDistance(const Point &v, const Point &w)
+{
     const double a = v.get<0>() - w.get<0>();
     const double b = v.get<1>() - w.get<1>();
     return a * a + b * b;
 }
 
-Point projectPointOnLineSegment(const Point &p, const Point &v, const Point &w) {
-  const double l2 = squaredDistance(v, w);
+Point ProjectPointOnLineSegment(const Point &p,
+                                const Point &v,
+                                const Point &w)
+{
+  const double l2 = SquaredDistance(v, w);
   if (l2 == 0) return v;
+
   const double t = ((p.get<0>() - v.get<0>()) * (w.get<0>() - v.get<0>()) + (p.get<1>() - v.get<1>()) * (w.get<1>() - v.get<1>())) / l2;
   if (t < 0) return v;
   if (t > 1) return w;
@@ -237,64 +185,76 @@ Point projectPointOnLineSegment(const Point &p, const Point &v, const Point &w) 
   };
 }
 
-double squaredDistanceToLineSegment(const Point &p, const Point &v, const Point &w) {
-    const Point s = projectPointOnLineSegment(p, v, w);
-    return squaredDistance(p, s);
+double SquaredDistanceToLineSegment(const Point &p,
+                                    const Point &v,
+                                    const Point &w)
+{
+    const Point s = ProjectPointOnLineSegment(p, v, w);
+    return SquaredDistance(p, s);
 }
 
-double minDistanceToLineSegment(const Tree &tree, const Point &p, int radius) {
+double MinDistanceToLineSegment(const Tree &tree,
+                                const Point &p,
+                                int radius)
+{
     const int squared_radius = radius * radius;
 
     std::vector<SegmentValue> results;
-    tree.query(
-        bgi::intersects(Box{Point{p.get<0>() - radius, p.get<1>() - radius},
-                            Point{p.get<0>() + radius, p.get<1>() + radius}}),
+    tree.query(bgi::intersects(
+        Box{
+            Point{p.get<0>() - radius, p.get<1>() - radius},
+            Point{p.get<0>() + radius, p.get<1>() + radius}
+        }),
         std::back_inserter(results));
 
     double sqaured_distance = std::numeric_limits<double>::infinity();
+
     for (const auto &value : results) {
         const SegmentPair &segment = value.second;
-        const double dist = squaredDistanceToLineSegment(p, segment.first, segment.second);
+        const double dist = SquaredDistanceToLineSegment(p,
+                                                         segment.first, 
+                                                         segment.second);
         if (dist < sqaured_distance && dist < squared_radius) {
             sqaured_distance = dist;
         }
     }
+
     return std::sqrt(sqaured_distance);
 }
 
-void font_face::glyph_outlines(glyph_info &glyph,
-                               int size,
-                               int buffer,
-                               float cutoff) const
+void Face::RenderSDF(mapnik::glyph_info &glyph,
+                     int size,
+                     int buffer,
+                     float cutoff) const
 {
-    //Check if char is already in cache
-    auto const& itr = glyphs_->find(glyph.glyph_index);
-    if (itr != glyphs_.get()->cend()) {
+    // Check if char is already in cache
+    auto const& itr = glyph_info_cache_.find(glyph.glyph_index);
+    if (itr != glyph_info_cache_.cend()) {
         glyph = itr->second;
         return;
     }
 
-    // float scale = face_->units_per_EM / size;
-
-    if (FT_Load_Glyph (face_, glyph.glyph_index, FT_LOAD_NO_HINTING)) return;
+    if (FT_Load_Glyph (ft_face_, glyph.glyph_index, FT_LOAD_NO_HINTING)) {
+        return;
+    }
 
     FT_Glyph ft_glyph;
-    if (FT_Get_Glyph(face_->glyph, &ft_glyph)) return;
+    if (FT_Get_Glyph(ft_face_->glyph, &ft_glyph)) return;
 
-    int advance = face_->glyph->metrics.horiAdvance / 64;
-    int ascender = face_->size->metrics.ascender / 64;
-    int descender = face_->size->metrics.descender / 64;
+    int advance = ft_face_->glyph->metrics.horiAdvance / 64;
+    int ascender = ft_face_->size->metrics.ascender / 64;
+    int descender = ft_face_->size->metrics.descender / 64;
 
-    glyph.line_height = face_->size->metrics.height;
+    glyph.line_height = ft_face_->size->metrics.height;
     glyph.advance = advance;
     glyph.ascender = ascender;
     glyph.descender = descender;
 
     FT_Outline_Funcs func_interface = {
-        .move_to = &move_to,
-        .line_to = &line_to,
-        .conic_to = &conic_to,
-        .cubic_to = &cubic_to,
+        .move_to = &MoveTo,
+        .line_to = &LineTo,
+        .conic_to = &ConicTo,
+        .cubic_to = &CubicTo,
         .shift = 0,
         .delta = 0
     };
@@ -306,7 +266,7 @@ void font_face::glyph_outlines(glyph_info &glyph,
     if (FT_Outline_Decompose(&outline, &func_interface, &user)) return;
 
     if (!user.ring.empty()) {
-        close_ring(user.ring);
+        CloseRing(user.ring);
         user.rings.push_back(user.ring);
     }
 
@@ -386,10 +346,10 @@ void font_face::glyph_outlines(glyph_info &glyph,
             unsigned int ypos = buffered_height - y - 1;
             unsigned int i = ypos * buffered_width + x;
 
-            double d = minDistanceToLineSegment(tree, Point {x + offset, y + offset}, radius) * (256 / radius);
+            double d = MinDistanceToLineSegment(tree, Point {x + offset, y + offset}, radius) * (256 / radius);
 
             // Invert if point is inside.
-            const bool inside = polyContainsPoint(user.rings, Point { x + offset, y + offset });
+            const bool inside = PolyContainsPoint(user.rings, Point { x + offset, y + offset });
             if (inside) {
                 d = -d;
             }
@@ -408,31 +368,7 @@ void font_face::glyph_outlines(glyph_info &glyph,
 
     FT_Done_Glyph(ft_glyph);
 
-    glyphs_.get()->emplace(glyph.glyph_index, glyph);
+    glyph_info_cache_.emplace(glyph.glyph_index, glyph);
 }
 
-font_face::~font_face()
-{
-    MAPNIK_LOG_DEBUG(font_face) <<
-        "font_face: Clean up face \"" << family_name() <<
-        " " << style_name() << "\"";
-
-    FT_Done_Face(face_);
-}
-
-/******************************************************************************/
-
-void font_face_set::add(face_ptr face)
-{
-    faces_.push_back(face);
-}
-
-void font_face_set::set_character_sizes(double size)
-{
-    for (face_ptr const& face : faces_)
-    {
-        face->set_character_sizes(size);
-    }
-}
-
-}//ns mapnik
+} // ns fontnik

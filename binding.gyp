@@ -26,12 +26,13 @@
         'src/agg/agg_curves.cpp',
         'src/edtaa/edtaa4func.c',
         'src/fontnik/glyphs.cpp',
+        'src/fontnik/face.cpp',
         'src/freetype-gl/distmap.c',
         'src/mapnik/debug.cpp',
         'src/mapnik/font_engine_freetype.cpp',
         'src/mapnik/font_set.cpp',
         'src/mapnik/fs.cpp',
-        'src/mapnik/text/face.cpp',
+        'src/mapnik/text/face_set.cpp',
         '<(SHARED_INTERMEDIATE_DIR)/glyphs.pb.cc'
       ],
       'include_dirs': [

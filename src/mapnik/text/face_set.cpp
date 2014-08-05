@@ -20,28 +20,31 @@
  *
  *****************************************************************************/
 
-#ifndef MAPNIK_FS_HPP
-#define MAPNIK_FS_HPP
-
 // mapnik
-#include <mapnik/config.hpp>
+#include <mapnik/text/face_set.hpp>
 
-// stl
-#include <string>
+namespace mapnik
+{
 
-namespace mapnik { namespace util {
+void font_face_set::add(fontnik::face_ptr face)
+{
+    faces_.push_back(face);
+}
 
-MAPNIK_DECL bool exists(std::string const& value);
-MAPNIK_DECL bool is_directory(std::string const& value);
-MAPNIK_DECL bool is_regular_file(std::string const& value);
-MAPNIK_DECL bool remove(std::string const& value);
-MAPNIK_DECL bool is_relative(std::string const& value);
-MAPNIK_DECL std::string make_relative(std::string const& filepath, std::string const& base);
-MAPNIK_DECL std::string make_absolute(std::string const& filepath, std::string const& base);
-MAPNIK_DECL std::string dirname(std::string const& value);
+void font_face_set::set_character_sizes(double size)
+{
+    for (fontnik::face_ptr const& face : faces_)
+    {
+        face->set_character_sizes(size);
+    }
+}
 
-}}
+void font_face_set::set_unscaled_character_sizes()
+{
+    for (fontnik::face_ptr const& face : faces_)
+    {
+        face->set_unscaled_character_sizes();
+    }
+}
 
-
-
-#endif
+} // ns mapnik

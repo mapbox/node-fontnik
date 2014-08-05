@@ -2,7 +2,7 @@
  *
  * This file is part of Mapnik (c++ mapping toolkit)
  *
- * Copyright (C) 2013 Artem Pavlenko
+ * Copyright (C) 2014 Artem Pavlenko
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -20,28 +20,14 @@
  *
  *****************************************************************************/
 
-#ifndef MAPNIK_FS_HPP
-#define MAPNIK_FS_HPP
+#ifndef MAPNIK_UNIQUE_LOCK_HPP
+#define MAPNIK_UNIQUE_LOCK_HPP
 
-// mapnik
-#include <mapnik/config.hpp>
+#include <mutex>
 
-// stl
-#include <string>
+namespace mapnik
+{
+    using scoped_lock = std::unique_lock<std::mutex>;
+}
 
-namespace mapnik { namespace util {
-
-MAPNIK_DECL bool exists(std::string const& value);
-MAPNIK_DECL bool is_directory(std::string const& value);
-MAPNIK_DECL bool is_regular_file(std::string const& value);
-MAPNIK_DECL bool remove(std::string const& value);
-MAPNIK_DECL bool is_relative(std::string const& value);
-MAPNIK_DECL std::string make_relative(std::string const& filepath, std::string const& base);
-MAPNIK_DECL std::string make_absolute(std::string const& filepath, std::string const& base);
-MAPNIK_DECL std::string dirname(std::string const& value);
-
-}}
-
-
-
-#endif
+#endif // MAPNIK_UNIQUE_LOCK_HPP
