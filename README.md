@@ -33,6 +33,7 @@ npm install --build-from-source
 ```
 
 ## Background reading
+- [Drawing Text with Signed Distance Fields in Mapbox GL](https://www.mapbox.com/blog/text-signed-distance-fields/)
 - [State of Text Rendering](http://behdad.org/text/)
 - [Pango vs HarfBuzz](http://mces.blogspot.com/2009/11/pango-vs-harfbuzz.html)
 - [An Introduction to Writing Systems & Unicode](http://rishida.net/docs/unicode-tutorial/)
