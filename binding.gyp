@@ -23,7 +23,7 @@
       'sources': [
         'src/node_fontnik.cpp',
         'src/glyphs.cpp',
-        'src/agg/agg_curves.cpp',
+        'vendor/agg/src/agg_curves.cpp',
         'src/fontnik/glyphs.cpp',
         'src/fontnik/face.cpp',
         'src/mapnik/debug.cpp',
@@ -35,6 +35,7 @@
       ],
       'include_dirs': [
         './include',
+        './vendor/agg/include',
         '<(SHARED_INTERMEDIATE_DIR)/',
         '<!@(pkg-config freetype2 --cflags-only-I | sed s/-I//g)',
         '<!@(pkg-config protobuf --cflags-only-I | sed s/-I//g)',

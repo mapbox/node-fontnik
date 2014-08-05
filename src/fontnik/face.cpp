@@ -24,7 +24,7 @@
 #include <fontnik/face.hpp>
 
 // agg
-#include <agg/agg_curves.h>
+#include "agg_curves.h"
 
 namespace fontnik
 {
