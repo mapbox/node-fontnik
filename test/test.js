@@ -28,17 +28,17 @@ describe('glyphs', function() {
 
     it('serialize', function(done) {
         // On disk fixture generated with the following code.
-        /*
-        fontnik.range({
-            fontstack:'Open Sans Regular',
-            start: 0,
-            end: 256
-        }, function(err, zdata) {
-            if (err) throw err;
-            fs.writeFileSync(__dirname + '/fixtures/range.0.256.pbf', zdata);
-            done();
-        });
-        */
+        if (UPDATE) {
+            fontnik.range({
+                fontstack:'Open Sans Regular',
+                start: 0,
+                end: 256
+            }, function(err, zdata) {
+                if (err) throw err;
+                fs.writeFileSync(__dirname + '/fixtures/range.0.256.pbf', zdata);
+                done();
+            });
+        }
         var glyphs = new fontnik.Glyphs(data);
         var vt = new Glyphs(new Protobuf(new Uint8Array(glyphs.serialize())));
         var json = JSON.parse(JSON.stringify(vt, nobuffer));
@@ -114,7 +114,7 @@ describe('glyphs', function() {
         var glyphs = new fontnik.Glyphs();
         glyphs.range('doesnotexist', '0-256', fontnik.getRange(0, 256), function(err) {
             assert.ok(err);
-            assert.equal('Error: Failed to find face doesnotexist', err.toString());
+            assert.equal("Error: Failed to find face 'doesnotexist' in font set 'doesnotexist'", err.toString());
             done();
         });
     });
@@ -123,7 +123,7 @@ describe('glyphs', function() {
         var glyphs = new fontnik.Glyphs();
         glyphs.range('Open Sans Regular, doesnotexist', '0-256', fontnik.getRange(0, 256), function(err) {
             assert.ok(err);
-            assert.equal('Error: Failed to find face doesnotexist', err.toString());
+            assert.equal("Error: Failed to find face 'doesnotexist' in font set 'Open Sans Regular, doesnotexist'", err.toString());
             done();
         });
     });
