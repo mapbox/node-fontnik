@@ -24,8 +24,8 @@
         'src/node_fontnik.cpp',
         'src/glyphs.cpp',
         'vendor/agg/src/agg_curves.cpp',
-        'src/fontnik/glyphs.cpp',
-        'src/fontnik/face.cpp',
+        'vendor/fontnik/src/glyphs.cpp',
+        'vendor/fontnik/src/face.cpp',
         'vendor/mapnik/src/debug.cpp',
         'vendor/mapnik/src/font_engine_freetype.cpp',
         'vendor/mapnik/src/font_set.cpp',
@@ -36,6 +36,7 @@
       'include_dirs': [
         './include',
         './vendor/agg/include',
+        './vendor/fontnik/include',
         './vendor/mapnik/include',
         './vendor/node_mapnik/include',
         '<(SHARED_INTERMEDIATE_DIR)/',
