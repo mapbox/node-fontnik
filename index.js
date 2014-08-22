@@ -22,12 +22,12 @@ function range(options, callback) {
     options.fontstack = options.fontstack || 'Open Sans Regular';
 
     var glyphs = new fontnik.Glyphs();
-    glyphs.range(options.fontstack, options.start + '-' + options.end, getRange(options.start, options.end), deflate);
+    glyphs.range(options.fontstack, options.start + '-' + options.end, getRange(options.start, options.end), gzip);
 
-    function deflate(err) {
+    function gzip(err) {
         if (err) return callback(err);
         var after = glyphs.serialize();
-        zlib.deflate(after, callback);
+        zlib.gzip(after, callback);
     }
 }
 
