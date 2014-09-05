@@ -224,7 +224,7 @@ double MinDistanceToLineSegment(const Tree &tree,
     return std::sqrt(sqaured_distance);
 }
 
-void Face::RenderSDF(mapnik::glyph_info &glyph,
+void Face::RenderSDF(mapnik_fontnik::glyph_info &glyph,
                      int size,
                      int buffer,
                      float cutoff) const

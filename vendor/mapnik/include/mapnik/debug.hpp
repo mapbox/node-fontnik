@@ -40,7 +40,7 @@
 #include <mutex>
 #endif
 
-namespace mapnik {
+namespace mapnik_fontnik {
 
     /*
         Global logger class that holds the configuration of severity, format
@@ -48,7 +48,7 @@ namespace mapnik {
     */
     class MAPNIK_DECL logger :
         public singleton<logger,CreateStatic>,
-        private mapnik::noncopyable
+        private mapnik_fontnik::noncopyable
     {
     public:
         enum severity_type
@@ -70,7 +70,7 @@ namespace mapnik {
         static void set_severity(severity_type const& severity_level)
         {
 #ifdef MAPNIK_THREADSAFE
-            mapnik::scoped_lock lock(severity_mutex_);
+            mapnik_fontnik::scoped_lock lock(severity_mutex_);
 #endif
 
             severity_level_ = severity_level;
@@ -94,7 +94,7 @@ namespace mapnik {
                                         severity_type const& security_level)
         {
 #ifdef MAPNIK_THREADSAFE
-            mapnik::scoped_lock lock(severity_mutex_);
+            mapnik_fontnik::scoped_lock lock(severity_mutex_);
 #endif
             if (! object_name.empty())
             {
@@ -105,7 +105,7 @@ namespace mapnik {
         static void clear_object_severity()
         {
 #ifdef MAPNIK_THREADSAFE
-            mapnik::scoped_lock lock(severity_mutex_);
+            mapnik_fontnik::scoped_lock lock(severity_mutex_);
 #endif
 
             object_severity_level_.clear();
@@ -120,7 +120,7 @@ namespace mapnik {
         static void set_format(std::string const& format)
         {
 #ifdef MAPNIK_THREADSAFE
-            mapnik::scoped_lock lock(format_mutex_);
+            mapnik_fontnik::scoped_lock lock(format_mutex_);
 #endif
             format_ = format;
         }
@@ -166,7 +166,7 @@ namespace mapnik {
             {
 #ifdef MAPNIK_THREADSAFE
                 static std::mutex mutex;
-                mapnik::scoped_lock lock(mutex);
+                mapnik_fontnik::scoped_lock lock(mutex);
 #endif
                 std::clog << logger::str() << " " << s.str() << std::endl;
             }
@@ -184,7 +184,7 @@ namespace mapnik {
                  class Ch = char,
                  class Tr = std::char_traits<Ch>,
                  class A = std::allocator<Ch> >
-        class base_log : public mapnik::noncopyable
+        class base_log : public mapnik_fontnik::noncopyable
         {
         public:
             using output_policy = OutputPolicy<Ch, Tr, A>;
@@ -254,7 +254,7 @@ namespace mapnik {
                  class Ch = char,
                  class Tr = std::char_traits<Ch>,
                  class A = std::allocator<Ch> >
-        class base_log_always : public mapnik::noncopyable
+        class base_log_always : public mapnik_fontnik::noncopyable
         {
         public:
             using output_policy = OutputPolicy<Ch, Tr, A>;
@@ -322,9 +322,9 @@ namespace mapnik {
     };
 
     // logging helpers
-    #define MAPNIK_LOG_DEBUG(s) mapnik::debug(#s)
-    #define MAPNIK_LOG_WARN(s) mapnik::warn(#s)
-    #define MAPNIK_LOG_ERROR(s) mapnik::error(#s)
+    #define MAPNIK_LOG_DEBUG(s) mapnik_fontnik::debug(#s)
+    #define MAPNIK_LOG_WARN(s) mapnik_fontnik::warn(#s)
+    #define MAPNIK_LOG_ERROR(s) mapnik_fontnik::error(#s)
 }
 
 #endif // MAPNIK_DEBUG_HPP

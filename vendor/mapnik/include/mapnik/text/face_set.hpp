@@ -34,10 +34,10 @@
 #include <memory>
 #include <vector>
 
-namespace mapnik
+namespace mapnik_fontnik
 {
 
-class MAPNIK_DECL font_face_set : private mapnik::noncopyable
+class MAPNIK_DECL font_face_set : private mapnik_fontnik::noncopyable
 {
 public:
     using iterator = std::vector<fontnik::face_ptr>::iterator;

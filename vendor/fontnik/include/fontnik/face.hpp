@@ -62,7 +62,7 @@ class Face
 {
 
 public:
-    using glyph_info_cache_type = std::unordered_map<mapnik::glyph_index_t, mapnik::glyph_info>;
+    using glyph_info_cache_type = std::unordered_map<mapnik_fontnik::glyph_index_t, mapnik_fontnik::glyph_info>;
 
     Face(FT_Face ft_face);
     ~Face();
@@ -75,7 +75,7 @@ public:
     bool set_character_sizes(double size);
     bool set_unscaled_character_sizes();
 
-    void RenderSDF(mapnik::glyph_info &glyph,
+    void RenderSDF(mapnik_fontnik::glyph_info &glyph,
                    int size,
                    int buffer,
                    float cutoff) const;

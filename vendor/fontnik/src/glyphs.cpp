@@ -58,10 +58,10 @@ void Glyphs::Range(std::string fontstack,
                    std::string range,
                    std::vector<std::uint32_t> chars)
 {
-    mapnik::freetype_engine font_engine_;
-    mapnik::face_manager_freetype font_manager(font_engine_);
+    mapnik_fontnik::freetype_engine font_engine_;
+    mapnik_fontnik::face_manager_freetype font_manager(font_engine_);
 
-    mapnik::font_set font_set(fontstack);
+    mapnik_fontnik::font_set font_set(fontstack);
     std::stringstream stream(fontstack);
     std::string face_name;
 
@@ -70,7 +70,7 @@ void Glyphs::Range(std::string fontstack,
         font_set.add_face_name(Trim(face_name, " \t"));
     }
 
-    mapnik::face_set_ptr face_set;
+    mapnik_fontnik::face_set_ptr face_set;
 
     // This may throw.
     face_set = font_manager.get_face_set(font_set);
@@ -87,7 +87,7 @@ void Glyphs::Range(std::string fontstack,
 
     for (std::vector<uint32_t>::size_type i = 0; i != chars.size(); i++) {
         FT_ULong char_code = chars[i];
-        mapnik::glyph_info glyph;
+        mapnik_fontnik::glyph_info glyph;
 
         for (auto const& face : *face_set) {
             // Get FreeType face from face_ptr.
@@ -122,10 +122,10 @@ void Glyphs::Range(std::string fontstack,
 std::vector<int> Glyphs::Codepoints(std::string fontstack)
 {
     std::vector<int> points;
-    mapnik::freetype_engine font_engine_;
-    mapnik::face_manager_freetype font_manager(font_engine_);
+    mapnik_fontnik::freetype_engine font_engine_;
+    mapnik_fontnik::face_manager_freetype font_manager(font_engine_);
 
-    mapnik::font_set font_set(fontstack);
+    mapnik_fontnik::font_set font_set(fontstack);
     std::stringstream stream(fontstack);
     std::string face_name;
 
@@ -133,7 +133,7 @@ std::vector<int> Glyphs::Codepoints(std::string fontstack)
         font_set.add_face_name(Trim(face_name, " \t"));
     }
 
-    mapnik::face_set_ptr face_set;
+    mapnik_fontnik::face_set_ptr face_set;
 
     // This may throw.
     face_set = font_manager.get_face_set(font_set);

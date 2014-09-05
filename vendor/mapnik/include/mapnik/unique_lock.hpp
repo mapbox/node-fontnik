@@ -25,7 +25,7 @@
 
 #include <mutex>
 
-namespace mapnik
+namespace mapnik_fontnik
 {
     using scoped_lock = std::unique_lock<std::mutex>;
 }

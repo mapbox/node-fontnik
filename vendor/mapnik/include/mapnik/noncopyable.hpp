@@ -23,7 +23,7 @@
 #ifndef MAPNIK_NONCOPYABLE_HPP
 #define MAPNIK_NONCOPYABLE_HPP
 
-namespace mapnik {
+namespace mapnik_fontnik {
 
 namespace non_copyable_
 {
@@ -40,6 +40,6 @@ protected:
 
 using noncopyable = non_copyable_::noncopyable;
 
-} // namespace mapnik
+} // namespace mapnik_fontnik
 
 #endif  // MAPNIK_NONCOPYABLE_HPP
