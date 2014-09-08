@@ -23,17 +23,17 @@
     }
   ],
   "dependencies": {
-    "queue-async": "1.0.x",
+    "minimist": "0.2.0",
+    "nan": "1.2.0",
     "node-pre-gyp": "0.5.23",
-    "nan": "~1.2.0",
-    "minimist": "~0.2.0"
+    "queue-async": "1.0.7"
   },
   "bundledDependencies": [
     "node-pre-gyp"
   ],
   "devDependencies": {
-    "mocha": "1.20.0",
-    "pbf": "0.0.1"
+    "mocha": "1.21.4",
+    "pbf": "0.0.2"
   },
   "bin": {
     "build-glyphs": "./bin/build-glyphs",
