@@ -19,7 +19,7 @@
 #include <cstring>
 #include "agg_basics.h"
 
-namespace agg
+namespace agg_fontnik
 {
 
     //-------------------------------------------------------pod_array_adaptor

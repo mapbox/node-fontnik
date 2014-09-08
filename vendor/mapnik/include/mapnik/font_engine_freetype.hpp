@@ -47,7 +47,7 @@ using face_ptr = std::shared_ptr<Face>;
 
 }
 
-namespace mapnik
+namespace mapnik_fontnik
 {
 
 class font_face_set;
@@ -85,7 +85,7 @@ private:
 };
 
 template <typename T>
-class MAPNIK_DECL face_manager : private mapnik::noncopyable
+class MAPNIK_DECL face_manager : private mapnik_fontnik::noncopyable
 {
     using font_engine_type = T;
     using face_ptr_cache_type = std::map<std::string, fontnik::face_ptr>;

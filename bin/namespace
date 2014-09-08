@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+
+find ./ -type f -name '*.cpp' -or -name '*.h' -or -name '*.hpp' | xargs perl -i -p -e "s/namespace $1(?!_fontnik)/namespace $1_fontnik/g;"
+find ./ -type f -name '*.cpp' -or -name '*.h' -or -name '*.hpp' | xargs perl -i -p -e "s/$1::/$1_fontnik::/g;"
