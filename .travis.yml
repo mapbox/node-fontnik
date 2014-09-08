@@ -4,6 +4,7 @@ os:
 language: cpp
 compiler:
 - gcc
+sudo: false
 env:
   matrix:
   - NODE_NVM_VERSION="0.8.26"
