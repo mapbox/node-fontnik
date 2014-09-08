@@ -17,7 +17,7 @@
 #include "agg_curves.h"
 #include "agg_math.h"
 
-namespace agg
+namespace agg_fontnik
 {
 
 //------------------------------------------------------------------------

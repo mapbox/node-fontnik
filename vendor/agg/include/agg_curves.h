@@ -19,7 +19,7 @@
 
 #include "agg_array.h"
 
-namespace agg
+namespace agg_fontnik
 {
 
     // See Implementation agg_curves.cpp

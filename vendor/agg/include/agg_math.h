@@ -22,7 +22,7 @@
 #include <cmath>
 #include "agg_basics.h"
 
-namespace agg
+namespace agg_fontnik
 {
 
     //------------------------------------------------------vertex_dist_epsilon
