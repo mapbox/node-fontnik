@@ -35,7 +35,7 @@
 #include <mutex>
 #endif
 
-namespace mapnik
+namespace mapnik_fontnik
 {
 
 template <typename T>
@@ -123,7 +123,7 @@ protected:
             if (! pInstance_)
             {
 #ifdef MAPNIK_THREADSAFE
-                mapnik::scoped_lock lock(mutex_);
+                mapnik_fontnik::scoped_lock lock(mutex_);
 #endif
                 if (! pInstance_)
                 {

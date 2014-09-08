@@ -64,7 +64,7 @@ void* _Realloc_Func(FT_Memory memory, long cur_size, long new_size, void* block)
     return std::realloc(block, new_size);
 }
 
-namespace mapnik
+namespace mapnik_fontnik
 {
 
 void init_freetype(FT_Memory memory, FT_Library & library)
@@ -124,7 +124,7 @@ void ft_close_cb(FT_Stream stream)
 
 bool freetype_engine::register_font(std::string const& file_name)
 {
-    mapnik::scoped_lock lock(mutex_);
+    mapnik_fontnik::scoped_lock lock(mutex_);
 
     FT_Library library = 0;
     std::unique_ptr<FT_MemoryRec_> memory(new FT_MemoryRec_);
@@ -137,7 +137,7 @@ bool freetype_engine::register_font(std::string const& file_name)
 bool freetype_engine::register_font_impl(std::string const& file_name, FT_LibraryRec_ * library)
 {
 #ifdef _WINDOWS
-    FILE * file = _wfopen(mapnik::utf8_to_utf16(file_name).c_str(), L"rb");
+    FILE * file = _wfopen(mapnik_fontnik::utf8_to_utf16(file_name).c_str(), L"rb");
 #else
     FILE * file = std::fopen(file_name.c_str(),"rb");
 #endif
@@ -205,7 +205,7 @@ bool freetype_engine::register_font_impl(std::string const& file_name, FT_Librar
 
 bool freetype_engine::register_fonts(std::string const& dir, bool recurse)
 {
-    mapnik::scoped_lock lock(mutex_);
+    mapnik_fontnik::scoped_lock lock(mutex_);
     std::unique_ptr<FT_MemoryRec_> memory(new FT_MemoryRec_);
     FT_Library library = 0;
     init_freetype(&*memory, library);
@@ -216,26 +216,26 @@ bool freetype_engine::register_fonts(std::string const& dir, bool recurse)
 
 bool freetype_engine::register_fonts_impl(std::string const& dir, FT_LibraryRec_ * library, bool recurse)
 {
-    if (!mapnik::util::exists(dir))
+    if (!mapnik_fontnik::util::exists(dir))
     {
         return false;
     }
-    if (!mapnik::util::is_directory(dir))
+    if (!mapnik_fontnik::util::is_directory(dir))
     {
-        return mapnik::freetype_engine::register_font_impl(dir, library);
+        return mapnik_fontnik::freetype_engine::register_font_impl(dir, library);
     }
     bool success = false;
     try
     {
         boost::filesystem::directory_iterator end_itr;
 #ifdef _WINDOWS
-        std::wstring wide_dir(mapnik::utf8_to_utf16(dir));
+        std::wstring wide_dir(mapnik_fontnik::utf8_to_utf16(dir));
         for (boost::filesystem::directory_iterator itr(wide_dir); itr != end_itr; ++itr)
         {
     #if (BOOST_FILESYSTEM_VERSION == 3)
-            std::string file_name = mapnik::utf16_to_utf8(itr->path().wstring());
+            std::string file_name = mapnik_fontnik::utf16_to_utf8(itr->path().wstring());
     #else // v2
-            std::string file_name = mapnik::utf16_to_utf8(itr->wstring());
+            std::string file_name = mapnik_fontnik::utf16_to_utf8(itr->wstring());
     #endif
 #else
         for (boost::filesystem::directory_iterator itr(dir); itr != end_itr; ++itr)
@@ -261,10 +261,10 @@ bool freetype_engine::register_fonts_impl(std::string const& dir, FT_LibraryRec_
                 std::string base_name = itr->filename();
 #endif
                 if (!boost::algorithm::starts_with(base_name,".") &&
-                    mapnik::util::is_regular_file(file_name) &&
+                    mapnik_fontnik::util::is_regular_file(file_name) &&
                     is_font_file(file_name))
                 {
-                    if (mapnik::freetype_engine::register_font_impl(file_name, library))
+                    if (mapnik_fontnik::freetype_engine::register_font_impl(file_name, library))
                     {
                         success = true;
                     }
@@ -318,10 +318,10 @@ fontnik::face_ptr freetype_engine::create_face(std::string const& family_name)
         else
         {
             // load font into memory
-            mapnik::scoped_lock lock(mutex_);
+            mapnik_fontnik::scoped_lock lock(mutex_);
 
 #ifdef _WINDOWS
-            std::unique_ptr<std::FILE, int (*)(std::FILE *)> file(_wfopen(mapnik::utf8_to_utf16(itr->second.second).c_str(), L"rb"), fclose);
+            std::unique_ptr<std::FILE, int (*)(std::FILE *)> file(_wfopen(mapnik_fontnik::utf8_to_utf16(itr->second.second).c_str(), L"rb"), fclose);
 #else
             std::unique_ptr<std::FILE, int (*)(std::FILE *)> file(std::fopen(itr->second.second.c_str(),"rb"), std::fclose);
 #endif

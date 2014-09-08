@@ -101,7 +101,7 @@ int ConicTo(const FT_Vector *control,
     // pop off last point, duplicate of first point in bezier curve
     user->ring.pop_back();
 
-    agg::curve3_div curve(prev.get<0>(), prev.get<1>(),
+    agg_fontnik::curve3_div curve(prev.get<0>(), prev.get<1>(),
                           float(control->x) / 64, float(control->y) / 64,
                           float(to->x) / 64, float(to->y) / 64);
 
@@ -109,7 +109,7 @@ int ConicTo(const FT_Vector *control,
     double x, y;
     unsigned cmd;
 
-    while (agg::path_cmd_stop != (cmd = curve.vertex(&x, &y))) {
+    while (agg_fontnik::path_cmd_stop != (cmd = curve.vertex(&x, &y))) {
         user->ring.push_back(Point {x, y});
     }
 
@@ -128,7 +128,7 @@ int CubicTo(const FT_Vector *c1,
     // pop off last point, duplicate of first point in bezier curve
     user->ring.pop_back();
 
-    agg::curve4_div curve(prev.get<0>(), prev.get<1>(),
+    agg_fontnik::curve4_div curve(prev.get<0>(), prev.get<1>(),
                           float(c1->x) / 64, float(c1->y) / 64,
                           float(c2->x) / 64, float(c2->y) / 64,
                           float(to->x) / 64, float(to->y) / 64);
@@ -137,7 +137,7 @@ int CubicTo(const FT_Vector *c1,
     double x, y;
     unsigned cmd;
 
-    while (agg::path_cmd_stop != (cmd = curve.vertex(&x, &y))) {
+    while (agg_fontnik::path_cmd_stop != (cmd = curve.vertex(&x, &y))) {
         user->ring.push_back(Point {x, y});
     }
 
@@ -224,7 +224,7 @@ double MinDistanceToLineSegment(const Tree &tree,
     return std::sqrt(sqaured_distance);
 }
 
-void Face::RenderSDF(mapnik::glyph_info &glyph,
+void Face::RenderSDF(mapnik_fontnik::glyph_info &glyph,
                      int size,
                      int buffer,
                      float cutoff) const

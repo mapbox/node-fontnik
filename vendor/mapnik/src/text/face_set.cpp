@@ -23,7 +23,7 @@
 // mapnik
 #include <mapnik/text/face_set.hpp>
 
-namespace mapnik
+namespace mapnik_fontnik
 {
 
 void font_face_set::add(fontnik::face_ptr face)

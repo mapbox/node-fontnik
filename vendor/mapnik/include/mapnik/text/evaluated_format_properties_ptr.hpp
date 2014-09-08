@@ -25,7 +25,7 @@
 
 #include <memory>
 
-namespace mapnik { namespace detail {
+namespace mapnik_fontnik { namespace detail {
 struct evaluated_format_properties;
 }
 using evaluated_format_properties_ptr = std::shared_ptr<detail::evaluated_format_properties>;

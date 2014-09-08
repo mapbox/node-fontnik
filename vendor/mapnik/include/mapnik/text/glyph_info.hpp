@@ -37,7 +37,7 @@ typedef std::shared_ptr<Face> face_ptr;
 
 }
 
-namespace mapnik
+namespace mapnik_fontnik
 {
 
 using glyph_index_t = unsigned;

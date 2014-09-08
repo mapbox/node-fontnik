@@ -25,7 +25,7 @@
 // stl
 #include <iomanip>
 
-namespace mapnik
+namespace mapnik_fontnik
 {
 
 struct rotation;

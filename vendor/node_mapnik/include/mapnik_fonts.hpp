@@ -15,7 +15,7 @@
 
 using namespace v8;
 
-namespace node_mapnik {
+namespace node_mapnik_fontnik {
 
 static inline NAN_METHOD(register_fonts)
 {
@@ -31,7 +31,7 @@ static inline NAN_METHOD(register_fonts)
 
         bool found = false;
 
-        std::vector<std::string> const names_before = mapnik::freetype_engine::face_names();
+        std::vector<std::string> const names_before = mapnik_fontnik::freetype_engine::face_names();
 
         // option hash
         if (args.Length() == 2){
@@ -53,16 +53,16 @@ static inline NAN_METHOD(register_fonts)
 
                 bool recurse = recurse_opt->BooleanValue();
                 std::string path = TOSTR(args[0]);
-                found = mapnik::freetype_engine::register_fonts(path,recurse);
+                found = mapnik_fontnik::freetype_engine::register_fonts(path,recurse);
             }
         }
         else
         {
             std::string path = TOSTR(args[0]);
-            found = mapnik::freetype_engine::register_fonts(path);
+            found = mapnik_fontnik::freetype_engine::register_fonts(path);
         }
 
-        std::vector<std::string> const& names_after = mapnik::freetype_engine::face_names();
+        std::vector<std::string> const& names_after = mapnik_fontnik::freetype_engine::face_names();
         if (names_after.size() == names_before.size())
             found = false;
 
@@ -78,7 +78,7 @@ static inline NAN_METHOD(register_fonts)
 static inline NAN_METHOD(available_font_faces)
 {
     NanScope();
-    std::vector<std::string> const& names = mapnik::freetype_engine::face_names();
+    std::vector<std::string> const& names = mapnik_fontnik::freetype_engine::face_names();
     Local<Array> a = NanNew<Array>(names.size());
     for (unsigned i = 0; i < names.size(); ++i)
     {
@@ -90,7 +90,7 @@ static inline NAN_METHOD(available_font_faces)
 static inline NAN_METHOD(available_font_files)
 {
     NanScope();
-    std::map<std::string,std::pair<int,std::string> > const& mapping = mapnik::freetype_engine::get_mapping();
+    std::map<std::string,std::pair<int,std::string> > const& mapping = mapnik_fontnik::freetype_engine::get_mapping();
     Local<Object> obj = NanNew<Object>();
     std::map<std::string,std::pair<int,std::string> >::const_iterator itr;
     for (itr = mapping.begin();itr!=mapping.end();++itr)

@@ -66,14 +66,14 @@ path read_symlink(const path& p)
 }
 #endif
 
-namespace mapnik {
+namespace mapnik_fontnik {
 
 namespace util {
 
     bool exists(std::string const& filepath)
     {
 #ifdef _WINDOWS
-        return boost::filesystem::exists(mapnik::utf8_to_utf16(filepath));
+        return boost::filesystem::exists(mapnik_fontnik::utf8_to_utf16(filepath));
 #else
         return boost::filesystem::exists(filepath);
 #endif
@@ -82,7 +82,7 @@ namespace util {
     bool is_directory(std::string const& filepath)
     {
 #ifdef _WINDOWS
-        return boost::filesystem::is_directory(mapnik::utf8_to_utf16(filepath));
+        return boost::filesystem::is_directory(mapnik_fontnik::utf8_to_utf16(filepath));
 #else
         return boost::filesystem::is_directory(filepath);
 #endif
@@ -91,7 +91,7 @@ namespace util {
     bool is_regular_file(std::string const& filepath)
     {
 #ifdef _WINDOWS
-        return boost::filesystem::is_regular_file(mapnik::utf8_to_utf16(filepath));
+        return boost::filesystem::is_regular_file(mapnik_fontnik::utf8_to_utf16(filepath));
 #else
         return boost::filesystem::is_regular_file(filepath);
 #endif
@@ -100,7 +100,7 @@ namespace util {
     bool remove(std::string const& filepath)
     {
 #ifdef _WINDOWS
-        return boost::filesystem::remove(mapnik::utf8_to_utf16(filepath));
+        return boost::filesystem::remove(mapnik_fontnik::utf8_to_utf16(filepath));
 #else
         return boost::filesystem::remove(filepath);
 #endif
@@ -110,7 +110,7 @@ namespace util {
     {
 
 #ifdef _WINDOWS
-        boost::filesystem::path child_path(mapnik::utf8_to_utf16(filepath));
+        boost::filesystem::path child_path(mapnik_fontnik::utf8_to_utf16(filepath));
 #else
         boost::filesystem::path child_path(filepath);
 #endif
@@ -121,7 +121,7 @@ namespace util {
     std::string make_relative(std::string const& filepath, std::string const& base)
     {
 #ifdef _WINDOWS
-        boost::filesystem::path absolute_path(mapnik::utf8_to_utf16(base));
+        boost::filesystem::path absolute_path(mapnik_fontnik::utf8_to_utf16(base));
 #else
         boost::filesystem::path absolute_path(base);
 #endif
@@ -159,4 +159,4 @@ namespace util {
 
 } // end namespace util
 
-} // end namespace mapnik
+} // end namespace mapnik_fontnik

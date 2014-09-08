@@ -39,7 +39,7 @@
   #endif
 #endif
 
-namespace mapnik {
+namespace mapnik_fontnik {
 
 // mutexes
 
@@ -161,4 +161,4 @@ void logger::use_console()
 }
 
 
-} // namespace mapnik
+} // namespace mapnik_fontnik

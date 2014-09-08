@@ -11,7 +11,7 @@ A library that delivers a range of glyphs rendered as SDFs (signed distance fiel
 By default, installs binaries. On these platforms no external dependencies are needed.
 
 - 64 bit OS X or 64 bit Linux
-- Node v0.10.x
+- Node v0.8.x or v0.10.x
 
 Just run:
 

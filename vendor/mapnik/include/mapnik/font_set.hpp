@@ -30,7 +30,7 @@
 #include <string>
 #include <vector>
 
-namespace mapnik
+namespace mapnik_fontnik
 {
 class MAPNIK_DECL font_set
 {
