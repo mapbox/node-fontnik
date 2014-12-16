@@ -156,4 +156,9 @@ describe('codepoints', function() {
         var cp = glyphs.codepoints('Open Sans Regular');
         assert.equal(cp.length, 882);
     });
+    it('invalid font face', function() {
+        var glyphs = new fontnik.Glyphs();
+        var cp = glyphs.codepoints('foo-bar-invalid');
+        assert.notOk(cp);
+    });
 });
