@@ -163,3 +163,10 @@ describe('codepoints', function() {
         });
     });
 });
+
+describe('faces', function() {
+    it('list faces', function() {
+        var faces = fontnik.faces();
+        assert.deepEqual(faces, ['Open Sans Regular']);
+    });
+});
