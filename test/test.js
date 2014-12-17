@@ -158,7 +158,8 @@ describe('codepoints', function() {
     });
     it('invalid font face', function() {
         var glyphs = new fontnik.Glyphs();
-        var cp = glyphs.codepoints('foo-bar-invalid');
-        assert.notOk(cp);
+        assert.throws(function() {
+            glyphs.codepoints('foo-bar-invalid');
+        });
     });
 });

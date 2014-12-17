@@ -146,16 +146,19 @@ NAN_METHOD(Glyphs::Codepoints) {
 
     v8::String::Utf8Value param1(args[0]->ToString());
     std::string from = std::string(*param1);
+    try {
+        std::vector<int> points = fontnik::Glyphs::Codepoints(from);
 
-    std::vector<int> points = fontnik::Glyphs::Codepoints(from);
+        v8::Handle<v8::Array> result = v8::Array::New(points.size());
 
-    v8::Handle<v8::Array> result = v8::Array::New(points.size());
-
-    for (size_t i = 0; i < points.size(); i++) {
-        result->Set(i, NanNew<v8::Number>(points[i]));
+        for (size_t i = 0; i < points.size(); i++) {
+            result->Set(i, NanNew<v8::Number>(points[i]));
+        }
+        NanReturnValue(result);
+    } catch (std::exception const& ex) {
+        return NanThrowTypeError(ex.what());
     }
-
-    NanReturnValue(result);
+    NanReturnUndefined();
 }
 
 void Glyphs::AsyncRange(uv_work_t* req) {
