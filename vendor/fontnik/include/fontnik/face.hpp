@@ -27,6 +27,8 @@
 #include <mapnik/text/glyph_info.hpp>
 
 // boost
+// undef B0 to workaround https://svn.boost.org/trac/boost/ticket/10467
+#undef B0
 #include <boost/geometry.hpp>
 #include <boost/geometry/geometries/point.hpp>
 #include <boost/geometry/geometries/box.hpp>
