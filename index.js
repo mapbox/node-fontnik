@@ -3,14 +3,6 @@ var path = require('path');
 var util = require('util');
 var fontnik = require('./lib/fontnik.node');
 
-// Fontnik directories must be set in the conf file prior to require.
-// Allow these to be passed in via FONTNIK_FONTS env var.
-var env_options = {};
-if (process.env.FONTNIK_FONTS) env_options.fonts = process.env.FONTNIK_FONTS.split(';');
-
-// Fontnik conf setup. Synchronous at require time.
-conf(env_options);
-
 module.exports = fontnik;
 module.exports.range = range;
 module.exports.getRange = getRange;
@@ -29,16 +21,6 @@ function range(options, callback) {
         var after = glyphs.serialize();
         zlib.gzip(after, callback);
     }
-}
-
-// Register fonts in FreeType.
-function conf(options) {
-    options = options || {};
-    options.fonts = options.fonts || [path.resolve(__dirname + '/fonts')];
-
-    options.fonts.forEach(function(d) {
-        fontnik.register_fonts(d, {recurse: true});
-    });
 }
 
 function getRange(start, end) {

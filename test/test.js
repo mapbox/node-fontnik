@@ -2,6 +2,7 @@ var fontnik = require('../index.js');
 var assert = require('assert');
 var zlib = require('zlib');
 var fs = require('fs');
+var path = require('path');
 var zdata = fs.readFileSync(__dirname + '/fixtures/range.0.256.pbf');
 var Protobuf = require('pbf');
 var Glyphs = require('./format/glyphs');
@@ -15,6 +16,8 @@ function jsonEqual(key, json) {
     if (UPDATE) fs.writeFileSync(__dirname + '/expected/'+key+'.json', JSON.stringify(json, null, 2));
     assert.deepEqual(json, require('./expected/'+key+'.json'));
 }
+
+fontnik.register_fonts(path.resolve(__dirname + '/../fonts/'), { recurse: true });
 
 describe('glyphs', function() {
     var data;
