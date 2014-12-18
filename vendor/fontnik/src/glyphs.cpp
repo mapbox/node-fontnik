@@ -146,8 +146,13 @@ std::vector<int> Glyphs::Codepoints(std::string fontstack)
             charcode = FT_Get_Next_Char(ft_face, charcode, &gindex);
             if (charcode != 0) points.push_back(charcode);
         }
-        break;
     }
+
+    // for font sets, eliminate duplicates of codepoints
+    // that are shared.
+    std::sort(points.begin(), points.end());
+    auto last = std::unique(points.begin(), points.end());
+    points.erase(last, points.end());
 
     return points;
 }
