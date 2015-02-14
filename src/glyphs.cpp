@@ -5,9 +5,6 @@
 #include <node_buffer.h>
 #include <nan.h>
 
-// DELETE
-#include <iostream>
-
 namespace node_fontnik
 {
 
