@@ -157,17 +157,21 @@ describe('codepoints', function() {
     it('basic scanning: open sans', function() {
         var glyphs = new fontnik.Glyphs();
         var cp = glyphs.codepoints('Open Sans Regular');
-        assert.equal(cp.length, 882);
+        assert.equal(cp.codepoints.length, 882);
+        assert.equal(cp.family_name, 'Open Sans');
+        assert.equal(cp.style_name, 'Regular');
     });
     it('basic scanning: fira sans', function() {
         var glyphs = new fontnik.Glyphs();
         var cp = glyphs.codepoints('Fira Sans Medium');
-        assert.equal(cp.length, 789);
+        assert.equal(cp.codepoints.length, 789);
+        assert.equal(cp.family_name, 'Fira Sans');
+        assert.equal(cp.style_name, 'Medium');
     });
     it('basic scanning: fira sans + open sans', function() {
         var glyphs = new fontnik.Glyphs();
         var cp = glyphs.codepoints('Fira Sans Medium, Open Sans Regular');
-        assert.equal(cp.length, 1021);
+        assert.equal(cp.codepoints.length, 1021);
     });
     it('invalid font face', function() {
         var glyphs = new fontnik.Glyphs();

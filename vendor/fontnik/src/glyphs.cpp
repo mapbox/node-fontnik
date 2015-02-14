@@ -119,7 +119,7 @@ void Glyphs::Range(std::string fontstack,
     }
 }
 
-std::vector<int> Glyphs::Codepoints(std::string fontstack)
+std::vector<int> Glyphs::Codepoints(std::string const& fontstack)
 {
     std::vector<int> points;
     mapnik_fontnik::freetype_engine font_engine_;
@@ -155,6 +155,34 @@ std::vector<int> Glyphs::Codepoints(std::string fontstack)
     points.erase(last, points.end());
 
     return points;
+}
+
+std::map<std::string, std::string> Glyphs::FontInfo(std::string const& fontstack)
+{
+    std::map<std::string, std::string> metadata;
+    mapnik_fontnik::freetype_engine font_engine_;
+    mapnik_fontnik::face_manager_freetype font_manager(font_engine_);
+
+    mapnik_fontnik::font_set font_set(fontstack);
+    std::stringstream stream(fontstack);
+    std::string face_name;
+
+    while (std::getline(stream, face_name, ',')) {
+        font_set.add_face_name(Trim(face_name, " \t"));
+    }
+
+    mapnik_fontnik::face_set_ptr face_set;
+
+    face_set = font_manager.get_face_set(font_set);
+    for (auto const& face : *face_set) {
+        FT_Face ft_face = face->get_face();
+        FT_String* family_name = ft_face->family_name;
+        FT_String* style_name = ft_face->style_name;
+        metadata.emplace("family_name", family_name);
+        metadata.emplace("style_name", style_name);
+    }
+
+    return metadata;
 }
 
 std::string Glyphs::Trim(std::string str, std::string whitespace)
