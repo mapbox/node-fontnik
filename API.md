@@ -33,16 +33,12 @@ Create a new Glyphs object.
 
 ### `glyphs.codepoints(face: string): Object`
 
-Gets an object with font metadata and unicode points where this font face[s] has
-coverage. Supports composited fonts. Returns an object with keys:
+Gets an object with font metadata and an array of numbers corresponding to
+unicode points where this font face[s] has coverage. Supports composited
+fonts. Returns an object with keys:
 
 * `faces: array[ Object{ face_name: string, style_name: string } ]`
 * `codepoints: array[number]`
-
-### `glyphs.codepoints(face: string): Array<number>`
-
-Get an array of numbers corresponding to unicode points where this font face
-has coverage.
 
 ### `glyphs.range(face: string, range: string, chars: Array<number>, callback: function)`
 
