@@ -157,9 +157,9 @@ std::vector<int> Glyphs::Codepoints(std::string const& fontstack)
     return points;
 }
 
-std::map<std::string, std::string> Glyphs::FontInfo(std::string const& fontstack)
+std::vector<std::map<std::string, std::string>> Glyphs::FontInfo(std::string const& fontstack)
 {
-    std::map<std::string, std::string> metadata;
+    std::vector<std::map<std::string, std::string>> faces;
     mapnik_fontnik::freetype_engine font_engine_;
     mapnik_fontnik::face_manager_freetype font_manager(font_engine_);
 
@@ -175,14 +175,16 @@ std::map<std::string, std::string> Glyphs::FontInfo(std::string const& fontstack
 
     face_set = font_manager.get_face_set(font_set);
     for (auto const& face : *face_set) {
+        std::map<std::string, std::string> metadata;
         FT_Face ft_face = face->get_face();
         FT_String* family_name = ft_face->family_name;
         FT_String* style_name = ft_face->style_name;
         metadata.emplace("family_name", family_name);
         metadata.emplace("style_name", style_name);
+        faces.push_back(metadata);
     }
 
-    return metadata;
+    return faces;
 }
 
 std::string Glyphs::Trim(std::string str, std::string whitespace)

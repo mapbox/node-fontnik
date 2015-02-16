@@ -43,7 +43,7 @@ public:
                std::vector<std::uint32_t> chars);
 
     static std::vector<int> Codepoints(std::string const& fontstack);
-    static std::map<std::string, std::string> FontInfo(std::string const& fontstack);
+    static std::vector<std::map<std::string, std::string>> FontInfo(std::string const& fontstack);
 
     static std::string Trim(std::string str, std::string whitespace);
 

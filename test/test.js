@@ -158,20 +158,26 @@ describe('codepoints', function() {
         var glyphs = new fontnik.Glyphs();
         var cp = glyphs.codepoints('Open Sans Regular');
         assert.equal(cp.codepoints.length, 882);
-        assert.equal(cp.family_name, 'Open Sans');
-        assert.equal(cp.style_name, 'Regular');
+        assert.equal(cp.faces.length, 1);
+        assert.equal(cp.faces[0].family_name, 'Open Sans');
+        assert.equal(cp.faces[0].style_name, 'Regular');
     });
     it('basic scanning: fira sans', function() {
         var glyphs = new fontnik.Glyphs();
         var cp = glyphs.codepoints('Fira Sans Medium');
         assert.equal(cp.codepoints.length, 789);
-        assert.equal(cp.family_name, 'Fira Sans');
-        assert.equal(cp.style_name, 'Medium');
+        assert.equal(cp.faces[0].family_name, 'Fira Sans');
+        assert.equal(cp.faces[0].style_name, 'Medium');
     });
     it('basic scanning: fira sans + open sans', function() {
         var glyphs = new fontnik.Glyphs();
         var cp = glyphs.codepoints('Fira Sans Medium, Open Sans Regular');
         assert.equal(cp.codepoints.length, 1021);
+        assert.equal(cp.faces.length, 2);
+        assert.equal(cp.faces[0].family_name, 'Fira Sans');
+        assert.equal(cp.faces[0].style_name, 'Medium');
+        assert.equal(cp.faces[1].family_name, 'Open Sans');
+        assert.equal(cp.faces[1].style_name, 'Regular');
     });
     it('invalid font face', function() {
         var glyphs = new fontnik.Glyphs();
