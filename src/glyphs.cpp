@@ -148,12 +148,29 @@ NAN_METHOD(Glyphs::Codepoints) {
     std::string from = std::string(*param1);
     try {
         std::vector<int> points = fontnik::Glyphs::Codepoints(from);
+        std::vector<std::map<std::string, std::string>> metadata = fontnik::Glyphs::FontInfo(from);
 
-        v8::Handle<v8::Array> result = v8::Array::New(points.size());
+        v8::Handle<v8::Array> resultFaces = v8::Array::New(metadata.size());
+
+        for (size_t i = 0; i < metadata.size(); i++) {
+            std::map<std::string, std::string> facedata = metadata[i];
+            v8::Handle<v8::Object> face = v8::Object::New();
+            face->Set(NanNew<v8::String>("family_name"), NanNew<v8::String>(facedata["family_name"].c_str()));
+            face->Set(NanNew<v8::String>("style_name"), NanNew<v8::String>(facedata["style_name"].c_str()));
+            resultFaces->Set(i, face);
+        }
+
+        v8::Handle<v8::Array> resultPoints = v8::Array::New(points.size());
 
         for (size_t i = 0; i < points.size(); i++) {
-            result->Set(i, NanNew<v8::Number>(points[i]));
+            resultPoints->Set(i, NanNew<v8::Number>(points[i]));
         }
+
+        v8::Handle<v8::Object> result = v8::Object::New();
+
+        result->Set(NanNew<v8::String>("faces"), resultFaces);
+        result->Set(NanNew<v8::String>("codepoints"), resultPoints);
+
         NanReturnValue(result);
     } catch (std::exception const& ex) {
         return NanThrowTypeError(ex.what());
