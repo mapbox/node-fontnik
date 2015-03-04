@@ -63,7 +63,7 @@ Glyphs.prototype.readGlyph = function() {
         if (tag == 1) {
             glyph.id = buffer.readVarint();
         } else if (tag == 2) {
-            glyph.bitmap = buffer.readBuffer();
+            glyph.bitmap = buffer.readBytes();
         } else if (tag == 3) {
             glyph.width = buffer.readVarint();
         } else if (tag == 4) {
