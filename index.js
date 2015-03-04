@@ -24,10 +24,10 @@ function range(options, callback) {
 }
 
 function getRange(start, end) {
-    if (typeof start !== 'number') throw new Error('start must be a number from 0-65533');
-    if (start < 0) throw new Error('start must be a number from 0-65533');
-    if (typeof end !== 'number') throw new Error('end must be a number from 0-65533');
-    if (end > 65533) throw new Error('end must be a number from 0-65533');
+    if (typeof start !== 'number') throw new Error('start must be a number from 0-65535');
+    if (start < 0) throw new Error('start must be a number from 0-65535');
+    if (typeof end !== 'number') throw new Error('end must be a number from 0-65535');
+    if (end > 65535) throw new Error('end must be a number from 0-65535');
     if (start > end) throw new Error('start must be less than or equal to end');
     var range = [];
     for (var i = start; i <= end; i++) range.push(i);

@@ -135,7 +135,7 @@ describe('glyphs', function() {
     it('getRange error start < 0', function() {
         assert.throws(function() {
             fontnik.getRange(-128, 256);
-        }, 'Error: start must be a number from 0-65533');
+        }, 'Error: start must be a number from 0-65535');
     });
 
     // Should error because end < start
@@ -145,11 +145,11 @@ describe('glyphs', function() {
         }, 'Error: start must be less than or equal to end');
     });
 
-    // Should error because end > 65533
-    it('getRange error end > 65533', function() {
+    // Should error because end > 65535
+    it('getRange error end > 65535', function() {
         assert.throws(function() {
-            fontnik.getRange(0, 65534);
-        }, 'Error: end must be a number from 0-65533');
+            fontnik.getRange(0, 65536);
+        }, 'Error: end must be a number from 0-65535');
     });
 });
 

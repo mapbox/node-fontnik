@@ -32,7 +32,7 @@
     "node-pre-gyp"
   ],
   "devDependencies": {
-    "mocha": "1.21.4",
+    "mocha": "^2.1.0",
     "pbf": "0.0.2"
   },
   "bin": {
