@@ -10,8 +10,7 @@ module.exports.getRange = getRange;
 // Retrieve a range of glyphs as a pbf.
 function range(options, callback) {
     'use strict';
-    options = options || {};
-    options.fontstack = options.fontstack || 'Open Sans Regular';
+    if (!options || typeof options.fontstack !== 'string') throw new Error('options.fontstack must be a string');
 
     var glyphs = new fontnik.Glyphs();
     glyphs.range(options.fontstack, options.start + '-' + options.end, getRange(options.start, options.end), gzip);
@@ -33,4 +32,3 @@ function getRange(start, end) {
     for (var i = start; i <= end; i++) range.push(i);
     return range;
 }
-
