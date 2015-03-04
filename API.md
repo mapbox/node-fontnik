@@ -20,8 +20,8 @@ Configure node-fontnik.
 
 ### `getRange(start: number, end: number): Array<number>`
 
-Generate an array of the numbers from `start` to `end`. Numbers must be
-in order and both less than 65533.
+Generate an array of the numbers from `start` to `end`. `start` must be 
+less than `end` and both numbers must be in the inclusive range 0 to 65535.
 
 ### `faces(): Array<string>`
 

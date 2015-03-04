@@ -24,11 +24,11 @@ if (!fs.existsSync(dir)) {
 
 var q = queue(Math.max(4, require('os').cpus()));
 var queue = [];
-for (var i = 0; i < 65534; (i = i + 256)) {
+for (var i = 0; i < 65536; (i = i + 256)) {
     q.defer(writeGlyphs, {
         fontstack: fontstack,
         start: i,
-        end: Math.min(i + 255, 65533)
+        end: Math.min(i + 255, 65535)
     });
 }
 
