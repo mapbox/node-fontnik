@@ -23,6 +23,7 @@ protected:
     static NAN_METHOD(Serialize);
     static NAN_METHOD(Range);
     static NAN_METHOD(Codepoints);
+    static NAN_METHOD(Load);
     static void AsyncRange(uv_work_t* req);
     static void RangeAfter(uv_work_t* req);
 

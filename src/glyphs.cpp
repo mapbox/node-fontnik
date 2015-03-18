@@ -161,6 +161,52 @@ NAN_METHOD(Glyphs::Codepoints) {
     NanReturnUndefined();
 }
 
+struct LoadBaton {
+    v8::Persistent<v8::Function> callback;
+    std::string file_name;
+    std::string error_name;
+    uv_work_t request;
+    LoadBaton() :
+      file_name(),
+      error_name() {}
+};
+
+
+NAN_METHOD(Glyphs::Load) {
+    NanScope();
+
+    // Validate arguments.
+    // args[0]?
+    if (args.Length() < 2 || !args[1]->IsFunction()) {
+        return NanThrowTypeError("callback must be a function");
+    }
+
+    v8::Local<v8::Function> cb = args[1].As<v8::Function>();
+
+    LoadBaton* baton = new LoadBaton();
+
+    baton->request.data = baton;
+    NanAssignPersistent(baton->cb, cb.As<Function>());
+
+    uv_queue_work(uv_default_loop(), &cb->request, LoadAsync, (uv_after_work_cb)AfterLoad);
+    NanReturnUndefined();
+}
+
+void LoadAsync(uv_work_t* req) {
+    LoadBaton* baton = static_cast<LoadBaton*>(req->data);
+
+    FT_Library library = nullptr;
+    FT_Error error = FT_Init_FreeType(&library);
+    if (error) {
+        baton->error_name = std::string("could not open FreeType library");
+        return;
+    }
+};
+
+void AfterLoad(uv_work_t* req) {
+
+};
+
 void Glyphs::AsyncRange(uv_work_t* req) {
     RangeBaton* baton = static_cast<RangeBaton*>(req->data);
 
