@@ -184,7 +184,6 @@ struct LoadBaton {
     v8::Persistent<v8::Function> callback;
     std::string file_name;
     std::string error_name;
-    bool error;
     std::vector<FaceMetadata> faces;
     uv_work_t request;
     LoadBaton() :
@@ -222,7 +221,6 @@ void LoadAsync(uv_work_t* req) {
     FT_Library library = nullptr;
     FT_Error error = FT_Init_FreeType(&library);
     if (error) {
-        baton->error = true;
         baton->error_name = std::string("could not open FreeType library");
         return;
     }
@@ -264,29 +262,15 @@ void AfterLoad(uv_work_t* req) {
     NanScope();
     LoadBaton* baton = static_cast<LoadBaton*>(req->data);
 
-    const unsigned argc = 1;
-
-    v8::TryCatch try_catch;
-    v8::Local<v8::Context> ctx = NanGetCurrentContext();
-
-    if (baton->error) {
-        v8::Local<v8::Value> argv[argc] = {
-            v8::Exception::Error(NanNew<v8::String>(baton->error_name.c_str()))
-        };
-        baton->callback->Call(ctx->Global(), argc, argv);
+    if (!baton->error_name.empty()) {
+        v8::Local<v8::Value> argv[1] = { NanError(baton->error_name.c_str()) };
+        NanMakeCallback(NanGetCurrentContext()->Global(), NanNew(baton->callback), 1, argv);
     } else {
-        v8::Local<v8::Value> argv[argc] = {
-            NanNull()
-        };
-        baton->callback->Call(ctx->Global(), argc, argv);
+        v8::Local<v8::Value> argv[2] = { NanNull(), NanNull() /* todo return custom object */ };
+        NanMakeCallback(NanGetCurrentContext()->Global(), NanNew(baton->callback), 2, argv);
     }
 
-    if (try_catch.HasCaught()) {
-        node::FatalException(try_catch);
-    }
-
-    baton->callback.Dispose();
-
+    NanDisposePersistent(baton->callback);
     delete baton;
 };
 
