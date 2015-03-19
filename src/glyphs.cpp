@@ -288,7 +288,6 @@ void AfterLoad(uv_work_t* req) {
     baton->callback.Dispose();
 
     delete baton;
-    delete req;
 };
 
 void Glyphs::AsyncRange(uv_work_t* req) {
