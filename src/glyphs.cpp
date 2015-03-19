@@ -58,7 +58,8 @@ void Glyphs::Init(v8::Handle<v8::Object> target) {
 
     // This has to be last, otherwise the properties won't show up on the
     // object in JavaScript.
-    target->Set(name, constructor->GetFunction());
+    target->Set(name, tpl->GetFunction());
+    NanAssignPersistent(constructor, tpl);
 }
 
 NAN_METHOD(Glyphs::New) {
@@ -87,7 +88,7 @@ NAN_METHOD(Glyphs::New) {
 
 bool Glyphs::HasInstance(v8::Handle<v8::Value> val) {
     if (!val->IsObject()) return false;
-    return constructor->HasInstance(val->ToObject());
+    return NanNew(constructor)->HasInstance(val->ToObject());
 }
 
 NAN_METHOD(Glyphs::Serialize) {
@@ -130,7 +131,7 @@ NAN_METHOD(Glyphs::Range) {
     Glyphs *glyphs = node::ObjectWrap::Unwrap<Glyphs>(args.This());
 
     RangeBaton* baton = new RangeBaton();
-    baton->callback = v8::Persistent<v8::Function>::New(callback);
+    NanAssignPersistent(baton->callback, callback.As<v8::Function>());
     baton->glyphs = glyphs;
     baton->fontstack = *fontstack;
     baton->range = *range;
@@ -158,7 +159,7 @@ NAN_METHOD(Glyphs::Codepoints) {
     try {
         std::vector<int> points = fontnik::Glyphs::Codepoints(from);
 
-        v8::Handle<v8::Array> result = v8::Array::New(points.size());
+        v8::Handle<v8::Array> result = NanNew<v8::Array>(points.size());
 
         for (size_t i = 0; i < points.size(); i++) {
             result->Set(i, NanNew<v8::Number>(points[i]));
@@ -304,31 +305,16 @@ void Glyphs::RangeAfter(uv_work_t* req) {
     NanScope();
     RangeBaton* baton = static_cast<RangeBaton*>(req->data);
 
-    const unsigned argc = 1;
-
-    v8::TryCatch try_catch;
-    v8::Local<v8::Context> ctx = NanGetCurrentContext();
-
-    if (baton->error) {
-        v8::Local<v8::Value> argv[argc] = {
-            v8::Exception::Error(NanNew<v8::String>(baton->error_name.c_str()))
-        };
-        baton->callback->Call(ctx->Global(), argc, argv);
+    if (!baton->error_name.empty()) {
+        v8::Local<v8::Value> argv[1] = { NanError(baton->error_name.c_str()) };
+        NanMakeCallback(NanGetCurrentContext()->Global(), NanNew(baton->callback), 1, argv);
     } else {
-        v8::Local<v8::Value> argv[argc] = {
-            NanNull()
-        };
-        baton->callback->Call(ctx->Global(), argc, argv);
+        v8::Local<v8::Value> argv[1] = { NanNull() };
+        NanMakeCallback(NanGetCurrentContext()->Global(), NanNew(baton->callback), 1, argv);
     }
 
-    if (try_catch.HasCaught()) {
-        node::FatalException(try_catch);
-    }
-
-    baton->callback.Dispose();
-
+    NanDisposePersistent(baton->callback);
     delete baton;
-    delete req;
 }
 
 } // ns node_fontnik

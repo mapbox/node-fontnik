@@ -24,7 +24,7 @@
   ],
   "dependencies": {
     "minimist": "^0.2.0",
-    "nan": "^1.2.0",
+    "nan": "^1.7.0",
     "node-pre-gyp": "~0.6.4",
     "queue-async": "^1.0.7"
   },
