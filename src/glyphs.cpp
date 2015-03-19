@@ -198,7 +198,7 @@ NAN_METHOD(Load) {
 
     // Validate arguments.
     if (!args[0]->IsString()) {
-        return NanThrowTypeError("");
+        return NanThrowTypeError("First argument must be a path to a font");
     }
     if (args.Length() < 2 || !args[1]->IsFunction()) {
         return NanThrowTypeError("callback must be a function");
@@ -207,6 +207,7 @@ NAN_METHOD(Load) {
     v8::Local<v8::Function> callback = args[1].As<v8::Function>();
 
     LoadBaton* baton = new LoadBaton();
+    baton->file_name = *NanUtf8String(args[0]);
 
     baton->request.data = baton;
     NanAssignPersistent(baton->callback, callback.As<v8::Function>());
