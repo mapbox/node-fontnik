@@ -25,7 +25,7 @@
   "dependencies": {
     "minimist": "^0.2.0",
     "nan": "^1.2.0",
-    "node-pre-gyp": "^0.5.31",
+    "node-pre-gyp": "~0.6.4",
     "queue-async": "^1.0.7"
   },
   "bundledDependencies": [
