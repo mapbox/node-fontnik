@@ -224,7 +224,6 @@ void LoadAsync(uv_work_t* req) {
         baton->error_name = std::string("could not open FreeType library");
         return;
     }
-    std::vector<FaceMetadata> faces;
     FT_Face ft_face = 0;
     int num_faces = 0;
     for ( int i = 0; ft_face == 0 || i < num_faces; ++i )
@@ -254,12 +253,11 @@ void LoadAsync(uv_work_t* req) {
         face.family_name = ft_face->family_name;
         face.style_name = ft_face->style_name;
 
-        faces.push_back(std::move(face));
+        baton->faces.push_back(std::move(face));
         if (ft_face) {
             FT_Done_Face(ft_face);
         }
     }
-    baton->faces = std::move(faces);
     FT_Done_FreeType(library);
 
 };
@@ -272,7 +270,21 @@ void AfterLoad(uv_work_t* req) {
         v8::Local<v8::Value> argv[1] = { NanError(baton->error_name.c_str()) };
         NanMakeCallback(NanGetCurrentContext()->Global(), NanNew(baton->callback), 1, argv);
     } else {
-        v8::Local<v8::Value> argv[2] = { NanNull(), NanNull() /* todo return custom object */ };
+        v8::Local<v8::Array> js_faces = NanNew<v8::Array>();
+        unsigned idx = 0;
+        for (auto const& face : baton->faces) {
+            v8::Local<v8::Object> js_face = NanNew<v8::Object>();
+            js_face->Set(NanNew("family_name"),NanNew(face.family_name));
+            js_face->Set(NanNew("style_name"),NanNew(face.style_name));
+            v8::Local<v8::Array> js_points = NanNew<v8::Array>(face.points.size());
+            unsigned p_idx = 0;
+            for (auto const& pt : face.points) {
+                js_points->Set(p_idx++,NanNew(pt));
+            }
+            js_face->Set(NanNew("points"),js_points);
+            js_faces->Set(idx++,js_face);
+        }
+        v8::Local<v8::Value> argv[2] = { NanNull(), js_faces };
         NanMakeCallback(NanGetCurrentContext()->Global(), NanNew(baton->callback), 2, argv);
     }
 
