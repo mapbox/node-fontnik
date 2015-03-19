@@ -224,17 +224,20 @@ void LoadAsync(uv_work_t* req) {
         baton->error_name = std::string("could not open FreeType library");
         return;
     }
-
     std::vector<FaceMetadata> faces;
-    FaceMetadata face;
-    std::vector<int> points;
-
-    FT_Face ft_face = nullptr;
-
-    FT_New_Face(library, baton->file_name.c_str(), 0, &ft_face);
-
-    for ( int i = 0; ft_face == 0 || i < ft_face->num_faces; ++i )
+    FT_Face ft_face = 0;
+    int num_faces = 0;
+    for ( int i = 0; ft_face == 0 || i < num_faces; ++i )
     {
+        FT_Error face_error = FT_New_Face(library, baton->file_name.c_str(), i, &ft_face);
+        if (face_error) {
+            baton->error_name = std::string("could not open Face") + baton->file_name;
+            return;
+        }
+        FaceMetadata face;
+        std::vector<int> points;
+        if (num_faces == 0)
+            num_faces = ft_face->num_faces;
         FT_ULong charcode;
         FT_UInt gindex;
         charcode = FT_Get_First_Char(ft_face, &gindex);
@@ -242,6 +245,7 @@ void LoadAsync(uv_work_t* req) {
             charcode = FT_Get_Next_Char(ft_face, charcode, &gindex);
             if (charcode != 0) points.push_back(charcode);
         }
+
         std::sort(points.begin(), points.end());
         auto last = std::unique(points.begin(), points.end());
         points.erase(last, points.end());
@@ -251,11 +255,13 @@ void LoadAsync(uv_work_t* req) {
         face.style_name = ft_face->style_name;
 
         faces.push_back(std::move(face));
+        if (ft_face) {
+            FT_Done_Face(ft_face);
+        }
     }
-
     baton->faces = std::move(faces);
+    FT_Done_FreeType(library);
 
-    FT_Done_Face(ft_face);
 };
 
 void AfterLoad(uv_work_t* req) {
