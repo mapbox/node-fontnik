@@ -5,6 +5,15 @@
 #include <node_buffer.h>
 #include <nan.h>
 
+// freetype2
+extern "C"
+{
+#include <ft2build.h>
+#include FT_FREETYPE_H
+#include FT_GLYPH_H
+#include FT_OUTLINE_H
+}
+
 namespace node_fontnik
 {
 
@@ -161,34 +170,48 @@ NAN_METHOD(Glyphs::Codepoints) {
     NanReturnUndefined();
 }
 
+struct FaceMetadata {
+    std::string family_name;
+    std::string style_name;
+    std::vector<int> points;
+    FaceMetadata() :
+        family_name(),
+        style_name(),
+        points() {}
+};
+
 struct LoadBaton {
     v8::Persistent<v8::Function> callback;
     std::string file_name;
     std::string error_name;
+    bool error;
+    std::vector<FaceMetadata> faces;
     uv_work_t request;
     LoadBaton() :
-      file_name(),
-      error_name() {}
+        file_name(),
+        error_name(),
+        faces() {}
 };
 
-
-NAN_METHOD(Glyphs::Load) {
+NAN_METHOD(Load) {
     NanScope();
 
     // Validate arguments.
-    // args[0]?
+    if (!args[0]->IsString()) {
+        return NanThrowTypeError("");
+    }
     if (args.Length() < 2 || !args[1]->IsFunction()) {
         return NanThrowTypeError("callback must be a function");
     }
 
-    v8::Local<v8::Function> cb = args[1].As<v8::Function>();
+    v8::Local<v8::Function> callback = args[1].As<v8::Function>();
 
     LoadBaton* baton = new LoadBaton();
 
     baton->request.data = baton;
-    NanAssignPersistent(baton->cb, cb.As<Function>());
+    NanAssignPersistent(baton->callback, callback.As<v8::Function>());
 
-    uv_queue_work(uv_default_loop(), &cb->request, LoadAsync, (uv_after_work_cb)AfterLoad);
+    uv_queue_work(uv_default_loop(), &baton->request, LoadAsync, (uv_after_work_cb)AfterLoad);
     NanReturnUndefined();
 }
 
@@ -198,13 +221,73 @@ void LoadAsync(uv_work_t* req) {
     FT_Library library = nullptr;
     FT_Error error = FT_Init_FreeType(&library);
     if (error) {
+        baton->error = true;
         baton->error_name = std::string("could not open FreeType library");
         return;
     }
+
+    std::vector<FaceMetadata> faces;
+    FaceMetadata face;
+    std::vector<int> points;
+
+    FT_Face ft_face = nullptr;
+
+    FT_New_Face(library, baton->file_name.c_str(), 0, &ft_face);
+
+    for ( int i = 0; ft_face == 0 || i < ft_face->num_faces; ++i )
+    {
+        FT_ULong charcode;
+        FT_UInt gindex;
+        charcode = FT_Get_First_Char(ft_face, &gindex);
+        while (gindex != 0) {
+            charcode = FT_Get_Next_Char(ft_face, charcode, &gindex);
+            if (charcode != 0) points.push_back(charcode);
+        }
+        std::sort(points.begin(), points.end());
+        auto last = std::unique(points.begin(), points.end());
+        points.erase(last, points.end());
+
+        face.points = std::move(points);
+        face.family_name = ft_face->family_name;
+        face.style_name = ft_face->style_name;
+
+        faces.push_back(std::move(face));
+    }
+
+    baton->faces = std::move(faces);
+
+    FT_Done_Face(ft_face);
 };
 
 void AfterLoad(uv_work_t* req) {
+    NanScope();
+    LoadBaton* baton = static_cast<LoadBaton*>(req->data);
 
+    const unsigned argc = 1;
+
+    v8::TryCatch try_catch;
+    v8::Local<v8::Context> ctx = NanGetCurrentContext();
+
+    if (baton->error) {
+        v8::Local<v8::Value> argv[argc] = {
+            v8::Exception::Error(NanNew<v8::String>(baton->error_name.c_str()))
+        };
+        baton->callback->Call(ctx->Global(), argc, argv);
+    } else {
+        v8::Local<v8::Value> argv[argc] = {
+            NanNull()
+        };
+        baton->callback->Call(ctx->Global(), argc, argv);
+    }
+
+    if (try_catch.HasCaught()) {
+        node::FatalException(try_catch);
+    }
+
+    baton->callback.Dispose();
+
+    delete baton;
+    delete req;
 };
 
 void Glyphs::AsyncRange(uv_work_t* req) {

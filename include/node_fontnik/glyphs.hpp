@@ -20,15 +20,18 @@ protected:
     ~Glyphs();
 
     static NAN_METHOD(New);
-    static NAN_METHOD(Serialize);
     static NAN_METHOD(Range);
-    static NAN_METHOD(Codepoints);
-    static NAN_METHOD(Load);
     static void AsyncRange(uv_work_t* req);
     static void RangeAfter(uv_work_t* req);
+    static NAN_METHOD(Serialize);
+    static NAN_METHOD(Codepoints);
 
     fontnik::Glyphs glyphs;
 };
+
+NAN_METHOD(Load);
+void LoadAsync(uv_work_t* req);
+void AfterLoad(uv_work_t* req);
 
 } // ns node_fontnik
 
