@@ -185,11 +185,13 @@ var UPDATE = process.env.UPDATE;
 // });
 
 describe('load', function() {
-    it('loads', function() {
+    it('loads', function(done) {
         var firasans = path.resolve(__dirname + '/../fonts/firasans-medium/FiraSans-Medium.ttf');
+        assert.ok(fs.existsSync(firasans));
         fontnik.load(firasans, function(err, res) {
             console.log(err, res);
             assert.ifError(err);
+            done();
         });
     });
 });
