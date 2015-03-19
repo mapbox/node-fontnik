@@ -1,29 +1,44 @@
 language: cpp
+
 os:
 - linux
 - osx
+
 compiler:
 - clang
 - gcc
+
 env:
   matrix:
-  - NODE_NVM_VERSION="0.8.26"
-  - NODE_NVM_VERSION="0.10"
+  - NODE_VERSION="0.10.37"
+  - NODE_VERSION="0.12.0"
   global:
   - BUILD: '/tmp/fontnik-build'
   - PKG_CONFIG_PATH: '/tmp/fontnik-build/lib/pkgconfig'
   - secure: "XV0lekmfgT+D9t0ZTIU+UJF6g+p3cBQMO6T6C9lkoKTC0YbtLtxSFtBahD/4PjL86DMJgTaf1nBmxqOxbrfkcpJUxnLe3r8u4Z2L/+7+QSACLNktlIfWNSO+33WxKNb4mVw6jMFZIo4ZurF016MXYzLzjpxRELW2oO2STUs2m44="
   - secure: "CQNHbxw8yHlAdUVbKokHzHmj7C+duXP3mifWOkZm9GKw4myWsRFhhoSYZmOSkgj9EWfYYkedrqEr9+GaMg9rkVJuO/7jzn6S+M7CFXKJju6MoZEDO6WcFva4M8pw6IFb9q22GcQ+OsE8/i0DwchTokyFkNb3fpwWuwROUPQ/nWg="
+
 before_install:
-- export platform=$(uname -s | sed "y/ABCDEFGHIJKLMNOPQRSTUVWXYZ/abcdefghijklmnopqrstuvwxyz/")
-- export PATH="$BUILD/bin:$PATH"
-- if [[ "$platform" == "linux" ]]; then export CXX=g++-4.8; export CC=gcc-4.8; fi
-- ./deps/nvm_install.sh
-- ./deps/travis_build.sh
+ - export platform=$(uname -s | sed "y/ABCDEFGHIJKLMNOPQRSTUVWXYZ/abcdefghijklmnopqrstuvwxyz/")
+ # here we set up the node version on the fly based on the matrix value.
+ # This is done manually so that it is easy to flip the 'language' to
+ # objective-c in another branch (to run the same travis.yml on OS X)
+ - git clone https://github.com/creationix/nvm.git ../.nvm
+ - source ../.nvm/nvm.sh
+ - nvm install $NODE_VERSION
+ - nvm use $NODE_VERSION
+ - node --version
+ - npm --version
+ - export PATH="$BUILD/bin:$PATH"
+ - if [[ "$platform" == "linux" ]]; then export CXX=g++-4.8; export CC=gcc-4.8; fi
+ - ./deps/travis_build.sh
+
 install:
-- npm install --build-from-source
+ - npm install --build-from-source
+
 script:
-- npm test
+ - npm test
+
 after_success:
-- ./deps/travis_publish.sh
+ - ./deps/travis_publish.sh
 
