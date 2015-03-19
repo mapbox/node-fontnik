@@ -174,10 +174,12 @@ struct FaceMetadata {
     std::string family_name;
     std::string style_name;
     std::vector<int> points;
-    FaceMetadata() :
-        family_name(),
-        style_name(),
-        points() {}
+    FaceMetadata(std::string const& _family_name,
+                 std::string const& _style_name,
+                 std::vector<int> && _points) :
+        family_name(_family_name),
+        style_name(_style_name),
+        points(std::move(_points)) {}
 };
 
 struct LoadBaton {
@@ -233,7 +235,6 @@ void LoadAsync(uv_work_t* req) {
             baton->error_name = std::string("could not open Face") + baton->file_name;
             return;
         }
-        FaceMetadata face;
         std::vector<int> points;
         if (num_faces == 0)
             num_faces = ft_face->num_faces;
@@ -242,18 +243,13 @@ void LoadAsync(uv_work_t* req) {
         charcode = FT_Get_First_Char(ft_face, &gindex);
         while (gindex != 0) {
             charcode = FT_Get_Next_Char(ft_face, charcode, &gindex);
-            if (charcode != 0) points.push_back(charcode);
+            if (charcode != 0) points.emplace_back(charcode);
         }
 
         std::sort(points.begin(), points.end());
         auto last = std::unique(points.begin(), points.end());
         points.erase(last, points.end());
-
-        face.points = std::move(points);
-        face.family_name = ft_face->family_name;
-        face.style_name = ft_face->style_name;
-
-        baton->faces.push_back(std::move(face));
+        baton->faces.emplace_back(ft_face->family_name,ft_face->style_name,std::move(points));
         if (ft_face) {
             FT_Done_Face(ft_face);
         }
