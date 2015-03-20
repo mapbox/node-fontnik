@@ -35,7 +35,6 @@ struct glyph_info
 {
    glyph_info()
        : glyph_index(0),
-        //  face(nullptr),
          bitmap(""),
          char_index(0),
          left(0),
@@ -47,7 +46,6 @@ struct glyph_info
          ascender(0.0),
          descender(0.0) {}
    unsigned glyph_index;
-   // fontnik::face_ptr face;
    std::string bitmap;
    // Position in the string of all characters i.e. before itemizing
    unsigned char_index;

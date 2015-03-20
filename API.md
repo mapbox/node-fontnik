@@ -1,8 +1,13 @@
 ## `fontnik`
 
-### `range(fontpath: string, start: number, end: number, callback: function)`
+### `range(options: object, callback: function)`
 
-Get a range of glyphs as a protocol buffer. `fontpath` is the path to a font file on disk.
+Get a range of glyphs as a protocol buffer. `options` is an object with options:
+* `file: string`
+* `start: number`
+* `end: number`
+
+`file` is the path to a font file on disk.]
 
 ### `load(fontpath: string, callback: function)`
 

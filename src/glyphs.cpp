@@ -101,33 +101,45 @@ NAN_METHOD(Range) {
     NanScope();
 
     // Validate arguments.
-    if (args.Length() < 1 || !args[0]->IsString()) {
-        return NanThrowTypeError("First argument must be a path to a font");
+    if (args.Length() < 1 || !args[0]->IsObject()) {
+        return NanThrowTypeError("First argument must be an object of options");
     }
 
-    if (args.Length() < 2 || !args[1]->IsNumber() || args[1]->IntegerValue() < 0) {
-        return NanThrowTypeError("Second argument 'start' must be a number from 0-65535");
+    v8::Local<v8::Object> options = args[0].As<v8::Object>();
+    v8::Local<v8::Value> file_name = options->Get(NanNew<v8::String>("file"));
+    v8::Local<v8::Value> start = options->Get(NanNew<v8::String>("start"));
+    v8::Local<v8::Value> end = options->Get(NanNew<v8::String>("end"));
+
+    if (!file_name->IsString()) {
+        return NanThrowTypeError("option `file` must be a path to a font");
+    }
+    std::string filename = *NanUtf8String(file_name);
+    if (filename.empty()) {
+        return NanThrowTypeError("option `file` cannot be empty");
     }
 
-    if (args.Length() < 3 || !args[2]->IsNumber() || args[2]->IntegerValue() > 65535) {
-        return NanThrowTypeError("Third argument 'end' must be a number from 0-65535");
+    if (!start->IsNumber() || start->IntegerValue() < 0) {
+        return NanThrowTypeError("option `start` must be a number from 0-65535");
     }
 
-    if (args[2]->IntegerValue() < args[1]->IntegerValue()) {
-        return NanThrowTypeError("Start must be less than or equal to end");
+    if (!end->IsNumber() || end->IntegerValue() > 65535) {
+        return NanThrowTypeError("option `end` must be a number from 0-65535");
     }
 
-    if (args.Length() < 4 || !args[3]->IsFunction()) {
+    if (end->IntegerValue() < start->IntegerValue()) {
+        return NanThrowTypeError("`start` must be less than or equal to `end`");
+    }
+
+    RangeBaton* baton = new RangeBaton();
+    baton->file_name = std::move(filename);
+    baton->start = start->IntegerValue();
+    baton->end = end->IntegerValue();
+
+    if (args.Length() < 2 || !args[1]->IsFunction()) {
         return NanThrowTypeError("Callback must be a function");
     }
 
-    v8::Local<v8::Function> callback = args[3].As<v8::Function>();
-
-    RangeBaton* baton = new RangeBaton();
-    baton->file_name = *NanUtf8String(args[0]);
-
-    baton->start = args[1]->IntegerValue();
-    baton->end = args[2]->IntegerValue();
+    v8::Local<v8::Function> callback = args[1].As<v8::Function>();
 
     unsigned array_size = baton->end - baton->start;
     for (unsigned i=baton->start; i <= array_size; i++) {
@@ -248,8 +260,8 @@ void RangeAsync(uv_work_t* req) {
         double size = 24 * scale_factor;
         FT_Set_Char_Size(ft_face,0,(FT_F26Dot6)(size * (1<<6)),0,0);
 
-        for (std::vector<uint32_t>::size_type i = 0; i != baton->chars.size(); i++) {
-            FT_ULong char_code = baton->chars[i];
+        for (std::vector<uint32_t>::size_type x = 0; x != baton->chars.size(); x++) {
+            FT_ULong char_code = baton->chars[x];
             glyph_info glyph;
 
             // Get FreeType face from face_ptr.

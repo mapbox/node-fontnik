@@ -77,7 +77,7 @@ describe('range', function() {
 
     it('ranges', function(done) {
         this.timeout(10000);
-        fontnik.range(opensans, 0, 256, function(err, res) {
+        fontnik.range({file: opensans, start: 0, end: 256}, function(err, res) {
             assert.ifError(err);
             assert.ok(res);
             assert.deepEqual(res, data);
@@ -90,16 +90,24 @@ describe('range', function() {
 
     it('longrange', function(done) {
         this.timeout(10000);
-        fontnik.range(opensans, 0, 1024, function(err, data) {
+        fontnik.range({file: opensans, start: 0, end: 1024}, function(err, data) {
             assert.ifError(err);
             assert.ok(data);
             done();
         });
     });
 
+
+    it('range typeerror options', function(done) {
+        assert.throws(function() {
+            fontnik.range(opensans, function(err, data) {});
+        }, /First argument must be an object of options/);
+        done();
+    });
+
     it('range filepath does not exist', function(done) {
         var doesnotexistsans = opensans.replace('Regular','baloney');
-        fontnik.range(doesnotexistsans, 0, 256, function(err, faces) {
+        fontnik.range({file: doesnotexistsans, start: 0, end: 256}, function(err, faces) {
             assert.ok(err.message.indexOf('could not open face'));
             done();
         });
@@ -107,44 +115,44 @@ describe('range', function() {
 
     it('range typeerror filepath', function(done) {
         assert.throws(function() {
-            fontnik.range(12, 0, 256, function(err, data) {});
-        }, /First argument must be a path to a font/);
+            fontnik.range({file: 12, start: 0, end: 256}, function(err, data) {});
+        }, /option `file` must be a path to a font/);
         done();
     });
 
     it('range typeerror start', function(done) {
         assert.throws(function() {
-            fontnik.range(opensans, 'x', 256, function(err, data) {});
-        }, /Second argument 'start' must be a number from 0-65535/);
+            fontnik.range({file: opensans, start: 'x', end: 256}, function(err, data) {});
+        }, /option `start` must be a number from 0-65535/);
         assert.throws(function() {
-            fontnik.range(opensans, -3, 256, function(err, data) {});
-        }, /Second argument 'start' must be a number from 0-65535/);
+            fontnik.range({file: opensans, start: -3, end: 256}, function(err, data) {});
+        }, /option `start` must be a number from 0-65535/);
         done();
     });
 
     it('range typeerror end', function(done) {
         assert.throws(function() {
-            fontnik.range(opensans, 0, 'y', function(err, data) {});
-        }, /Third argument 'end' must be a number from 0-65535/);
+            fontnik.range({file: opensans, start: 0, end: 'y'}, function(err, data) {});
+        }, /option `end` must be a number from 0-65535/);
         assert.throws(function() {
-            fontnik.range(opensans, 0, 10000000, function(err, data) {});
-        }, /Third argument 'end' must be a number from 0-65535/);
+            fontnik.range({file: opensans, start: 0, end: 10000000}, function(err, data) {});
+        }, /option `end` must be a number from 0-65535/);
         done();
     });
 
     it('range typeerror lt', function(done) {
         assert.throws(function() {
-            fontnik.range(opensans, 256, 0, function(err, data) {});
-        }, /Start must be less than or equal to end/);
+            fontnik.range({file: opensans, start: 256, end: 0}, function(err, data) {});
+        }, /`start` must be less than or equal to `end`/);
         done();
     });
 
-    it('range typeerror lt', function(done) {
+    it('range typeerror callback', function(done) {
         assert.throws(function() {
-            fontnik.range(opensans, 0, 256, '');
+            fontnik.range({file: opensans, start: 0, end: 256}, '');
         }, /Callback must be a function/);
         assert.throws(function() {
-            fontnik.range(opensans, 0, 256);
+            fontnik.range({file: opensans, start: 0, end: 256});
         }, /Callback must be a function/);
         done();
     });
