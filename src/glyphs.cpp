@@ -147,8 +147,10 @@ void LoadAsync(uv_work_t* req) {
     FT_Library library = nullptr;
     FT_Error error = FT_Init_FreeType(&library);
     if (error) {
+        /* LCOV_EXCL_START */
         baton->error_name = std::string("could not open FreeType library");
         return;
+        /* LCOV_EXCL_END */
     }
     FT_Face ft_face = 0;
     int num_faces = 0;
@@ -217,8 +219,10 @@ void RangeAsync(uv_work_t* req) {
     FT_Library library = nullptr;
     FT_Error error = FT_Init_FreeType(&library);
     if (error) {
+        /* LCOV_EXCL_START */
         baton->error_name = std::string("could not open FreeType library");
         return;
+        /* LCOV_EXCL_END */
     }
 
     FT_Face ft_face = 0;
