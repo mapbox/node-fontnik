@@ -234,7 +234,7 @@ void RangeAsync(uv_work_t* req) {
     {
         FT_Error face_error = FT_New_Face(library, baton->file_name.c_str(), i, &ft_face);
         if (face_error) {
-            baton->error_name = std::string("could not open Face") + baton->file_name;
+            baton->error_name = std::string("could not open Face: '") + baton->file_name + "'";
             return;
         }
 

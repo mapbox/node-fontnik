@@ -48,6 +48,14 @@ describe('load', function() {
         done();
     });
 
+    it('non existent font loading', function(done) {
+        var doesnotexistsans = opensans.replace('Regular','baloney');
+        fontnik.load(doesnotexistsans, function(err, faces) {
+            assert.ok(err.message.indexOf('could not open face'));
+            done();
+        });
+    });
+
     it('load typeerror callback', function(done) {
         assert.throws(function() {
             fontnik.load(firasans);
@@ -85,6 +93,14 @@ describe('range', function() {
         fontnik.range(opensans, 0, 1024, function(err, data) {
             assert.ifError(err);
             assert.ok(data);
+            done();
+        });
+    });
+
+    it('range filepath does not exist', function(done) {
+        var doesnotexistsans = opensans.replace('Regular','baloney');
+        fontnik.range(doesnotexistsans, 0, 256, function(err, faces) {
+            assert.ok(err.message.indexOf('could not open face'));
             done();
         });
     });
