@@ -1,7 +1,7 @@
 var fontnik = require('../index.js');
 var assert = require('assert');
-var zlib = require('zlib');
 var fs = require('fs');
+var zlib = require('zlib');
 var path = require('path');
 var zdata = fs.readFileSync(__dirname + '/fixtures/range.0.256.pbf');
 var Protobuf = require('pbf');
@@ -50,11 +50,21 @@ describe('load', function() {
 });
 
 describe('range', function() {
+        var data;
+        before(function(done) {
+            zlib.inflate(zdata, function(err, d) {
+                assert.ifError(err);
+                data = d;
+                done();
+            });
+        });
+
     it('ranges', function(done) {
-        fontnik.range(opensans, 0, 256, function(err, magic) {
+        fontnik.range(opensans, 0, 256, function(err, res) {
             assert.ifError(err);
-            assert.ok(magic);
-            var vt = new Glyphs(new Protobuf(new Uint8Array(magic)));
+            assert.ok(res);
+            assert.deepEqual(res, data);
+            var vt = new Glyphs(new Protobuf(new Uint8Array(res)));
             var json = JSON.parse(JSON.stringify(vt, nobuffer));
             jsonEqual('range', json);
             done();
