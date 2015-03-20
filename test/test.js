@@ -60,6 +60,7 @@ describe('range', function() {
         });
 
     it('ranges', function(done) {
+        this.timeout(10000);
         fontnik.range(opensans, 0, 256, function(err, res) {
             assert.ifError(err);
             assert.ok(res);
