@@ -113,6 +113,13 @@ describe('range', function() {
         });
     });
 
+    it('range typeerror empty filepath', function(done) {
+        assert.throws(function() {
+            fontnik.range({file: '', start: 0, end: 256}, function(err, data) {});
+        }, /option `file` cannot be empty/);
+        done();
+    });
+
     it('range typeerror filepath', function(done) {
         assert.throws(function() {
             fontnik.range({file: 12, start: 0, end: 256}, function(err, data) {});
