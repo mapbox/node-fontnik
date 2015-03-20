@@ -31,7 +31,6 @@ env:
 
 before_install:
  - export COVERAGE=${COVERAGE:-false}
- - export platform=$(uname -s | sed "y/ABCDEFGHIJKLMNOPQRSTUVWXYZ/abcdefghijklmnopqrstuvwxyz/")
  # here we set up the node version on the fly based on the matrix value.
  # This is done manually so that it is easy to flip the 'language' to
  # objective-c in another branch (to run the same travis.yml on OS X)
@@ -52,7 +51,6 @@ before_install:
       pyenv rehash;
      fi;
  - export PATH="$BUILD/bin:$PATH"
- - if [[ "$platform" == "linux" ]]; then export CXX=g++-4.8; export CC=gcc-4.8; fi
  - ./deps/travis_build.sh
 
 install:
