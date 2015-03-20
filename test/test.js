@@ -44,9 +44,17 @@ describe('load', function() {
         var baloneysans;
         assert.throws(function() {
             fontnik.load(baloneysans, function(err, faces) {});
-        });
+        }, /First argument must be a path to a font/);
         done();
-    })
+    });
+
+    it('load typeerror callback', function(done) {
+        assert.throws(function() {
+            fontnik.load(firasans);
+        }, /Callback must be a function/);
+        done();
+    });
+
 });
 
 describe('range', function() {
