@@ -57,14 +57,12 @@ describe('range', function() {
             var vt = new Glyphs(new Protobuf(new Uint8Array(magic)));
             var json = JSON.parse(JSON.stringify(vt, nobuffer));
             jsonEqual('range', json);
-            fs.writeFile(__dirname + '/magic.pbf', magic, function(err) {
-                assert.ifError(err);
-                done();
-            });
+            done();
         });
     });
 
     it('longrange', function(done) {
+        this.timeout(10000);
         fontnik.range(opensans, 0, 1024, function(err, data) {
             assert.ifError(err);
             assert.ok(data);
