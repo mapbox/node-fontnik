@@ -5,171 +5,32 @@
 #include <node_buffer.h>
 #include <nan.h>
 
-// freetype2
-extern "C"
-{
-#include <ft2build.h>
-#include FT_FREETYPE_H
-#include FT_GLYPH_H
-#include FT_OUTLINE_H
-}
+#include "agg_curves.h"
+
+// boost
+// undef B0 to workaround https://svn.boost.org/trac/boost/ticket/10467
+#undef B0
+#include <boost/geometry.hpp>
+#include <boost/geometry/geometries/point.hpp>
+#include <boost/geometry/geometries/box.hpp>
+#include <boost/geometry/index/rtree.hpp>
+
+// stl
+#include <unordered_map>
+
+namespace bg = boost::geometry;
+namespace bgm = bg::model;
+namespace bgi = bg::index;
+typedef bgm::point<float, 2, bg::cs::cartesian> Point;
+typedef bgm::box<Point> Box;
+typedef std::vector<Point> Points;
+typedef std::vector<Points> Rings;
+typedef std::pair<Point, Point> SegmentPair;
+typedef std::pair<Box, SegmentPair> SegmentValue;
+typedef bgi::rtree<SegmentValue, bgi::rstar<16>> Tree;
 
 namespace node_fontnik
 {
-
-struct RangeBaton {
-    v8::Persistent<v8::Function> callback;
-    Glyphs *glyphs;
-    std::string fontstack;
-    std::string range;
-    std::vector<std::uint32_t> chars;
-    bool error;
-    std::string error_name;
-};
-
-v8::Persistent<v8::FunctionTemplate> Glyphs::constructor;
-
-Glyphs::Glyphs() : node::ObjectWrap() {
-    glyphs = fontnik::Glyphs();
-}
-
-Glyphs::Glyphs(const char *data, size_t length) : node::ObjectWrap() {
-    glyphs = fontnik::Glyphs(data, length);
-}
-
-Glyphs::~Glyphs() {}
-
-void Glyphs::Init(v8::Handle<v8::Object> target) {
-    NanScope();
-
-    v8::Local<v8::FunctionTemplate> tpl = NanNew<v8::FunctionTemplate>(New);
-    v8::Local<v8::String> name = NanNew<v8::String>("Glyphs");
-
-    NanAssignPersistent(Glyphs::constructor, tpl);
-
-    // node::ObjectWrap uses the first internal field to store the wrapped pointer.
-    tpl->InstanceTemplate()->SetInternalFieldCount(1);
-    tpl->SetClassName(name);
-
-    // Add all prototype methods, getters and setters here.
-    NODE_SET_PROTOTYPE_METHOD(tpl, "serialize", Serialize);
-    NODE_SET_PROTOTYPE_METHOD(tpl, "range", Range);
-    NODE_SET_PROTOTYPE_METHOD(tpl, "codepoints", Codepoints);
-
-    // This has to be last, otherwise the properties won't show up on the
-    // object in JavaScript.
-    target->Set(name, tpl->GetFunction());
-    NanAssignPersistent(constructor, tpl);
-}
-
-NAN_METHOD(Glyphs::New) {
-    NanScope();
-
-    if (!args.IsConstructCall()) {
-        return NanThrowTypeError("Constructor must be called with new keyword");
-    }
-    if (args.Length() > 0 && !node::Buffer::HasInstance(args[0])) {
-        return NanThrowTypeError("First argument may only be a buffer");
-    }
-
-    Glyphs* glyphs;
-
-    if (args.Length() < 1) {
-        glyphs = new Glyphs();
-    } else {
-        v8::Local<v8::Object> buffer = args[0]->ToObject();
-        glyphs = new Glyphs(node::Buffer::Data(buffer), node::Buffer::Length(buffer));
-    }
-
-    glyphs->Wrap(args.This());
-
-    NanReturnValue(args.This());
-}
-
-bool Glyphs::HasInstance(v8::Handle<v8::Value> val) {
-    if (!val->IsObject()) return false;
-    return NanNew(constructor)->HasInstance(val->ToObject());
-}
-
-NAN_METHOD(Glyphs::Serialize) {
-    NanScope();
-    std::string serialized = node::ObjectWrap::Unwrap<Glyphs>(args.This())->glyphs.Serialize();
-    NanReturnValue(NanNewBufferHandle(serialized.data(), serialized.length()));
-}
-
-NAN_METHOD(Glyphs::Range) {
-    NanScope();
-
-    // Validate arguments.
-    if (args.Length() < 1 || !args[0]->IsString()) {
-        return NanThrowTypeError("fontstack must be a string");
-    }
-
-    if (args.Length() < 2 || !args[1]->IsString()) {
-        return NanThrowTypeError("range must be a string");
-    }
-
-    if (args.Length() < 3 || !args[2]->IsArray()) {
-        return NanThrowTypeError("chars must be an array");
-    }
-
-    if (args.Length() < 4 || !args[3]->IsFunction()) {
-        return NanThrowTypeError("callback must be a function");
-    }
-
-    v8::String::Utf8Value fontstack(args[0]->ToString());
-    v8::String::Utf8Value range(args[1]->ToString());
-    v8::Local<v8::Array> charsArray = v8::Local<v8::Array>::Cast(args[2]);
-    v8::Local<v8::Function> callback = v8::Local<v8::Function>::Cast(args[3]);
-
-    unsigned array_size = charsArray->Length();
-    std::vector<std::uint32_t> chars;
-    for (unsigned i=0; i < array_size; i++) {
-        chars.push_back(charsArray->Get(i)->IntegerValue());
-    }
-
-    Glyphs *glyphs = node::ObjectWrap::Unwrap<Glyphs>(args.This());
-
-    RangeBaton* baton = new RangeBaton();
-    NanAssignPersistent(baton->callback, callback.As<v8::Function>());
-    baton->glyphs = glyphs;
-    baton->fontstack = *fontstack;
-    baton->range = *range;
-    baton->chars = chars;
-
-    uv_work_t *req = new uv_work_t();
-    req->data = baton;
-
-    int status = uv_queue_work(uv_default_loop(), req, AsyncRange, (uv_after_work_cb)RangeAfter);
-    assert(status == 0);
-
-    NanReturnUndefined();
-}
-
-NAN_METHOD(Glyphs::Codepoints) {
-    NanScope();
-
-    // Validate arguments.
-    if (args.Length() < 1 || !args[0]->IsString()) {
-        return NanThrowTypeError("fontstack must be a string");
-    }
-
-    v8::String::Utf8Value param1(args[0]->ToString());
-    std::string from = std::string(*param1);
-    try {
-        std::vector<int> points = fontnik::Glyphs::Codepoints(from);
-
-        v8::Handle<v8::Array> result = NanNew<v8::Array>(points.size());
-
-        for (size_t i = 0; i < points.size(); i++) {
-            result->Set(i, NanNew<v8::Number>(points[i]));
-        }
-        NanReturnValue(result);
-    } catch (std::exception const& ex) {
-        return NanThrowTypeError(ex.what());
-    }
-    NanReturnUndefined();
-}
 
 struct FaceMetadata {
     std::string family_name;
@@ -195,6 +56,24 @@ struct LoadBaton {
         faces() {}
 };
 
+struct RangeBaton {
+    v8::Persistent<v8::Function> callback;
+    std::string file_name;
+    std::string error_name;
+    std::uint32_t start;
+    std::uint32_t end;
+    std::vector<std::uint32_t> chars;
+    std::string message;
+    uv_work_t request;
+    RangeBaton() :
+        file_name(),
+        error_name(),
+        start(),
+        end(),
+        chars(),
+        message() {}
+};
+
 NAN_METHOD(Load) {
     NanScope();
 
@@ -203,7 +82,7 @@ NAN_METHOD(Load) {
         return NanThrowTypeError("First argument must be a path to a font");
     }
     if (args.Length() < 2 || !args[1]->IsFunction()) {
-        return NanThrowTypeError("callback must be a function");
+        return NanThrowTypeError("Callback must be a function");
     }
 
     v8::Local<v8::Function> callback = args[1].As<v8::Function>();
@@ -215,6 +94,50 @@ NAN_METHOD(Load) {
     NanAssignPersistent(baton->callback, callback.As<v8::Function>());
 
     uv_queue_work(uv_default_loop(), &baton->request, LoadAsync, (uv_after_work_cb)AfterLoad);
+    NanReturnUndefined();
+}
+
+NAN_METHOD(Range) {
+    NanScope();
+
+    // Validate arguments.
+    if (args.Length() < 1 || !args[0]->IsString()) {
+        return NanThrowTypeError("First argument must be a path to a font");
+    }
+
+    if (args.Length() < 2 || !args[1]->IsNumber() || args[1]->IntegerValue() < 0) {
+        return NanThrowTypeError("Second argument 'start' must be a number from 0-65535");
+    }
+
+    if (args.Length() < 3 || !args[2]->IsNumber() || args[2]->IntegerValue() > 65535) {
+        return NanThrowTypeError("Third argument 'end' must be a number from 0-65535");
+    }
+
+    if (args[2]->IntegerValue() < args[1]->IntegerValue()) {
+        return NanThrowTypeError("Start must be less than or equal to end");
+    }
+
+    if (args.Length() < 4 || !args[3]->IsFunction()) {
+        return NanThrowTypeError("Callback must be a function");
+    }
+
+    v8::Local<v8::Function> callback = args[3].As<v8::Function>();
+
+    RangeBaton* baton = new RangeBaton();
+    baton->file_name = *NanUtf8String(args[0]);
+
+    baton->start = args[1]->IntegerValue();
+    baton->end = args[2]->IntegerValue();
+
+    unsigned array_size = baton->end - baton->start;
+    for (unsigned i=baton->start; i <= array_size; i++) {
+        baton->chars.emplace_back(i);
+    }
+
+    baton->request.data = baton;
+    NanAssignPersistent(baton->callback, callback.As<v8::Function>());
+
+    uv_queue_work(uv_default_loop(), &baton->request, RangeAsync, (uv_after_work_cb)AfterRange);
     NanReturnUndefined();
 }
 
@@ -250,13 +173,12 @@ void LoadAsync(uv_work_t* req) {
         std::sort(points.begin(), points.end());
         auto last = std::unique(points.begin(), points.end());
         points.erase(last, points.end());
-        baton->faces.emplace_back(ft_face->family_name,ft_face->style_name,std::move(points));
+        baton->faces.emplace_back(ft_face->family_name, ft_face->style_name, std::move(points));
         if (ft_face) {
             FT_Done_Face(ft_face);
         }
     }
     FT_Done_FreeType(library);
-
 };
 
 void AfterLoad(uv_work_t* req) {
@@ -289,19 +211,76 @@ void AfterLoad(uv_work_t* req) {
     delete baton;
 };
 
-void Glyphs::AsyncRange(uv_work_t* req) {
+void RangeAsync(uv_work_t* req) {
     RangeBaton* baton = static_cast<RangeBaton*>(req->data);
 
-    try {
-        baton->glyphs->glyphs.Range(baton->fontstack, baton->range, baton->chars);
-    } catch(const std::runtime_error &e) {
-        baton->error = true;
-        baton->error_name = e.what();
+    FT_Library library = nullptr;
+    FT_Error error = FT_Init_FreeType(&library);
+    if (error) {
+        baton->error_name = std::string("could not open FreeType library");
         return;
     }
+
+    FT_Face ft_face = 0;
+
+    llmr::glyphs::glyphs glyphs;
+
+    int num_faces = 0;
+    for ( int i = 0; ft_face == 0 || i < num_faces; ++i )
+    {
+        FT_Error face_error = FT_New_Face(library, baton->file_name.c_str(), i, &ft_face);
+        if (face_error) {
+            baton->error_name = std::string("could not open Face") + baton->file_name;
+            return;
+        }
+
+        llmr::glyphs::fontstack *mutable_fontstack = glyphs.add_stacks();
+        mutable_fontstack->set_name(std::string(ft_face->family_name) + " " + ft_face->style_name);
+        mutable_fontstack->set_range(std::to_string(baton->start) + "-" + std::to_string(baton->end));
+
+        const double scale_factor = 1.0;
+
+        // Set character sizes.
+        double size = 24 * scale_factor;
+        FT_Set_Char_Size(ft_face,0,(FT_F26Dot6)(size * (1<<6)),0,0);
+
+        for (std::vector<uint32_t>::size_type i = 0; i != baton->chars.size(); i++) {
+            FT_ULong char_code = baton->chars[i];
+            glyph_info glyph;
+
+            // Get FreeType face from face_ptr.
+            FT_UInt char_index = FT_Get_Char_Index(ft_face, char_code);
+
+            if (!char_index) continue;
+
+            glyph.glyph_index = char_index;
+            RenderSDF(glyph, 24, 3, 0.25, ft_face);
+
+            // Add glyph to fontstack.
+            llmr::glyphs::glyph *mutable_glyph = mutable_fontstack->add_glyphs();
+            mutable_glyph->set_id(char_code);
+            mutable_glyph->set_width(glyph.width);
+            mutable_glyph->set_height(glyph.height);
+            mutable_glyph->set_left(glyph.left);
+            mutable_glyph->set_top(glyph.top - glyph.ascender);
+            mutable_glyph->set_advance(glyph.advance);
+
+            if (glyph.width > 0) {
+                mutable_glyph->set_bitmap(glyph.bitmap);
+            }
+
+        }
+        if (ft_face) {
+            FT_Done_Face(ft_face);
+        }
+    }
+
+    baton->message = glyphs.SerializeAsString();
+
+    FT_Done_FreeType(library);
 }
 
-void Glyphs::RangeAfter(uv_work_t* req) {
+void AfterRange(uv_work_t* req) {
     NanScope();
     RangeBaton* baton = static_cast<RangeBaton*>(req->data);
 
@@ -309,12 +288,333 @@ void Glyphs::RangeAfter(uv_work_t* req) {
         v8::Local<v8::Value> argv[1] = { NanError(baton->error_name.c_str()) };
         NanMakeCallback(NanGetCurrentContext()->Global(), NanNew(baton->callback), 1, argv);
     } else {
-        v8::Local<v8::Value> argv[1] = { NanNull() };
-        NanMakeCallback(NanGetCurrentContext()->Global(), NanNew(baton->callback), 1, argv);
+        v8::Local<v8::Array> js_faces = NanNew<v8::Array>();
+        unsigned idx = 0;
+        v8::Local<v8::Value> argv[2] = { NanNull(), NanNewBufferHandle(baton->message.data(), baton->message.size()) };
+        NanMakeCallback(NanGetCurrentContext()->Global(), NanNew(baton->callback), 2, argv);
     }
 
     NanDisposePersistent(baton->callback);
     delete baton;
+};
+
+struct User {
+    Rings rings;
+    Points ring;
+};
+
+void CloseRing(Points &ring)
+{
+    const Point &first = ring.front();
+    const Point &last = ring.back();
+
+    if (first.get<0>() != last.get<0>() ||
+        first.get<1>() != last.get<1>())
+    {
+        ring.push_back(first);
+    }
+}
+
+int MoveTo(const FT_Vector *to, void *ptr)
+{
+    User *user = (User*)ptr;
+    if (!user->ring.empty()) {
+        CloseRing(user->ring);
+        user->rings.push_back(user->ring);
+        user->ring.clear();
+    }
+    user->ring.push_back(Point { float(to->x) / 64, float(to->y) / 64 });
+    return 0;
+}
+
+int LineTo(const FT_Vector *to, void *ptr)
+{
+    User *user = (User*)ptr;
+    user->ring.push_back(Point { float(to->x) / 64, float(to->y) / 64 });
+    return 0;
+}
+
+int ConicTo(const FT_Vector *control,
+            const FT_Vector *to,
+            void *ptr)
+{
+    User *user = (User*)ptr;
+
+    Point prev = user->ring.back();
+
+    // pop off last point, duplicate of first point in bezier curve
+    user->ring.pop_back();
+
+    agg_fontnik::curve3_div curve(prev.get<0>(), prev.get<1>(),
+                          float(control->x) / 64, float(control->y) / 64,
+                          float(to->x) / 64, float(to->y) / 64);
+
+    curve.rewind(0);
+    double x, y;
+    unsigned cmd;
+
+    while (agg_fontnik::path_cmd_stop != (cmd = curve.vertex(&x, &y))) {
+        user->ring.push_back(Point {x, y});
+    }
+
+    return 0;
+}
+
+int CubicTo(const FT_Vector *c1,
+            const FT_Vector *c2,
+            const FT_Vector *to,
+            void *ptr)
+{
+    User *user = (User*)ptr;
+
+    Point prev = user->ring.back();
+
+    // pop off last point, duplicate of first point in bezier curve
+    user->ring.pop_back();
+
+    agg_fontnik::curve4_div curve(prev.get<0>(), prev.get<1>(),
+                          float(c1->x) / 64, float(c1->y) / 64,
+                          float(c2->x) / 64, float(c2->y) / 64,
+                          float(to->x) / 64, float(to->y) / 64);
+
+    curve.rewind(0);
+    double x, y;
+    unsigned cmd;
+
+    while (agg_fontnik::path_cmd_stop != (cmd = curve.vertex(&x, &y))) {
+        user->ring.push_back(Point {x, y});
+    }
+
+    return 0;
+}
+
+// point in polygon ray casting algorithm
+bool PolyContainsPoint(const Rings &rings, const Point &p)
+{
+    bool c = false;
+
+    for (const Points &ring : rings) {
+        auto p1 = ring.begin();
+        auto p2 = p1 + 1;
+
+        for (; p2 != ring.end(); p1++, p2++) {
+            if (((p1->get<1>() > p.get<1>()) != (p2->get<1>() > p.get<1>())) && (p.get<0>() < (p2->get<0>() - p1->get<0>()) * (p.get<1>() - p1->get<1>()) / (p2->get<1>() - p1->get<1>()) + p1->get<0>())) {
+                c = !c;
+            }
+        }
+    }
+
+    return c;
+}
+
+double SquaredDistance(const Point &v, const Point &w)
+{
+    const double a = v.get<0>() - w.get<0>();
+    const double b = v.get<1>() - w.get<1>();
+    return a * a + b * b;
+}
+
+Point ProjectPointOnLineSegment(const Point &p,
+                                const Point &v,
+                                const Point &w)
+{
+  const double l2 = SquaredDistance(v, w);
+  if (l2 == 0) return v;
+
+  const double t = ((p.get<0>() - v.get<0>()) * (w.get<0>() - v.get<0>()) + (p.get<1>() - v.get<1>()) * (w.get<1>() - v.get<1>())) / l2;
+  if (t < 0) return v;
+  if (t > 1) return w;
+
+  return Point {
+      v.get<0>() + t * (w.get<0>() - v.get<0>()),
+      v.get<1>() + t * (w.get<1>() - v.get<1>())
+  };
+}
+
+double SquaredDistanceToLineSegment(const Point &p,
+                                    const Point &v,
+                                    const Point &w)
+{
+    const Point s = ProjectPointOnLineSegment(p, v, w);
+    return SquaredDistance(p, s);
+}
+
+double MinDistanceToLineSegment(const Tree &tree,
+                                const Point &p,
+                                int radius)
+{
+    const int squared_radius = radius * radius;
+
+    std::vector<SegmentValue> results;
+    tree.query(bgi::intersects(
+        Box{
+            Point{p.get<0>() - radius, p.get<1>() - radius},
+            Point{p.get<0>() + radius, p.get<1>() + radius}
+        }),
+        std::back_inserter(results));
+
+    double sqaured_distance = std::numeric_limits<double>::infinity();
+
+    for (const auto &value : results) {
+        const SegmentPair &segment = value.second;
+        const double dist = SquaredDistanceToLineSegment(p,
+                                                         segment.first,
+                                                         segment.second);
+        if (dist < sqaured_distance && dist < squared_radius) {
+            sqaured_distance = dist;
+        }
+    }
+
+    return std::sqrt(sqaured_distance);
+}
+
+void RenderSDF(glyph_info &glyph,
+                     int size,
+                     int buffer,
+                     float cutoff,
+                     FT_Face ft_face)
+{
+    // // Check if char is already in cache
+    // glyph_info_cache_type::const_iterator itr;
+    // itr = glyph_info_cache_.find(glyph.glyph_index);
+    // if (itr != glyph_info_cache_.end()) {
+    //     glyph = itr->second;
+    //     return;
+    // }
+
+    if (FT_Load_Glyph (ft_face, glyph.glyph_index, FT_LOAD_NO_HINTING)) {
+        return;
+    }
+
+    FT_Glyph ft_glyph;
+    if (FT_Get_Glyph(ft_face->glyph, &ft_glyph)) return;
+
+    int advance = ft_face->glyph->metrics.horiAdvance / 64;
+    int ascender = ft_face->size->metrics.ascender / 64;
+    int descender = ft_face->size->metrics.descender / 64;
+
+    glyph.line_height = ft_face->size->metrics.height;
+    glyph.advance = advance;
+    glyph.ascender = ascender;
+    glyph.descender = descender;
+
+    FT_Outline_Funcs func_interface = {
+        .move_to = &MoveTo,
+        .line_to = &LineTo,
+        .conic_to = &ConicTo,
+        .cubic_to = &CubicTo,
+        .shift = 0,
+        .delta = 0
+    };
+
+    User user;
+
+    // Decompose outline into bezier curves and line segments
+    FT_Outline outline = ((FT_OutlineGlyph)ft_glyph)->outline;
+    if (FT_Outline_Decompose(&outline, &func_interface, &user)) return;
+
+    if (!user.ring.empty()) {
+        CloseRing(user.ring);
+        user.rings.push_back(user.ring);
+    }
+
+    if (user.rings.empty()) return;
+
+    // Calculate the real glyph bbox.
+    double bbox_xmin = std::numeric_limits<double>::infinity(),
+           bbox_ymin = std::numeric_limits<double>::infinity();
+
+    double bbox_xmax = -std::numeric_limits<double>::infinity(),
+           bbox_ymax = -std::numeric_limits<double>::infinity();
+
+    for (const Points &ring : user.rings) {
+        for (const Point &point : ring) {
+            if (point.get<0>() > bbox_xmax) bbox_xmax = point.get<0>();
+            if (point.get<0>() < bbox_xmin) bbox_xmin = point.get<0>();
+            if (point.get<1>() > bbox_ymax) bbox_ymax = point.get<1>();
+            if (point.get<1>() < bbox_ymin) bbox_ymin = point.get<1>();
+        }
+    }
+
+    bbox_xmin = std::round(bbox_xmin);
+    bbox_ymin = std::round(bbox_ymin);
+    bbox_xmax = std::round(bbox_xmax);
+    bbox_ymax = std::round(bbox_ymax);
+
+    // Offset so that glyph outlines are in the bounding box.
+    for (Points &ring : user.rings) {
+        for (Point &point : ring) {
+            point.set<0>(point.get<0>() + -bbox_xmin + buffer);
+            point.set<1>(point.get<1>() + -bbox_ymin + buffer);
+        }
+    }
+
+    if (bbox_xmax - bbox_xmin == 0 || bbox_ymax - bbox_ymin == 0) return;
+
+    glyph.left = bbox_xmin;
+    glyph.top = bbox_ymax;
+    glyph.width = bbox_xmax - bbox_xmin;
+    glyph.height = bbox_ymax - bbox_ymin;
+
+    Tree tree;
+    float offset = 0.5;
+    int radius = 8;
+
+    for (const Points &ring : user.rings) {
+        auto p1 = ring.begin();
+        auto p2 = p1 + 1;
+
+        for (; p2 != ring.end(); p1++, p2++) {
+            const int segment_x1 = std::min(p1->get<0>(), p2->get<0>());
+            const int segment_x2 = std::max(p1->get<0>(), p2->get<0>());
+            const int segment_y1 = std::min(p1->get<1>(), p2->get<1>());
+            const int segment_y2 = std::max(p1->get<1>(), p2->get<1>());
+
+            tree.insert(SegmentValue {
+                Box {
+                    Point {segment_x1, segment_y1},
+                    Point {segment_x2, segment_y2}
+                },
+                SegmentPair {
+                    Point {p1->get<0>(), p1->get<1>()},
+                    Point {p2->get<0>(), p2->get<1>()}
+                }
+            });
+        }
+    }
+
+    // Loop over every pixel and determine the positive/negative distance to the outline.
+    unsigned int buffered_width = glyph.width + 2 * buffer;
+    unsigned int buffered_height = glyph.height + 2 * buffer;
+    unsigned int bitmap_size = buffered_width * buffered_height;
+    glyph.bitmap.resize(bitmap_size);
+
+    for (unsigned int y = 0; y < buffered_height; y++) {
+        for (unsigned int x = 0; x < buffered_width; x++) {
+            unsigned int ypos = buffered_height - y - 1;
+            unsigned int i = ypos * buffered_width + x;
+
+            double d = MinDistanceToLineSegment(tree, Point {x + offset, y + offset}, radius) * (256 / radius);
+
+            // Invert if point is inside.
+            const bool inside = PolyContainsPoint(user.rings, Point { x + offset, y + offset });
+            if (inside) {
+                d = -d;
+            }
+
+            // Shift the 0 so that we can fit a few negative values
+            // into our 8 bits.
+            d += cutoff * 256;
+
+            // Clamp to 0-255 to prevent overflows or underflows.
+            int n = d > 255 ? 255 : d;
+            n = n < 0 ? 0 : n;
+
+            glyph.bitmap[i] = static_cast<char>(255 - n);
+        }
+    }
+
+    FT_Done_Glyph(ft_glyph);
 }
 
 } // ns node_fontnik
