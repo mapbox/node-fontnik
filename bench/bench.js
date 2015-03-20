@@ -36,7 +36,7 @@ function main() {
     });
     suite.defer(bench, {
         name:"fontnik.range",
-        args:[fontnik.range,opensans,0,256],
+        args:[fontnik.range,{file:opensans,start:0,end:256}],
         iterations: 1000,
         concurrency: 100
     });

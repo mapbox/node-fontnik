@@ -25,7 +25,7 @@ suite
     'fn': function(deferred) {
       // avoid test inlining
       suite.name;
-      fontnik.range(opensans,0,256,function(err) {
+      fontnik.range({file:opensans,start:0,end:256},function(err) {
         if (err) throw err;
         deferred.resolve();
       });
