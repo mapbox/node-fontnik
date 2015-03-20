@@ -46,19 +46,19 @@ struct FaceMetadata {
 
 struct LoadBaton {
     v8::Persistent<v8::Function> callback;
-    std::string file_name;
+    std::string font_data;
     std::string error_name;
     std::vector<FaceMetadata> faces;
     uv_work_t request;
     LoadBaton() :
-        file_name(),
+        font_data(),
         error_name(),
         faces() {}
 };
 
 struct RangeBaton {
     v8::Persistent<v8::Function> callback;
-    std::string file_name;
+    std::string font_data;
     std::string error_name;
     std::uint32_t start;
     std::uint32_t end;
@@ -66,7 +66,7 @@ struct RangeBaton {
     std::string message;
     uv_work_t request;
     RangeBaton() :
-        file_name(),
+        font_data(),
         error_name(),
         start(),
         end(),
@@ -78,9 +78,14 @@ NAN_METHOD(Load) {
     NanScope();
 
     // Validate arguments.
-    if (!args[0]->IsString()) {
-        return NanThrowTypeError("First argument must be a path to a font");
+    if (!args[0]->IsObject()) {
+        return NanThrowTypeError("First argument must be a font buffer");
     }
+    v8::Local<v8::Object> obj = args[0]->ToObject();
+    if (obj->IsNull() || obj->IsUndefined() || !node::Buffer::HasInstance(obj)) {
+        return NanThrowTypeError("First argument must be a font buffer");
+    }
+
     if (args.Length() < 2 || !args[1]->IsFunction()) {
         return NanThrowTypeError("Callback must be a function");
     }
@@ -88,7 +93,8 @@ NAN_METHOD(Load) {
     v8::Local<v8::Function> callback = args[1].As<v8::Function>();
 
     LoadBaton* baton = new LoadBaton();
-    baton->file_name = *NanUtf8String(args[0]);
+
+    baton->font_data = std::string(node::Buffer::Data(obj), node::Buffer::Length(obj));
 
     baton->request.data = baton;
     NanAssignPersistent(baton->callback, callback.As<v8::Function>());
@@ -106,16 +112,16 @@ NAN_METHOD(Range) {
     }
 
     v8::Local<v8::Object> options = args[0].As<v8::Object>();
-    v8::Local<v8::Value> file_name = options->Get(NanNew<v8::String>("file"));
+    v8::Local<v8::Value> font_buffer = options->Get(NanNew<v8::String>("font"));
+    if (!font_buffer->IsObject()) {
+        return NanThrowTypeError("Font buffer is not an object");
+    }
+    v8::Local<v8::Object> obj = font_buffer->ToObject();
     v8::Local<v8::Value> start = options->Get(NanNew<v8::String>("start"));
     v8::Local<v8::Value> end = options->Get(NanNew<v8::String>("end"));
 
-    if (!file_name->IsString()) {
-        return NanThrowTypeError("option `file` must be a path to a font");
-    }
-    std::string filename = *NanUtf8String(file_name);
-    if (filename.empty()) {
-        return NanThrowTypeError("option `file` cannot be empty");
+    if (obj->IsNull() || obj->IsUndefined() || !node::Buffer::HasInstance(obj)) {
+        return NanThrowTypeError("First argument must be a font buffer");
     }
 
     if (!start->IsNumber() || start->IntegerValue() < 0) {
@@ -131,7 +137,7 @@ NAN_METHOD(Range) {
     }
 
     RangeBaton* baton = new RangeBaton();
-    baton->file_name = std::move(filename);
+    baton->font_data = std::string(node::Buffer::Data(obj), node::Buffer::Length(obj));
     baton->start = start->IntegerValue();
     baton->end = end->IntegerValue();
 
@@ -168,9 +174,9 @@ void LoadAsync(uv_work_t* req) {
     int num_faces = 0;
     for ( int i = 0; ft_face == 0 || i < num_faces; ++i )
     {
-        FT_Error face_error = FT_New_Face(library, baton->file_name.c_str(), i, &ft_face);
+        FT_Error face_error = FT_New_Memory_Face(library, reinterpret_cast<FT_Byte const*>(baton->font_data.data()), static_cast<FT_Long>(baton->font_data.size()), i, &ft_face);
         if (face_error) {
-            baton->error_name = std::string("could not open Face") + baton->file_name;
+            baton->error_name = std::string("could not open font file");
             return;
         }
         std::set<int> points;
@@ -242,9 +248,9 @@ void RangeAsync(uv_work_t* req) {
     int num_faces = 0;
     for ( int i = 0; ft_face == 0 || i < num_faces; ++i )
     {
-        FT_Error face_error = FT_New_Face(library, baton->file_name.c_str(), i, &ft_face);
+        FT_Error face_error = FT_New_Memory_Face(library, reinterpret_cast<FT_Byte const*>(baton->font_data.data()), static_cast<FT_Long>(baton->font_data.size()), i, &ft_face);
         if (face_error) {
-            baton->error_name = std::string("could not open Face: '") + baton->file_name + "'";
+            baton->error_name = std::string("could not open font");
             return;
         }
 

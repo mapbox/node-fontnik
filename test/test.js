@@ -18,11 +18,10 @@ function jsonEqual(key, json) {
 }
 
 var expected = JSON.parse(fs.readFileSync(__dirname + '/expected/load.json').toString());
-var firasans = path.resolve(__dirname + '/../fonts/firasans-medium/FiraSans-Medium.ttf');
-var opensans = path.resolve(__dirname + '/../fonts/open-sans/OpenSans-Regular.ttf');
+var firasans = fs.readFileSync(path.resolve(__dirname + '/../fonts/firasans-medium/FiraSans-Medium.ttf'));
+var opensans = fs.readFileSync(path.resolve(__dirname + '/../fonts/open-sans/OpenSans-Regular.ttf'));
 describe('load', function() {
     it('loads: fira sans', function(done) {
-        assert.ok(fs.existsSync(firasans));
         fontnik.load(firasans, function(err, faces) {
             assert.ifError(err);
             assert.deepEqual(faces,expected);
@@ -44,14 +43,14 @@ describe('load', function() {
         var baloneysans;
         assert.throws(function() {
             fontnik.load(baloneysans, function(err, faces) {});
-        }, /First argument must be a path to a font/);
+        }, /First argument must be a font buffer/);
         done();
     });
 
     it('non existent font loading', function(done) {
-        var doesnotexistsans = opensans.replace('Regular','baloney');
+        var doesnotexistsans = new Buffer('baloney');
         fontnik.load(doesnotexistsans, function(err, faces) {
-            assert.ok(err.message.indexOf('could not open face'));
+            assert.ok(err.message.indexOf('Font buffer is not an object'));
             done();
         });
     });
@@ -77,7 +76,7 @@ describe('range', function() {
 
     it('ranges', function(done) {
         this.timeout(10000);
-        fontnik.range({file: opensans, start: 0, end: 256}, function(err, res) {
+        fontnik.range({font: opensans, start: 0, end: 256}, function(err, res) {
             assert.ifError(err);
             assert.ok(res);
             assert.deepEqual(res, data);
@@ -90,7 +89,7 @@ describe('range', function() {
 
     it('longrange', function(done) {
         this.timeout(10000);
-        fontnik.range({file: opensans, start: 0, end: 1024}, function(err, data) {
+        fontnik.range({font: opensans, start: 0, end: 1024}, function(err, data) {
             assert.ifError(err);
             assert.ok(data);
             done();
@@ -101,65 +100,51 @@ describe('range', function() {
     it('range typeerror options', function(done) {
         assert.throws(function() {
             fontnik.range(opensans, function(err, data) {});
-        }, /First argument must be an object of options/);
+        }, /Font buffer is not an object/);
         done();
     });
 
     it('range filepath does not exist', function(done) {
-        var doesnotexistsans = opensans.replace('Regular','baloney');
-        fontnik.range({file: doesnotexistsans, start: 0, end: 256}, function(err, faces) {
-            assert.ok(err.message.indexOf('could not open face'));
+        var doesnotexistsans = new Buffer('baloney');
+        fontnik.range({font: doesnotexistsans, start: 0, end: 256}, function(err, faces) {
+            assert.ok(err.message.indexOf('Font buffer is not an object'));
             done();
         });
     });
 
-    it('range typeerror empty filepath', function(done) {
-        assert.throws(function() {
-            fontnik.range({file: '', start: 0, end: 256}, function(err, data) {});
-        }, /option `file` cannot be empty/);
-        done();
-    });
-
-    it('range typeerror filepath', function(done) {
-        assert.throws(function() {
-            fontnik.range({file: 12, start: 0, end: 256}, function(err, data) {});
-        }, /option `file` must be a path to a font/);
-        done();
-    });
-
     it('range typeerror start', function(done) {
         assert.throws(function() {
-            fontnik.range({file: opensans, start: 'x', end: 256}, function(err, data) {});
+            fontnik.range({font: opensans, start: 'x', end: 256}, function(err, data) {});
         }, /option `start` must be a number from 0-65535/);
         assert.throws(function() {
-            fontnik.range({file: opensans, start: -3, end: 256}, function(err, data) {});
+            fontnik.range({font: opensans, start: -3, end: 256}, function(err, data) {});
         }, /option `start` must be a number from 0-65535/);
         done();
     });
 
     it('range typeerror end', function(done) {
         assert.throws(function() {
-            fontnik.range({file: opensans, start: 0, end: 'y'}, function(err, data) {});
+            fontnik.range({font: opensans, start: 0, end: 'y'}, function(err, data) {});
         }, /option `end` must be a number from 0-65535/);
         assert.throws(function() {
-            fontnik.range({file: opensans, start: 0, end: 10000000}, function(err, data) {});
+            fontnik.range({font: opensans, start: 0, end: 10000000}, function(err, data) {});
         }, /option `end` must be a number from 0-65535/);
         done();
     });
 
     it('range typeerror lt', function(done) {
         assert.throws(function() {
-            fontnik.range({file: opensans, start: 256, end: 0}, function(err, data) {});
+            fontnik.range({font: opensans, start: 256, end: 0}, function(err, data) {});
         }, /`start` must be less than or equal to `end`/);
         done();
     });
 
     it('range typeerror callback', function(done) {
         assert.throws(function() {
-            fontnik.range({file: opensans, start: 0, end: 256}, '');
+            fontnik.range({font: opensans, start: 0, end: 256}, '');
         }, /Callback must be a function/);
         assert.throws(function() {
-            fontnik.range({file: opensans, start: 0, end: 256});
+            fontnik.range({font: opensans, start: 0, end: 256});
         }, /Callback must be a function/);
         done();
     });
