@@ -173,7 +173,7 @@ void LoadAsync(uv_work_t* req) {
             baton->error_name = std::string("could not open Face") + baton->file_name;
             return;
         }
-        std::vector<int> points;
+        std::set<int> points;
         if (num_faces == 0)
             num_faces = ft_face->num_faces;
         FT_ULong charcode;
@@ -181,13 +181,11 @@ void LoadAsync(uv_work_t* req) {
         charcode = FT_Get_First_Char(ft_face, &gindex);
         while (gindex != 0) {
             charcode = FT_Get_Next_Char(ft_face, charcode, &gindex);
-            if (charcode != 0) points.emplace_back(charcode);
+            if (charcode != 0) points.emplace(charcode);
         }
 
-        std::sort(points.begin(), points.end());
-        auto last = std::unique(points.begin(), points.end());
-        points.erase(last, points.end());
-        baton->faces.emplace_back(ft_face->family_name, ft_face->style_name, std::move(points));
+        std::vector<int> points_vec(points.begin(), points.end());
+        baton->faces.emplace_back(ft_face->family_name, ft_face->style_name, std::move(points_vec));
         if (ft_face) {
             FT_Done_Face(ft_face);
         }
