@@ -23,6 +23,7 @@
     }
   ],
   "dependencies": {
+    "benchmark": "^1.0.0",
     "minimist": "^0.2.0",
     "nan": "^1.7.0",
     "node-pre-gyp": "~0.6.4",
