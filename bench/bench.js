@@ -3,6 +3,7 @@
 var path = require('path');
 var fontnik = require('../');
 var queue = require('queue-async');
+var fs = require('fs');
 
 // https://gist.github.com/mourner/96b1335c6a43e68af252
 // https://gist.github.com/fengmk2/4345606
@@ -25,7 +26,7 @@ function bench(opts,cb) {
 }
 
 function main() {
-    var opensans = path.resolve(__dirname + '/../fonts/open-sans/OpenSans-Regular.ttf');
+    var opensans = fs.readFileSync(path.resolve(__dirname + '/../fonts/open-sans/OpenSans-Regular.ttf'));
 
     var suite = queue(1);
     suite.defer(bench, {
@@ -36,7 +37,7 @@ function main() {
     });
     suite.defer(bench, {
         name:"fontnik.range",
-        args:[fontnik.range,{file:opensans,start:0,end:256}],
+        args:[fontnik.range,{font:opensans,start:0,end:256}],
         iterations: 1000,
         concurrency: 100
     });

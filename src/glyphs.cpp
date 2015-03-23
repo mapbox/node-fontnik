@@ -46,53 +46,79 @@ struct FaceMetadata {
 
 struct LoadBaton {
     v8::Persistent<v8::Function> callback;
-    std::string file_name;
+    v8::Persistent<v8::Object> buffer;
+    const char * font_data;
+    std::size_t font_size;
     std::string error_name;
     std::vector<FaceMetadata> faces;
     uv_work_t request;
-    LoadBaton() :
-        file_name(),
+    LoadBaton(v8::Local<v8::Object> buf,
+              v8::Local<v8::Value> cb) :
+        font_data(node::Buffer::Data(buf)),
+        font_size(node::Buffer::Length(buf)),
         error_name(),
-        faces() {}
+        faces(),
+        request() {
+            request.data = this;
+            NanAssignPersistent(callback, cb.As<v8::Function>());
+            NanAssignPersistent(buffer, buf.As<v8::Object>());
+        }
+    ~LoadBaton() {
+        NanDisposePersistent(callback);
+        NanDisposePersistent(buffer);
+    }
 };
 
 struct RangeBaton {
     v8::Persistent<v8::Function> callback;
-    std::string file_name;
+    v8::Persistent<v8::Object> buffer;
+    const char * font_data;
+    std::size_t font_size;
     std::string error_name;
     std::uint32_t start;
     std::uint32_t end;
     std::vector<std::uint32_t> chars;
     std::string message;
     uv_work_t request;
-    RangeBaton() :
-        file_name(),
+    RangeBaton(v8::Local<v8::Object> buf,
+               v8::Local<v8::Value> cb,
+               std::uint32_t _start,
+               std::uint32_t _end) :
+        font_data(node::Buffer::Data(buf)),
+        font_size(node::Buffer::Length(buf)),
         error_name(),
-        start(),
-        end(),
+        start(_start),
+        end(_end),
         chars(),
-        message() {}
+        message(),
+        request() {
+            request.data = this;
+            NanAssignPersistent(callback, cb.As<v8::Function>());
+            NanAssignPersistent(buffer, buf.As<v8::Object>());
+        }
+    ~RangeBaton() {
+        NanDisposePersistent(callback);
+        NanDisposePersistent(buffer);
+    }
 };
 
 NAN_METHOD(Load) {
     NanScope();
 
     // Validate arguments.
-    if (!args[0]->IsString()) {
-        return NanThrowTypeError("First argument must be a path to a font");
+    if (!args[0]->IsObject()) {
+        return NanThrowTypeError("First argument must be a font buffer");
     }
+    v8::Local<v8::Object> obj = args[0]->ToObject();
+    if (obj->IsNull() || obj->IsUndefined() || !node::Buffer::HasInstance(obj)) {
+        return NanThrowTypeError("First argument must be a font buffer");
+    }
+
     if (args.Length() < 2 || !args[1]->IsFunction()) {
         return NanThrowTypeError("Callback must be a function");
     }
 
-    v8::Local<v8::Function> callback = args[1].As<v8::Function>();
-
-    LoadBaton* baton = new LoadBaton();
-    baton->file_name = *NanUtf8String(args[0]);
-
-    baton->request.data = baton;
-    NanAssignPersistent(baton->callback, callback.As<v8::Function>());
-
+    LoadBaton* baton = new LoadBaton(obj,args[1]);
     uv_queue_work(uv_default_loop(), &baton->request, LoadAsync, (uv_after_work_cb)AfterLoad);
     NanReturnUndefined();
 }
@@ -106,16 +132,16 @@ NAN_METHOD(Range) {
     }
 
     v8::Local<v8::Object> options = args[0].As<v8::Object>();
-    v8::Local<v8::Value> file_name = options->Get(NanNew<v8::String>("file"));
+    v8::Local<v8::Value> font_buffer = options->Get(NanNew<v8::String>("font"));
+    if (!font_buffer->IsObject()) {
+        return NanThrowTypeError("Font buffer is not an object");
+    }
+    v8::Local<v8::Object> obj = font_buffer->ToObject();
     v8::Local<v8::Value> start = options->Get(NanNew<v8::String>("start"));
     v8::Local<v8::Value> end = options->Get(NanNew<v8::String>("end"));
 
-    if (!file_name->IsString()) {
-        return NanThrowTypeError("option `file` must be a path to a font");
-    }
-    std::string filename = *NanUtf8String(file_name);
-    if (filename.empty()) {
-        return NanThrowTypeError("option `file` cannot be empty");
+    if (obj->IsNull() || obj->IsUndefined() || !node::Buffer::HasInstance(obj)) {
+        return NanThrowTypeError("First argument must be a font buffer");
     }
 
     if (!start->IsNumber() || start->IntegerValue() < 0) {
@@ -130,25 +156,14 @@ NAN_METHOD(Range) {
         return NanThrowTypeError("`start` must be less than or equal to `end`");
     }
 
-    RangeBaton* baton = new RangeBaton();
-    baton->file_name = std::move(filename);
-    baton->start = start->IntegerValue();
-    baton->end = end->IntegerValue();
-
     if (args.Length() < 2 || !args[1]->IsFunction()) {
         return NanThrowTypeError("Callback must be a function");
     }
 
-    v8::Local<v8::Function> callback = args[1].As<v8::Function>();
-
-    unsigned array_size = baton->end - baton->start;
-    for (unsigned i=baton->start; i <= array_size; i++) {
-        baton->chars.emplace_back(i);
-    }
-
-    baton->request.data = baton;
-    NanAssignPersistent(baton->callback, callback.As<v8::Function>());
-
+    RangeBaton* baton = new RangeBaton(obj,
+                                       args[1],
+                                       start->IntegerValue(),
+                                       end->IntegerValue());
     uv_queue_work(uv_default_loop(), &baton->request, RangeAsync, (uv_after_work_cb)AfterRange);
     NanReturnUndefined();
 }
@@ -168,9 +183,9 @@ void LoadAsync(uv_work_t* req) {
     int num_faces = 0;
     for ( int i = 0; ft_face == 0 || i < num_faces; ++i )
     {
-        FT_Error face_error = FT_New_Face(library, baton->file_name.c_str(), i, &ft_face);
+        FT_Error face_error = FT_New_Memory_Face(library, reinterpret_cast<FT_Byte const*>(baton->font_data), static_cast<FT_Long>(baton->font_size), i, &ft_face);
         if (face_error) {
-            baton->error_name = std::string("could not open Face") + baton->file_name;
+            baton->error_name = std::string("could not open font file");
             return;
         }
         std::set<int> points;
@@ -218,13 +233,17 @@ void AfterLoad(uv_work_t* req) {
         v8::Local<v8::Value> argv[2] = { NanNull(), js_faces };
         NanMakeCallback(NanGetCurrentContext()->Global(), NanNew(baton->callback), 2, argv);
     }
-
-    NanDisposePersistent(baton->callback);
     delete baton;
 };
 
 void RangeAsync(uv_work_t* req) {
     RangeBaton* baton = static_cast<RangeBaton*>(req->data);
+
+    unsigned array_size = baton->end - baton->start;
+    baton->chars.reserve(array_size);
+    for (unsigned i=baton->start; i <= array_size; i++) {
+        baton->chars.emplace_back(i);
+    }
 
     FT_Library library = nullptr;
     FT_Error error = FT_Init_FreeType(&library);
@@ -242,9 +261,9 @@ void RangeAsync(uv_work_t* req) {
     int num_faces = 0;
     for ( int i = 0; ft_face == 0 || i < num_faces; ++i )
     {
-        FT_Error face_error = FT_New_Face(library, baton->file_name.c_str(), i, &ft_face);
+        FT_Error face_error = FT_New_Memory_Face(library, reinterpret_cast<FT_Byte const*>(baton->font_data), static_cast<FT_Long>(baton->font_size), i, &ft_face);
         if (face_error) {
-            baton->error_name = std::string("could not open Face: '") + baton->file_name + "'";
+            baton->error_name = std::string("could not open font");
             return;
         }
 
@@ -308,7 +327,6 @@ void AfterRange(uv_work_t* req) {
         NanMakeCallback(NanGetCurrentContext()->Global(), NanNew(baton->callback), 2, argv);
     }
 
-    NanDisposePersistent(baton->callback);
     delete baton;
 };
 
