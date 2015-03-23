@@ -168,10 +168,35 @@ NAN_METHOD(Range) {
     NanReturnUndefined();
 }
 
+struct ft_library_guard {
+    ft_library_guard(FT_Library lib) :
+        library_(lib) {}
+
+    ~ft_library_guard()
+    {
+        if (library_) FT_Done_FreeType(library_);
+    }
+
+    FT_Library library_;
+};
+
+struct ft_glyph_guard {
+    ft_glyph_guard(FT_Glyph glyph) :
+        glyph_(glyph) {}
+
+    ~ft_glyph_guard()
+    {
+        if (glyph_) FT_Done_Glyph(glyph_);
+    }
+
+    FT_Glyph glyph_;
+};
+
 void LoadAsync(uv_work_t* req) {
     LoadBaton* baton = static_cast<LoadBaton*>(req->data);
 
     FT_Library library = nullptr;
+    ft_library_guard library_guard(library);
     FT_Error error = FT_Init_FreeType(&library);
     if (error) {
         /* LCOV_EXCL_START */
@@ -205,7 +230,6 @@ void LoadAsync(uv_work_t* req) {
             FT_Done_Face(ft_face);
         }
     }
-    FT_Done_FreeType(library);
 };
 
 void AfterLoad(uv_work_t* req) {
@@ -246,6 +270,7 @@ void RangeAsync(uv_work_t* req) {
     }
 
     FT_Library library = nullptr;
+    ft_library_guard library_guard(library);
     FT_Error error = FT_Init_FreeType(&library);
     if (error) {
         /* LCOV_EXCL_START */
@@ -309,8 +334,6 @@ void RangeAsync(uv_work_t* req) {
     }
 
     baton->message = glyphs.SerializeAsString();
-
-    FT_Done_FreeType(library);
 }
 
 void AfterRange(uv_work_t* req) {
@@ -506,19 +529,13 @@ void RenderSDF(glyph_info &glyph,
                      float cutoff,
                      FT_Face ft_face)
 {
-    // // Check if char is already in cache
-    // glyph_info_cache_type::const_iterator itr;
-    // itr = glyph_info_cache_.find(glyph.glyph_index);
-    // if (itr != glyph_info_cache_.end()) {
-    //     glyph = itr->second;
-    //     return;
-    // }
 
     if (FT_Load_Glyph (ft_face, glyph.glyph_index, FT_LOAD_NO_HINTING)) {
         return;
     }
 
     FT_Glyph ft_glyph;
+    ft_glyph_guard glyph_guard(ft_glyph);
     if (FT_Get_Glyph(ft_face->glyph, &ft_glyph)) return;
 
     int advance = ft_face->glyph->metrics.horiAdvance / 64;
@@ -645,8 +662,6 @@ void RenderSDF(glyph_info &glyph,
             glyph.bitmap[i] = static_cast<char>(255 - n);
         }
     }
-
-    FT_Done_Glyph(ft_glyph);
 }
 
 } // ns node_fontnik
