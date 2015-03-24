@@ -169,34 +169,34 @@ NAN_METHOD(Range) {
 }
 
 struct ft_library_guard {
-    ft_library_guard(FT_Library lib) :
+    ft_library_guard(FT_Library * lib) :
         library_(lib) {}
 
     ~ft_library_guard()
     {
-        if (library_) FT_Done_FreeType(library_);
+        if (library_) FT_Done_FreeType(*library_);
     }
 
-    FT_Library library_;
+    FT_Library * library_;
 };
 
 struct ft_glyph_guard {
-    ft_glyph_guard(FT_Glyph glyph) :
+    ft_glyph_guard(FT_Glyph * glyph) :
         glyph_(glyph) {}
 
     ~ft_glyph_guard()
     {
-        if (glyph_) FT_Done_Glyph(glyph_);
+        if (glyph_) FT_Done_Glyph(*glyph_);
     }
 
-    FT_Glyph glyph_;
+    FT_Glyph * glyph_;
 };
 
 void LoadAsync(uv_work_t* req) {
     LoadBaton* baton = static_cast<LoadBaton*>(req->data);
 
     FT_Library library = nullptr;
-    ft_library_guard library_guard(library);
+    ft_library_guard library_guard(&library);
     FT_Error error = FT_Init_FreeType(&library);
     if (error) {
         /* LCOV_EXCL_START */
@@ -270,7 +270,7 @@ void RangeAsync(uv_work_t* req) {
     }
 
     FT_Library library = nullptr;
-    ft_library_guard library_guard(library);
+    ft_library_guard library_guard(&library);
     FT_Error error = FT_Init_FreeType(&library);
     if (error) {
         /* LCOV_EXCL_START */
@@ -534,8 +534,8 @@ void RenderSDF(glyph_info &glyph,
         return;
     }
 
-    FT_Glyph ft_glyph;
-    ft_glyph_guard glyph_guard(ft_glyph);
+    FT_Glyph ft_glyph = nullptr;
+    ft_glyph_guard glyph_guard(&ft_glyph);
     if (FT_Get_Glyph(ft_face->glyph, &ft_glyph)) return;
 
     int advance = ft_face->glyph->metrics.horiAdvance / 64;
