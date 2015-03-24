@@ -20,8 +20,8 @@
 #include <boost/geometry/index/rtree.hpp>
 #pragma GCC diagnostic pop
 
-// stl
-#include <unordered_map>
+// std
+#include <cmath> // std::sqrt
 
 namespace bg = boost::geometry;
 namespace bgm = bg::model;
