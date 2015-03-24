@@ -1,5 +1,5 @@
 // fontnik
-#include <node_fontnik/glyphs.hpp>
+#include "glyphs.hpp"
 
 // node
 #include <node_buffer.h>
@@ -9,11 +9,16 @@
 
 // boost
 // undef B0 to workaround https://svn.boost.org/trac/boost/ticket/10467
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wshadow"
+#pragma GCC diagnostic ignored "-Wunused-parameter"
+#pragma GCC diagnostic ignored "-Wunused-variable"
 #undef B0
 #include <boost/geometry.hpp>
 #include <boost/geometry/geometries/point.hpp>
 #include <boost/geometry/geometries/box.hpp>
 #include <boost/geometry/index/rtree.hpp>
+#pragma GCC diagnostic pop
 
 // stl
 #include <unordered_map>
