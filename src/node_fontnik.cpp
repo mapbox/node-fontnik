@@ -1,5 +1,5 @@
 // fontnik
-#include <node_fontnik/glyphs.hpp>
+#include "glyphs.hpp"
 
 // node
 #include <node.h>
