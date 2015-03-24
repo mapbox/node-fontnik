@@ -35,8 +35,6 @@
         "<!(node -e \"require('nan')\")"
       ],
       'libraries': [
-        '-lboost_system',
-        '-lboost_filesystem',
         '<!@(pkg-config freetype2 --libs --static)',
         '<!@(pkg-config protobuf --libs --static)'
       ],
