@@ -1,28 +1,30 @@
-### Making a release + publishing binaries via travis
+### Tagging and publishing binaries via Travis
 
-Typical flow:
+On each commit that passes through Travis, the [`travis_publish.sh`](https://github.com/mapbox/node-fontnik/blob/master/deps/travis_publish.sh) script checks for the string `[publish binary]` in the commit message, and if present, runs `node-pre-gyp publish` to publish a binary.
 
-    git checkout master
+Running `npm publish` doesn't actually upload a binary anywhere, but instead just pushes up your local code with an updated version number in `package.json`. When your module is installed with `npm install`, `node-pre-gyp` will use this version number to search for a published binary, falling back to a source compile if no matching binary is found.
 
-    # increment version number
-    vim package.json
+Typical workflow:
 
-    git commit package.json -m "0.m.n"
-    git tag v0.m.n
-    git push
-    git push --tags
+```
+git checkout master
 
-    # empty commit with '[publish binary]' in message
-    # tells travis to create a new binary for version in package.json
-    git commit --allow-empty -m "linux [publish binary]"
-    git push origin master
+# increment version number
+# https://docs.npmjs.com/cli/version
+npm version major | minor | patch
 
-    # switch to travis-osx branch which can build on OS X
-    # and do the same
-    git checkout travis-osx
-    git merge master
-    git commit --allow-empty -m "darwin [publish binary]"
-    git push origin travis-osx
+# amend commit to include "[publish binary]"
+git commit --amend
+"x.y.z" -> "x.y.z [publish binary]"
 
-    # make a sandwich, check travis console for build successes
-    npm publish
+# push commit and tag to remote
+git push
+git push --tags
+
+# make a sandwich, check travis console for build successes
+# test published binary (should install from remote)
+npm install && npm test
+
+# publish to npm
+npm publish
+```
