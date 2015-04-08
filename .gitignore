@@ -2,3 +2,4 @@ build
 lib
 glyphs
 spec
+/node_modules
