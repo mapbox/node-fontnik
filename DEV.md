@@ -1,28 +1,24 @@
-### Making a release + publishing binaries via travis
+### Making a release + publishing binaries via Travis
 
-Typical flow:
+```
+git checkout master
 
-    git checkout master
+# increment version number
+# https://docs.npmjs.com/cli/version
+npm version major | minor | patch
 
-    # increment version number
-    vim package.json
+# amend commit to include "[publish binary]"
+git commit --amend
+"x.y.z" -> "x.y.z [publish binary]"
 
-    git commit package.json -m "0.m.n"
-    git tag v0.m.n
-    git push
-    git push --tags
+# push commit and tag to remote
+git push
+git push --tags
 
-    # empty commit with '[publish binary]' in message
-    # tells travis to create a new binary for version in package.json
-    git commit --allow-empty -m "linux [publish binary]"
-    git push origin master
+# make a sandwich, check travis console for build successes
+# test published binary (should install from remote)
+npm install && npm test
 
-    # switch to travis-osx branch which can build on OS X
-    # and do the same
-    git checkout travis-osx
-    git merge master
-    git commit --allow-empty -m "darwin [publish binary]"
-    git push origin travis-osx
-
-    # make a sandwich, check travis console for build successes
-    npm publish
+# publish to npm
+npm publish
+```
