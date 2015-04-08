@@ -1,7 +1,7 @@
 var fontnik = require('../index.js');
 var assert = require('assert');
-var zlib = require('zlib');
 var fs = require('fs');
+var zlib = require('zlib');
 var path = require('path');
 var zdata = fs.readFileSync(__dirname + '/fixtures/range.0.256.pbf');
 var Protobuf = require('pbf');
@@ -17,169 +17,135 @@ function jsonEqual(key, json) {
     assert.deepEqual(json, require('./expected/'+key+'.json'));
 }
 
-fontnik.register_fonts(path.resolve(__dirname + '/../fonts/'), { recurse: true });
-
-describe('glyphs', function() {
-    var data;
-    before(function(done) {
-        zlib.inflate(zdata, function(err, d) {
+var expected = JSON.parse(fs.readFileSync(__dirname + '/expected/load.json').toString());
+var firasans = fs.readFileSync(path.resolve(__dirname + '/../fonts/firasans-medium/FiraSans-Medium.ttf'));
+var opensans = fs.readFileSync(path.resolve(__dirname + '/../fonts/open-sans/OpenSans-Regular.ttf'));
+describe('load', function() {
+    it('loads: fira sans', function(done) {
+        fontnik.load(firasans, function(err, faces) {
             assert.ifError(err);
-            data = d;
+            assert.deepEqual(faces,expected);
             done();
         });
     });
 
-    it('serialize', function(done) {
-        // On disk fixture generated with the following code.
-        if (UPDATE) {
-            fontnik.range({
-                fontstack:'Open Sans Regular',
-                start: 0,
-                end: 256
-            }, function(err, zdata) {
-                if (err) throw err;
-                fs.writeFileSync(__dirname + '/fixtures/range.0.256.pbf', zdata);
-                done();
-            });
-        }
-        var glyphs = new fontnik.Glyphs(data);
-        var vt = new Glyphs(new Protobuf(new Uint8Array(glyphs.serialize())));
-        var json = JSON.parse(JSON.stringify(vt, nobuffer));
-        jsonEqual('range', json);
+    it('loads: open sans', function(done) {
+        fontnik.load(opensans, function(err, faces) {
+            assert.ifError(err);
+            assert.equal(faces[0].points.length, 882);
+            assert.equal(faces[0].family_name, 'Open Sans');
+            assert.equal(faces[0].style_name, 'Regular');
+            done();
+        });
+    });
+
+    it('invalid font loading', function(done) {
+        var baloneysans;
+        assert.throws(function() {
+            fontnik.load(baloneysans, function(err, faces) {});
+        }, /First argument must be a font buffer/);
         done();
     });
 
-    it('range', function(done) {
-        var glyphs = new fontnik.Glyphs();
-        glyphs.range('Open Sans Regular', '0-256', fontnik.getRange(0, 256), function(err) {
+    it('non existent font loading', function(done) {
+        var doesnotexistsans = new Buffer('baloney');
+        fontnik.load(doesnotexistsans, function(err, faces) {
+            assert.ok(err.message.indexOf('Font buffer is not an object'));
+            done();
+        });
+    });
+
+    it('load typeerror callback', function(done) {
+        assert.throws(function() {
+            fontnik.load(firasans);
+        }, /Callback must be a function/);
+        done();
+    });
+
+});
+
+describe('range', function() {
+        var data;
+        before(function(done) {
+            zlib.inflate(zdata, function(err, d) {
+                assert.ifError(err);
+                data = d;
+                done();
+            });
+        });
+
+    it('ranges', function(done) {
+        this.timeout(10000);
+        fontnik.range({font: opensans, start: 0, end: 256}, function(err, res) {
             assert.ifError(err);
-            var vt = new Glyphs(new Protobuf(new Uint8Array(glyphs.serialize())));
+            assert.ok(res);
+            assert.deepEqual(res, data);
+            var vt = new Glyphs(new Protobuf(new Uint8Array(res)));
             var json = JSON.parse(JSON.stringify(vt, nobuffer));
             jsonEqual('range', json);
             done();
         });
     });
 
-    // Render a long range of characters which can cause segfaults
-    // with V8 arrays ... not sure yet why.
     it('longrange', function(done) {
-        var glyphs = new fontnik.Glyphs();
-        glyphs.range('Open Sans Regular', '0-1024', fontnik.getRange(0, 1024), function(err) {
+        this.timeout(10000);
+        fontnik.range({font: opensans, start: 0, end: 1024}, function(err, data) {
             assert.ifError(err);
+            assert.ok(data);
             done();
         });
     });
 
-    it('range (chars input)', function(done) {
-        var glyphs = new fontnik.Glyphs();
-        glyphs.range('Open Sans Regular', 'a-and-z', [('a').charCodeAt(0), ('z').charCodeAt(0)], function(err) {
-            assert.ifError(err);
-            var vt = new Glyphs(new Protobuf(new Uint8Array(glyphs.serialize())));
-            var json = JSON.parse(JSON.stringify(vt, nobuffer));
-            jsonEqual('chars', json);
+
+    it('range typeerror options', function(done) {
+        assert.throws(function() {
+            fontnik.range(opensans, function(err, data) {});
+        }, /Font buffer is not an object/);
+        done();
+    });
+
+    it('range filepath does not exist', function(done) {
+        var doesnotexistsans = new Buffer('baloney');
+        fontnik.range({font: doesnotexistsans, start: 0, end: 256}, function(err, faces) {
+            assert.ok(err.message.indexOf('Font buffer is not an object'));
             done();
         });
     });
 
-    it('range typeerror fontstack', function(done) {
-        var glyphs = new fontnik.Glyphs();
+    it('range typeerror start', function(done) {
         assert.throws(function() {
-            glyphs.range(0, '0-256', fontnik.getRange(0, 256), function() {});
-        }, /fontstack must be a string/);
+            fontnik.range({font: opensans, start: 'x', end: 256}, function(err, data) {});
+        }, /option `start` must be a number from 0-65535/);
+        assert.throws(function() {
+            fontnik.range({font: opensans, start: -3, end: 256}, function(err, data) {});
+        }, /option `start` must be a number from 0-65535/);
         done();
     });
 
-    it('range typeerror range', function(done) {
-        var glyphs = new fontnik.Glyphs();
+    it('range typeerror end', function(done) {
         assert.throws(function() {
-            glyphs.range('Open Sans Regular', 0, fontnik.getRange(0, 256), function() {});
-        }, /range must be a string/);
+            fontnik.range({font: opensans, start: 0, end: 'y'}, function(err, data) {});
+        }, /option `end` must be a number from 0-65535/);
+        assert.throws(function() {
+            fontnik.range({font: opensans, start: 0, end: 10000000}, function(err, data) {});
+        }, /option `end` must be a number from 0-65535/);
         done();
     });
 
-    it('range typeerror chars', function(done) {
-        var glyphs = new fontnik.Glyphs();
+    it('range typeerror lt', function(done) {
         assert.throws(function() {
-            glyphs.range('Open Sans Regular', '0-256', 'foo', function() {});
-        }, /chars must be an array/);
+            fontnik.range({font: opensans, start: 256, end: 0}, function(err, data) {});
+        }, /`start` must be less than or equal to `end`/);
         done();
     });
 
     it('range typeerror callback', function(done) {
-        var glyphs = new fontnik.Glyphs();
         assert.throws(function() {
-            glyphs.range('Open Sans Regular', '0-256', fontnik.getRange(0, 256), '');
-        }, /callback must be a function/);
+            fontnik.range({font: opensans, start: 0, end: 256}, '');
+        }, /Callback must be a function/);
+        assert.throws(function() {
+            fontnik.range({font: opensans, start: 0, end: 256});
+        }, /Callback must be a function/);
         done();
-    });
-
-    it('range for fontstack with 0 matching fonts', function(done) {
-        var glyphs = new fontnik.Glyphs();
-        glyphs.range('doesnotexist', '0-256', fontnik.getRange(0, 256), function(err) {
-            assert.ok(err);
-            assert.equal("Error: Failed to find face 'doesnotexist' in font set 'doesnotexist'", err.toString());
-            done();
-        });
-    });
-
-    it('range for fontstack with 1 bad font', function(done) {
-        var glyphs = new fontnik.Glyphs();
-        glyphs.range('Open Sans Regular, doesnotexist', '0-256', fontnik.getRange(0, 256), function(err) {
-            assert.ok(err);
-            assert.equal("Error: Failed to find face 'doesnotexist' in font set 'Open Sans Regular, doesnotexist'", err.toString());
-            done();
-        });
-    });
-
-    // Should error because start is < 0
-    it('getRange error start < 0', function() {
-        assert.throws(function() {
-            fontnik.getRange(-128, 256);
-        }, 'Error: start must be a number from 0-65535');
-    });
-
-    // Should error because end < start
-    it('getRange error end < start', function() {
-        assert.throws(function() {
-            fontnik.getRange(256, 0);
-        }, 'Error: start must be less than or equal to end');
-    });
-
-    // Should error because end > 65535
-    it('getRange error end > 65535', function() {
-        assert.throws(function() {
-            fontnik.getRange(0, 65536);
-        }, 'Error: end must be a number from 0-65535');
-    });
-});
-
-describe('codepoints', function() {
-    it('basic scanning: open sans', function() {
-        var glyphs = new fontnik.Glyphs();
-        var cp = glyphs.codepoints('Open Sans Regular');
-        assert.equal(cp.length, 882);
-    });
-    it('basic scanning: fira sans', function() {
-        var glyphs = new fontnik.Glyphs();
-        var cp = glyphs.codepoints('Fira Sans Medium');
-        assert.equal(cp.length, 789);
-    });
-    it('basic scanning: fira sans + open sans', function() {
-        var glyphs = new fontnik.Glyphs();
-        var cp = glyphs.codepoints('Fira Sans Medium, Open Sans Regular');
-        assert.equal(cp.length, 1021);
-    });
-    it('invalid font face', function() {
-        var glyphs = new fontnik.Glyphs();
-        assert.throws(function() {
-            glyphs.codepoints('foo-bar-invalid');
-        });
-    });
-});
-
-describe('faces', function() {
-    it('list faces', function() {
-        var faces = fontnik.faces();
-        assert.deepEqual(faces, ['Fira Sans Medium', 'Open Sans Regular']);
     });
 });

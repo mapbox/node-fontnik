@@ -1,6 +1,6 @@
 {
   "name": "fontnik",
-  "version": "0.2.6",
+  "version": "1.0.0",
   "description": "A library that delivers a range of glyphs rendered as SDFs (signed distance fields) in a protobuf.",
   "keywords": [
     "font",
@@ -23,9 +23,10 @@
     }
   ],
   "dependencies": {
+    "benchmark": "^1.0.0",
     "minimist": "^0.2.0",
-    "nan": "^1.2.0",
-    "node-pre-gyp": "^0.5.31",
+    "nan": "^1.7.0",
+    "node-pre-gyp": "~0.6.4",
     "queue-async": "^1.0.7"
   },
   "bundledDependencies": [
