@@ -3,13 +3,13 @@
 ### `range(options: object, callback: function)`
 
 Get a range of glyphs as a protocol buffer. `options` is an object with options:
-* `file: string`
+* `font: buffer`
 * `start: number`
 * `end: number`
 
-`file` is the path to a font file on disk.]
+`font` is the actual font file.
 
-### `load(fontpath: string, callback: function)`
+### `load(font: buffer, callback: function)`
 
 Read a font's metadata. Returns an object like
 ``` json
