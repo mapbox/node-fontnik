@@ -96,6 +96,15 @@ describe('range', function() {
         });
     });
 
+    it('shortrange', function(done) {
+        this.timeout(10000);
+        fontnik.range({font: opensans, start: 34, end: 38}, function(err, res) {
+            var vt = new Glyphs(new Protobuf(new Uint8Array(res)));
+            var codes = Object.keys(vt.stacks['Open Sans Regular'].glyphs);
+            assert.deepEqual(codes, [ '34', '35', '36', '37', '38' ]);
+            done();
+        });
+    });
 
     it('range typeerror options', function(done) {
         assert.throws(function() {
