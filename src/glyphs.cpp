@@ -74,6 +74,34 @@ struct LoadBaton {
     }
 };
 
+struct TableBaton {
+    v8::Persistent<v8::Function> callback;
+    v8::Persistent<v8::Object> buffer;
+    v8::Persistent<v8::String> table;
+    const char * font_data;
+    std::size_t font_size;
+    std::string error_name;
+    std::string message;
+    uv_work_t request;
+    TableBaton(v8::Local<v8::Object> buf,
+              v8::Local<v8::String> _table,
+              v8::Local<v8::Value> cb) :
+        table(_table),
+        font_data(node::Buffer::Data(buf)),
+        font_size(node::Buffer::Length(buf)),
+        error_name(),
+        message(),
+        request() {
+            request.data = this;
+            NanAssignPersistent(callback, cb.As<v8::Function>());
+            NanAssignPersistent(buffer, buf.As<v8::Object>());
+        }
+    ~TableBaton() {
+        NanDisposePersistent(callback);
+        NanDisposePersistent(buffer);
+    }
+};
+
 struct RangeBaton {
     v8::Persistent<v8::Function> callback;
     v8::Persistent<v8::Object> buffer;
@@ -125,6 +153,35 @@ NAN_METHOD(Load) {
 
     LoadBaton* baton = new LoadBaton(obj,args[1]);
     uv_queue_work(uv_default_loop(), &baton->request, LoadAsync, (uv_after_work_cb)AfterLoad);
+    NanReturnUndefined();
+}
+
+NAN_METHOD(Table) {
+    NanScope();
+
+    // Validate arguments.
+    if (!args[0]->IsObject()) {
+        return NanThrowTypeError("First argument must be a font buffer");
+    }
+    v8::Local<v8::Object> obj = args[0]->ToObject();
+    if (obj->IsNull() || obj->IsUndefined() || !node::Buffer::HasInstance(obj)) {
+        return NanThrowTypeError("First argument must be a font buffer");
+    }
+
+    if (!args[1]->IsString()) {
+        return NanThrowTypeError("Second argument must be a string table name");
+    }
+    v8::Local<v8::String> table = args[1]->ToString();
+    if (table->IsNull() || table->IsUndefined() || table->Length() == 0) {
+        return NanThrowTypeError("Second argument must be a string of non-zero size");
+    }
+
+    if (args.Length() < 3 || !args[2]->IsFunction()) {
+        return NanThrowTypeError("Callback must be a function");
+    }
+
+    TableBaton* baton = new TableBaton(obj,table,args[2]);
+    uv_queue_work(uv_default_loop(), &baton->request, TableAsync, (uv_after_work_cb)AfterTable);
     NanReturnUndefined();
 }
 
@@ -265,6 +322,80 @@ void AfterLoad(uv_work_t* req) {
     delete baton;
 };
 
+void TableAsync(uv_work_t* req) {
+    TableBaton* baton = static_cast<TableBaton*>(req->data);
+
+    FT_Library library = nullptr;
+    ft_library_guard library_guard(&library);
+    FT_Error error = FT_Init_FreeType(&library);
+    if (error) {
+        /* LCOV_EXCL_START */
+        baton->error_name = std::string("could not open FreeType library");
+        return;
+        /* LCOV_EXCL_END */
+    }
+    FT_Face ft_face = 0;
+    int num_faces = 0;
+    for ( int i = 0; ft_face == 0 || i < num_faces; ++i )
+    {
+        FT_Error face_error = FT_New_Memory_Face(library, reinterpret_cast<FT_Byte const*>(baton->font_data), static_cast<FT_Long>(baton->font_size), i, &ft_face);
+        if (face_error) {
+            baton->error_name = std::string("could not open font file");
+            return;
+        }
+
+        FT_ULong  length = 0;
+        FT_Byte *buffer;
+
+        v8::String::Utf8Value _tablename(baton->table);
+        std::string tablename = reinterpret_cast<const std::string&>(_tablename);
+
+        FT_ULong tag = FT_MAKE_TAG(tablename.at(0) << 24,
+            tablename.at(1) << 16,
+            tablename.at(2) << 8,
+            tablename.at(3));
+
+        face_error = FT_Load_Sfnt_Table(ft_face, tag, 0, NULL, &length);
+        if (face_error) {
+            baton->error_name = std::string("error retrieving table");
+            return;
+        }
+
+        buffer = (FT_Byte *) malloc (length);
+        if (buffer == NULL) {
+            baton->error_name = std::string("error retrieving 0-length table");
+        }
+
+        face_error = FT_Load_Sfnt_Table(ft_face, tag, 0, buffer, &length);
+        if (face_error) {
+            baton->error_name = std::string("error retrieving table");
+            return;
+        }
+        const char _message = reinterpret_cast<const char&>(buffer);
+
+        baton->message = _message;
+
+        if (ft_face) {
+            FT_Done_Face(ft_face);
+        }
+    }
+};
+
+void AfterTable(uv_work_t* req) {
+    NanScope();
+    TableBaton* baton = static_cast<TableBaton*>(req->data);
+
+    if (!baton->error_name.empty()) {
+        v8::Local<v8::Value> argv[1] = { NanError(baton->error_name.c_str()) };
+        NanMakeCallback(NanGetCurrentContext()->Global(), NanNew(baton->callback), 1, argv);
+    } else {
+        v8::Local<v8::Value> argv[2] = { NanNull(), NanNewBufferHandle(baton->message.data(), baton->message.size()) };
+        NanMakeCallback(NanGetCurrentContext()->Global(), NanNew(baton->callback), 2, argv);
+    }
+
+    delete baton;
+};
+
 void RangeAsync(uv_work_t* req) {
     RangeBaton* baton = static_cast<RangeBaton*>(req->data);
 
@@ -349,8 +480,6 @@ void AfterRange(uv_work_t* req) {
         v8::Local<v8::Value> argv[1] = { NanError(baton->error_name.c_str()) };
         NanMakeCallback(NanGetCurrentContext()->Global(), NanNew(baton->callback), 1, argv);
     } else {
-        v8::Local<v8::Array> js_faces = NanNew<v8::Array>();
-        unsigned idx = 0;
         v8::Local<v8::Value> argv[2] = { NanNull(), NanNewBufferHandle(baton->message.data(), baton->message.size()) };
         NanMakeCallback(NanGetCurrentContext()->Global(), NanNew(baton->callback), 2, argv);
     }

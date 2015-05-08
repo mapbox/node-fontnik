@@ -13,6 +13,7 @@ extern "C"
 #include FT_FREETYPE_H
 #include FT_GLYPH_H
 #include FT_OUTLINE_H
+#include FT_TRUETYPE_TABLES_H
 }
 
 namespace node_fontnik
@@ -24,6 +25,9 @@ void AfterLoad(uv_work_t* req);
 NAN_METHOD(Range);
 void RangeAsync(uv_work_t* req);
 void AfterRange(uv_work_t* req);
+NAN_METHOD(Table);
+void TableAsync(uv_work_t* req);
+void AfterTable(uv_work_t* req);
 struct glyph_info;
 void RenderSDF(glyph_info &glyph,
                int size,
