@@ -77,14 +77,14 @@ struct LoadBaton {
 struct TableBaton {
     v8::Persistent<v8::Function> callback;
     v8::Persistent<v8::Object> buffer;
-    v8::Persistent<v8::String> table;
+    std::string table;
     const char * font_data;
     std::size_t font_size;
     std::string error_name;
     std::string message;
     uv_work_t request;
     TableBaton(v8::Local<v8::Object> buf,
-              v8::Local<v8::String> _table,
+              std::string _table,
               v8::Local<v8::Value> cb) :
         table(_table),
         font_data(node::Buffer::Data(buf)),
@@ -171,8 +171,8 @@ NAN_METHOD(Table) {
     if (!args[1]->IsString()) {
         return NanThrowTypeError("Second argument must be a string table name");
     }
-    v8::Local<v8::String> table = args[1]->ToString();
-    if (table->IsNull() || table->IsUndefined() || table->Length() == 0) {
+    std::string table = *v8::String::Utf8Value(args[1]->ToString());
+    if (table.empty()) {
         return NanThrowTypeError("Second argument must be a string of non-zero size");
     }
 
@@ -347,13 +347,10 @@ void TableAsync(uv_work_t* req) {
         FT_ULong  length = 0;
         FT_Byte *buffer;
 
-        v8::String::Utf8Value _tablename(baton->table);
-        std::string tablename = reinterpret_cast<const std::string&>(_tablename);
-
-        FT_ULong tag = FT_MAKE_TAG(tablename.at(0) << 24,
-            tablename.at(1) << 16,
-            tablename.at(2) << 8,
-            tablename.at(3));
+        FT_ULong tag = FT_MAKE_TAG(baton->table.at(0),
+            baton->table.at(1),
+            baton->table.at(2),
+            baton->table.at(3));
 
         face_error = FT_Load_Sfnt_Table(ft_face, tag, 0, NULL, &length);
         if (face_error) {
