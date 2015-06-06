@@ -9,6 +9,8 @@ Get a range of glyphs as a protocol buffer. `options` is an object with options:
 
 `font` is the actual font file.
 
+`callback` will be called as `callback(err, res)` where `res` is the Buffer protocol result.
+
 ### `load(font: buffer, callback: function)`
 
 Read a font's metadata. Returns an object like
@@ -18,3 +20,5 @@ Read a font's metadata. Returns an object like
 "points": [32,33,34,35…]
 ```
 where `points` is an array of numbers corresponding to unicode points where this font face has coverage.
+
+`callback` will be called as `callback(err, res)` where `res` is an array of font style object metadata.
