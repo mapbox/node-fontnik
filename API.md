@@ -9,7 +9,7 @@ Get a range of glyphs as a protocol buffer. `options` is an object with options:
 
 `font` is the actual font file.
 
-`callback` will be called as `callback(err, res)` where `res` is the Buffer protocol result.
+`callback` will be called as `callback(err, res)` where `res` is the protocol buffer result.
 
 ### `load(font: buffer, callback: function)`
 
