@@ -270,7 +270,7 @@ void RangeAsync(uv_work_t* req) {
 
     unsigned array_size = baton->end - baton->start;
     baton->chars.reserve(array_size);
-    for (unsigned i=baton->start; i <= array_size; i++) {
+    for (unsigned i=baton->start; i <= baton->end; i++) {
         baton->chars.emplace_back(i);
     }
 
