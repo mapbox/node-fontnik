@@ -1,69 +1,105 @@
-language: cpp
+# Prevent Travis from exporting CXX after matrix env
+language: c
+
+sudo: false
 
 matrix:
   include:
-     # Coverage
-     - os: osx
-       compiler: clang
-       env: NODE_VERSION="0.10" COVERAGE=true
-     # Linux
-     - os: linux
-       compiler: clang
-       env: NODE_VERSION="0.10"
-     - os: linux
-       compiler: clang
-       env: NODE_VERSION="0.12"
-     # OS X
-     - os: osx
-       compiler: clang
-       env: NODE_VERSION="0.10"
-     - os: osx
-       compiler: clang
-       env: NODE_VERSION="0.12"
+# Coverage
+  - os: osx
+    compiler: clang
+    env:
+    - NODE_EXE: "node"
+    - NODE_VERSION: 0.10
+    - COVERAGE: true
+    - CXXFLAGS: "--coverage"
+    - LDFLAGS: "--coverage"
+# Linux
+  - os: linux
+    compiler: clang
+    env:
+    - CXX: clang++-3.5
+    - NODE_EXE: "node"
+    - NODE_VERSION: 0.10
+    addons:
+      apt:
+        sources: [ 'ubuntu-toolchain-r-test', 'llvm-toolchain-precise-3.5' ]
+        packages: [ 'clang-3.5', 'libstdc++-4.9-dev', 'libstdc++6' ]
+  - os: linux
+    compiler: clang
+    env:
+    - CXX: clang++-3.5
+    - NODE_EXE: "node"
+    - NODE_VERSION: 0.12
+    addons:
+      apt:
+        sources: [ 'ubuntu-toolchain-r-test', 'llvm-toolchain-precise-3.5' ]
+        packages: [ 'clang-3.5', 'libstdc++-4.9-dev', 'libstdc++6' ]
+  - os: linux
+    compiler: clang
+    env:
+    - CXX: clang++-3.5
+    - NODE_EXE: "iojs"
+    - NODE_VERSION: 2.3
+    addons:
+      apt:
+        sources: [ 'ubuntu-toolchain-r-test', 'llvm-toolchain-precise-3.5' ]
+        packages: [ 'clang-3.5', 'libstdc++-4.9-dev', 'libstdc++6' ]
+# OS X
+  - os: osx
+    compiler: clang
+    env:
+    - NODE_EXE: "node"
+    - NODE_VERSION: 0.10
+  - os: osx
+    compiler: clang
+    env:
+    - NODE_EXE: "node"
+    - NODE_VERSION: 0.12
+  - os: osx
+    compiler: clang
+    env:
+    - NODE_EXE: "iojs"
+    - NODE_VERSION: 2.3
 
 env:
   global:
-   - JOBS: "8"
-   - BUILD: '/tmp/fontnik-build'
-   - PKG_CONFIG_PATH: '/tmp/fontnik-build/lib/pkgconfig'
-   - secure: "XV0lekmfgT+D9t0ZTIU+UJF6g+p3cBQMO6T6C9lkoKTC0YbtLtxSFtBahD/4PjL86DMJgTaf1nBmxqOxbrfkcpJUxnLe3r8u4Z2L/+7+QSACLNktlIfWNSO+33WxKNb4mVw6jMFZIo4ZurF016MXYzLzjpxRELW2oO2STUs2m44="
-   - secure: "CQNHbxw8yHlAdUVbKokHzHmj7C+duXP3mifWOkZm9GKw4myWsRFhhoSYZmOSkgj9EWfYYkedrqEr9+GaMg9rkVJuO/7jzn6S+M7CFXKJju6MoZEDO6WcFva4M8pw6IFb9q22GcQ+OsE8/i0DwchTokyFkNb3fpwWuwROUPQ/nWg="
+  - secure: "XV0lekmfgT+D9t0ZTIU+UJF6g+p3cBQMO6T6C9lkoKTC0YbtLtxSFtBahD/4PjL86DMJgTaf1nBmxqOxbrfkcpJUxnLe3r8u4Z2L/+7+QSACLNktlIfWNSO+33WxKNb4mVw6jMFZIo4ZurF016MXYzLzjpxRELW2oO2STUs2m44="
+  - secure: "CQNHbxw8yHlAdUVbKokHzHmj7C+duXP3mifWOkZm9GKw4myWsRFhhoSYZmOSkgj9EWfYYkedrqEr9+GaMg9rkVJuO/7jzn6S+M7CFXKJju6MoZEDO6WcFva4M8pw6IFb9q22GcQ+OsE8/i0DwchTokyFkNb3fpwWuwROUPQ/nWg="
 
 before_install:
- - export COVERAGE=${COVERAGE:-false}
- # here we set up the node version on the fly based on the matrix value.
- # This is done manually so that it is easy to flip the 'language' to
- # objective-c in another branch (to run the same travis.yml on OS X)
- - git clone https://github.com/creationix/nvm.git ../.nvm
- - source ../.nvm/nvm.sh
- - nvm install $NODE_VERSION
- - nvm use $NODE_VERSION
- - node --version
- - npm --version
- - if [[ ${COVERAGE} == true ]]; then
-      brew update;
-      brew install pyenv;
-      eval "$(pyenv init -)";
-      pyenv install 2.7.6;
-      pyenv global 2.7.6;
-      pyenv rehash;
-      pip install cpp-coveralls;
-      pyenv rehash;
-     fi;
- - export PATH="$BUILD/bin:$PATH"
- - ./deps/travis_build.sh
+- export COVERAGE=${COVERAGE:-false}
+- if [[ ${COVERAGE} == true ]]; then
+    brew update;
+    brew install pyenv;
+    eval "$(pyenv init -)";
+    pyenv install 2.7.6;
+    pyenv global 2.7.6;
+    pyenv rehash;
+    pip install cpp-coveralls;
+    pyenv rehash;
+  fi;
+- ./scripts/install_node.sh
 
 install:
- - if [[ ${COVERAGE} == true ]]; then
-    export LDFLAGS="--coverage" && export CXXFLAGS="--coverage" && npm install --build-from-source --debug --clang=1;
+- if [[ ${COVERAGE} == true ]]; then
+    npm install --build-from-source --debug --clang;
   else
-    npm install --build-from-source --clang=1;
+    npm install --build-from-source --clang;
   fi;
 
+before_script:
+- ulimit -c unlimited -S
+- ulimit -a
+
 script:
- - npm test
- - if [[ ${COVERAGE} == true ]]; then cpp-coveralls --exclude node_modules --exclude tests --build-root build --gcov-options '\-lp' --exclude doc --exclude build/Debug/obj/gen; fi;
+- npm test
+- if [[ ${COVERAGE} == true ]]; then
+    cpp-coveralls --exclude node_modules --exclude tests --build-root build --gcov-options '\-lp' --exclude doc --exclude build/Debug/obj/gen;
+  fi;
 
 after_success:
- - ./deps/travis_publish.sh
+- ./scripts/travis_publish.sh
 
+git:
+  submodules: true
