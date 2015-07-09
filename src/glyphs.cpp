@@ -34,8 +34,7 @@ typedef std::pair<Point, Point> SegmentPair;
 typedef std::pair<Box, SegmentPair> SegmentValue;
 typedef bgi::rtree<SegmentValue, bgi::rstar<16>> Tree;
 
-namespace node_fontnik
-{
+namespace node_fontnik {
 
 struct FaceMetadata {
     std::string family_name;

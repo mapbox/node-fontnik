@@ -16,8 +16,7 @@ extern "C"
 #include FT_TRUETYPE_TABLES_H
 }
 
-namespace node_fontnik
-{
+namespace node_fontnik {
 
 NAN_METHOD(Load);
 void LoadAsync(uv_work_t* req);
