@@ -41,7 +41,7 @@
     "font-inspect": "./bin/font-inspect"
   },
   "scripts": {
-    "install": "node-pre-gyp install --fallback-to-build",
+    "install": ". ./scripts/install_mason.sh && node-pre-gyp install --fallback-to-build",
     "test": "node_modules/.bin/mocha -R spec"
   },
   "binary": {

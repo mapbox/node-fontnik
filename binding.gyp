@@ -30,23 +30,50 @@
         './include',
         './vendor/agg/include',
         '<(SHARED_INTERMEDIATE_DIR)/',
-        '<!@(pkg-config freetype2 --cflags-only-I | sed s/-I//g)',
-        '<!@(pkg-config protobuf --cflags-only-I | sed s/-I//g)',
+        '<!@(mason cflags boost ${BOOST_VERSION} | sed s/-I//g)',
+        '<!@(mason cflags freetype ${FREETYPE_VERSION} | sed s/-I//g)',
+        '<!@(mason cflags protobuf ${PROTOBUF_VERSION} | sed s/-I//g)',
         "<!(node -e \"require('nan')\")"
       ],
       'libraries': [
-        '<!@(pkg-config freetype2 --libs --static)',
-        '<!@(pkg-config protobuf --libs --static)'
+        '<!@(mason static_libs freetype ${FREETYPE_VERSION})',
+        '<!@(mason static_libs protobuf ${PROTOBUF_VERSION})'
       ],
-      'xcode_settings': {
-          'MACOSX_DEPLOYMENT_TARGET': '10.8',
-          'OTHER_CPLUSPLUSFLAGS': ['-Wshadow','-std=c++11', '-stdlib=libc++', '-Wno-unused-variable'],
-          'GCC_ENABLE_CPP_RTTI': 'YES',
-          'GCC_ENABLE_CPP_EXCEPTIONS': 'YES'
-      },
-      'cflags_cc!': ['-fno-rtti', '-fno-exceptions'],
-      'cflags_cc' : ['-std=c++11','-Wshadow'],
-      'cflags_c' : ['-std=c99']
+      'conditions': [
+        ['OS=="mac"', {
+          'xcode_settings': {
+            'CLANG_CXX_LIBRARY': 'libc++',
+            'CLANG_CXX_LANGUAGE_STANDARD': 'c++1y',
+            'GCC_VERSION': 'com.apple.compilers.llvm.clang.1_0',
+            'GCC_ENABLE_CPP_EXCEPTIONS': 'YES',
+            'GCC_ENABLE_CPP_RTTI': 'YES',
+            'OTHER_CPLUSPLUSFLAGS': [
+              '-Wall',
+              '-Wextra',
+              '-Wshadow',
+              '-Wno-variadic-macros',
+              '-Wno-unused-parameter',
+              '-Wno-unused-variable',
+              '-Wno-sign-compare',
+            ],
+            'GCC_WARN_PEDANTIC': 'YES',
+            'GCC_WARN_UNINITIALIZED_AUTOS': 'YES_AGGRESSIVE',
+            'MACOSX_DEPLOYMENT_TARGET': '10.9',
+          },
+        }, {
+          'cflags_cc': [
+            '-std=c++14',
+            '-Wall',
+            '-Wextra',
+            '-Wno-variadic-macros',
+            '-Wno-unused-parameter',
+            '-Wno-unused-variable',
+            '-Wno-sign-compare',
+            '-frtti',
+            '-fexceptions',
+          ],
+        }],
+      ],
     },
     {
       'target_name': 'action_after_build',
