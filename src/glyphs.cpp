@@ -31,8 +31,7 @@ typedef std::pair<Point, Point> SegmentPair;
 typedef std::pair<Box, SegmentPair> SegmentValue;
 typedef bgi::rtree<SegmentValue, bgi::rstar<16>> Tree;
 
-namespace node_fontnik
-{
+namespace node_fontnik {
 
 struct FaceMetadata {
     std::string family_name;
@@ -166,14 +165,15 @@ NAN_METHOD(Range) {
                                        start->IntegerValue(),
                                        end->IntegerValue());
     uv_queue_work(uv_default_loop(), &baton->request, RangeAsync, (uv_after_work_cb)AfterRange);
+
+    NanReturnUndefined();
 }
 
 struct ft_library_guard {
     ft_library_guard(FT_Library * lib) :
         library_(lib) {}
 
-    ~ft_library_guard()
-    {
+    ~ft_library_guard() {
         if (library_) FT_Done_FreeType(*library_);
     }
 
@@ -184,8 +184,7 @@ struct ft_glyph_guard {
     ft_glyph_guard(FT_Glyph * glyph) :
         glyph_(glyph) {}
 
-    ~ft_glyph_guard()
-    {
+    ~ft_glyph_guard() {
         if (glyph_) FT_Done_Glyph(*glyph_);
     }
 
@@ -206,8 +205,7 @@ void LoadAsync(uv_work_t* req) {
     }
     FT_Face ft_face = 0;
     int num_faces = 0;
-    for ( int i = 0; ft_face == 0 || i < num_faces; ++i )
-    {
+    for (int i = 0; ft_face == 0 || i < num_faces; ++i) {
         FT_Error face_error = FT_New_Memory_Face(library, reinterpret_cast<FT_Byte const*>(baton->font_data), static_cast<FT_Long>(baton->font_size), i, &ft_face);
         if (face_error) {
             baton->error_name = std::string("could not open font file");
@@ -291,8 +289,7 @@ void RangeAsync(uv_work_t* req) {
     llmr::glyphs::glyphs glyphs;
 
     int num_faces = 0;
-    for ( int i = 0; ft_face == 0 || i < num_faces; ++i )
-    {
+    for (int i = 0; ft_face == 0 || i < num_faces; ++i) {
         FT_Error face_error = FT_New_Memory_Face(library, reinterpret_cast<FT_Byte const*>(baton->font_data), static_cast<FT_Long>(baton->font_size), i, &ft_face);
         if (face_error) {
             baton->error_name = std::string("could not open font");
@@ -342,6 +339,7 @@ void RangeAsync(uv_work_t* req) {
             }
 
         }
+
         if (ft_face) {
             FT_Done_Face(ft_face);
         }
@@ -373,20 +371,17 @@ struct User {
     Points ring;
 };
 
-void CloseRing(Points &ring)
-{
+void CloseRing(Points &ring) {
     const Point &first = ring.front();
     const Point &last = ring.back();
 
     if (first.get<0>() != last.get<0>() ||
-        first.get<1>() != last.get<1>())
-    {
+        first.get<1>() != last.get<1>()) {
         ring.push_back(first);
     }
 }
 
-int MoveTo(const FT_Vector *to, void *ptr)
-{
+int MoveTo(const FT_Vector *to, void *ptr) {
     User *user = (User*)ptr;
     if (!user->ring.empty()) {
         CloseRing(user->ring);
@@ -397,8 +392,7 @@ int MoveTo(const FT_Vector *to, void *ptr)
     return 0;
 }
 
-int LineTo(const FT_Vector *to, void *ptr)
-{
+int LineTo(const FT_Vector *to, void *ptr) {
     User *user = (User*)ptr;
     user->ring.push_back(Point { float(to->x) / 64, float(to->y) / 64 });
     return 0;
@@ -406,8 +400,7 @@ int LineTo(const FT_Vector *to, void *ptr)
 
 int ConicTo(const FT_Vector *control,
             const FT_Vector *to,
-            void *ptr)
-{
+            void *ptr) {
     User *user = (User*)ptr;
 
     Point prev = user->ring.back();
@@ -416,8 +409,8 @@ int ConicTo(const FT_Vector *control,
     user->ring.pop_back();
 
     agg_fontnik::curve3_div curve(prev.get<0>(), prev.get<1>(),
-                          float(control->x) / 64, float(control->y) / 64,
-                          float(to->x) / 64, float(to->y) / 64);
+                            float(control->x) / 64, float(control->y) / 64,
+                            float(to->x) / 64, float(to->y) / 64);
 
     curve.rewind(0);
     double x, y;
@@ -433,8 +426,7 @@ int ConicTo(const FT_Vector *control,
 int CubicTo(const FT_Vector *c1,
             const FT_Vector *c2,
             const FT_Vector *to,
-            void *ptr)
-{
+            void *ptr) {
     User *user = (User*)ptr;
 
     Point prev = user->ring.back();
@@ -443,9 +435,9 @@ int CubicTo(const FT_Vector *c1,
     user->ring.pop_back();
 
     agg_fontnik::curve4_div curve(prev.get<0>(), prev.get<1>(),
-                          float(c1->x) / 64, float(c1->y) / 64,
-                          float(c2->x) / 64, float(c2->y) / 64,
-                          float(to->x) / 64, float(to->y) / 64);
+                            float(c1->x) / 64, float(c1->y) / 64,
+                            float(c2->x) / 64, float(c2->y) / 64,
+                            float(to->x) / 64, float(to->y) / 64);
 
     curve.rewind(0);
     double x, y;
@@ -459,8 +451,7 @@ int CubicTo(const FT_Vector *c1,
 }
 
 // point in polygon ray casting algorithm
-bool PolyContainsPoint(const Rings &rings, const Point &p)
-{
+bool PolyContainsPoint(const Rings &rings, const Point &p) {
     bool c = false;
 
     for (const Points &ring : rings) {
@@ -477,8 +468,7 @@ bool PolyContainsPoint(const Rings &rings, const Point &p)
     return c;
 }
 
-double SquaredDistance(const Point &v, const Point &w)
-{
+double SquaredDistance(const Point &v, const Point &w) {
     const double a = v.get<0>() - w.get<0>();
     const double b = v.get<1>() - w.get<1>();
     return a * a + b * b;
@@ -486,8 +476,7 @@ double SquaredDistance(const Point &v, const Point &w)
 
 Point ProjectPointOnLineSegment(const Point &p,
                                 const Point &v,
-                                const Point &w)
-{
+                                const Point &w) {
   const double l2 = SquaredDistance(v, w);
   if (l2 == 0) return v;
 
@@ -503,16 +492,14 @@ Point ProjectPointOnLineSegment(const Point &p,
 
 double SquaredDistanceToLineSegment(const Point &p,
                                     const Point &v,
-                                    const Point &w)
-{
+                                    const Point &w) {
     const Point s = ProjectPointOnLineSegment(p, v, w);
     return SquaredDistance(p, s);
 }
 
 double MinDistanceToLineSegment(const Tree &tree,
                                 const Point &p,
-                                int radius)
-{
+                                int radius) {
     const int squared_radius = radius * radius;
 
     std::vector<SegmentValue> results;
@@ -539,12 +526,10 @@ double MinDistanceToLineSegment(const Tree &tree,
 }
 
 void RenderSDF(glyph_info &glyph,
-                     int size,
-                     int buffer,
-                     float cutoff,
-                     FT_Face ft_face)
-{
-
+               int size,
+               int buffer,
+               float cutoff,
+               FT_Face ft_face) {
     if (FT_Load_Glyph (ft_face, glyph.glyph_index, FT_LOAD_NO_HINTING)) {
         return;
     }
