@@ -17,6 +17,8 @@ message glyph {
     required sint32 left = 5;
     required sint32 top = 6;
     required uint32 advance = 7;
+    optional uint32 ascender = 8;
+    optional uint32 descender = 9;
 }
 
 // Stores fontstack information and a list of faces.
