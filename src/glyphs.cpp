@@ -658,8 +658,9 @@ void RenderSDF(glyph_info &glyph,
             // Clamp to 0-255 to prevent overflows or underflows.
             int n = d > 255 ? 255 : d;
             n = n < 0 ? 0 : n;
+            n = ((255 - n) / granularity) * granularity;
 
-            glyph.bitmap[i] = static_cast<char>(255 - n);
+            glyph.bitmap[i] = static_cast<char>(n);
         }
     }
 }
