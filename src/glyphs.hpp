@@ -57,4 +57,6 @@ void RenderSDF(glyph_info &glyph,
                float cutoff,
                FT_Face ft_face);
 
+static uint32_t granularity = 1;
+
 } // ns node_fontnik
