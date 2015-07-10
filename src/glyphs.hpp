@@ -52,15 +52,24 @@ struct glyph_info {
 NAN_METHOD(Load);
 void LoadAsync(uv_work_t* req);
 void AfterLoad(uv_work_t* req);
+
 NAN_METHOD(Range);
 void RangeAsync(uv_work_t* req);
 void AfterRange(uv_work_t* req);
+
 void RenderSDF(glyph_info &glyph,
                int size,
                int buffer,
                float cutoff,
                FT_Face ft_face);
 
-static uint32_t granularity = 1;
+const static int granularity = 1;
+const static float offset_size = 0.5;
+const static int radius_size = 1;
+
+const static int char_size = 24;
+const static int buffer_size = 3;
+const static float cutoff_size = 0.25;
+const static float scale_factor = 1.0;
 
 } // ns node_fontnik
