@@ -297,10 +297,8 @@ void RangeAsync(uv_work_t* req) {
         mutable_fontstack->set_name(std::string(ft_face->family_name) + " " + ft_face->style_name);
         mutable_fontstack->set_range(std::to_string(baton->start) + "-" + std::to_string(baton->end));
 
-        const double scale_factor = 1.0;
-
         // Set character sizes.
-        double size = 24 * scale_factor;
+        double size = char_size * scale_factor;
         FT_Set_Char_Size(ft_face,0,(FT_F26Dot6)(size * (1<<6)),0,0);
 
         for (std::vector<uint32_t>::size_type x = 0; x != baton->chars.size(); x++) {
@@ -313,7 +311,7 @@ void RangeAsync(uv_work_t* req) {
             if (!char_index) continue;
 
             glyph.glyph_index = char_index;
-            RenderSDF(glyph, 24, 3, 0.25, ft_face);
+            RenderSDF(glyph, char_size, buffer_size, cutoff_size, ft_face);
 
             // Add glyph to fontstack.
             llmr::glyphs::glyph *mutable_glyph = mutable_fontstack->add_glyphs();
@@ -596,8 +594,8 @@ void RenderSDF(glyph_info &glyph,
     glyph.height = bbox_ymax - bbox_ymin;
 
     Tree tree;
-    float offset = 0.5;
-    int radius = 8;
+    float offset = offset_size;
+    int radius = radius_size;
 
     for (const Points &ring : user.rings) {
         auto p1 = ring.begin();
@@ -636,7 +634,7 @@ void RenderSDF(glyph_info &glyph,
             double d = MinDistanceToLineSegment(tree, Point {x + offset, y + offset}, radius) * (256 / radius);
 
             // Invert if point is inside.
-            const bool inside = PolyContainsPoint(user.rings, Point { x + offset, y + offset });
+            const bool inside = PolyContainsPoint(user.rings, Point {x + offset, y + offset});
             if (inside) {
                 d = -d;
             }
