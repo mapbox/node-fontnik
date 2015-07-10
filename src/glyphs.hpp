@@ -1,5 +1,4 @@
-#ifndef NODE_FONTNIK_GLYPHS_HPP
-#define NODE_FONTNIK_GLYPHS_HPP
+#pragma once
 
 #include "glyphs.pb.h"
 
@@ -7,32 +6,16 @@
 #include <nan.h>
 
 // freetype2
-extern "C"
-{
+extern "C" {
 #include <ft2build.h>
 #include FT_FREETYPE_H
 #include FT_GLYPH_H
 #include FT_OUTLINE_H
 }
 
-namespace node_fontnik
-{
+namespace node_fontnik {
 
-NAN_METHOD(Load);
-void LoadAsync(uv_work_t* req);
-void AfterLoad(uv_work_t* req);
-NAN_METHOD(Range);
-void RangeAsync(uv_work_t* req);
-void AfterRange(uv_work_t* req);
-struct glyph_info;
-void RenderSDF(glyph_info &glyph,
-               int size,
-               int buffer,
-               float cutoff,
-               FT_Face ft_face);
-
-struct glyph_info
-{
+struct glyph_info {
    glyph_info()
        : glyph_index(0),
          bitmap(""),
@@ -62,7 +45,16 @@ struct glyph_info
    double descender;
 };
 
+NAN_METHOD(Load);
+void LoadAsync(uv_work_t* req);
+void AfterLoad(uv_work_t* req);
+NAN_METHOD(Range);
+void RangeAsync(uv_work_t* req);
+void AfterRange(uv_work_t* req);
+void RenderSDF(glyph_info &glyph,
+               int size,
+               int buffer,
+               float cutoff,
+               FT_Face ft_face);
 
 } // ns node_fontnik
-
-#endif // NODE_FONTNIK_GLYPHS_HPP
