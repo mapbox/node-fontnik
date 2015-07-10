@@ -11,7 +11,7 @@ var Protobuf = require('pbf');
 var Glyphs = require('./format/glyphs');
 var UPDATE = process.env.UPDATE;
 
-var opensans = fs.readFileSync(__dirname + '/fonts/open-sans/OpenSans-Regular.ttf');
+var opensans = fs.readFileSync(__dirname + '/fixtures/fonts/open-sans/OpenSans-Regular.ttf');
 
 test('range', function(t) {
     var data;

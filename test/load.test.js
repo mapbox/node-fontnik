@@ -5,45 +5,56 @@
 var fontnik = require('..');
 var test = require('tape');
 var fs = require('fs');
+var mkdirp = require('mkdirp');
 var UPDATE = process.env.UPDATE;
 
-var firasans = fs.readFileSync(__dirname + '/fonts/firasans-medium/FiraSans-Medium.ttf');
-var opensans = fs.readFileSync(__dirname + '/fonts/open-sans/OpenSans-Regular.ttf');
+var opensans = fs.readFileSync(__dirname + '/fixtures/fonts/open-sans/OpenSans-Regular.ttf');
+var notokufiarabic = fs.readFileSync(__dirname + '/fixtures/fonts/noto-kufi-arabic/NotoKufiArabic-Regular.ttf');
 
 test('load', function(t) {
-    t.test('loads: fira sans', function(t) {
-        fontnik.load(firasans, function(err, faces) {
-            t.error(err);
-
-            var family = faces[0].family_name;
-            var style = faces[0].style_name;
-            var face = [family, style].join(' ');
-            var codepoints = __dirname + '/expected/' + face + '/codepoints.json';
-
-            t.equal(family, 'Fira Sans');
-            t.equal(style, 'Medium');
-
-            if (UPDATE) fs.writeFileSync(codepoints, JSON.stringify(faces[0].points));
-            t.deepEqual(faces[0].points, JSON.parse(fs.readFileSync(codepoints)))
-
-            t.end();
-        });
-    });
-
-    t.test('loads: open sans', function(t) {
+    t.test('loads: Open Sans Regular', function(t) {
         fontnik.load(opensans, function(err, faces) {
             t.error(err);
 
             var family = faces[0].family_name;
             var style = faces[0].style_name;
             var face = [family, style].join(' ');
-            var codepoints = __dirname + '/expected/' + face + '/codepoints.json';
+            var dir = __dirname + '/expected/' + face;
+            var codepoints = dir + '/codepoints.json';
 
             t.equal(family, 'Open Sans');
             t.equal(style, 'Regular');
 
-            if (UPDATE) fs.writeFileSync(codepoints, JSON.stringify(faces[0].points));
+            if (UPDATE) {
+                mkdirp(dir);
+                fs.writeFileSync(codepoints, JSON.stringify(faces[0].points));
+            }
+
             t.deepEqual(faces[0].points, require(codepoints));
+
+            t.end();
+        });
+    });
+
+    t.test('loads: Noto Kufi Arabic Regular', function(t) {
+        fontnik.load(notokufiarabic, function(err, faces) {
+            t.error(err);
+
+            var family = faces[0].family_name;
+            var style = faces[0].style_name;
+            var face = [family, style].join(' ');
+            var dir = __dirname + '/expected/' + face;
+            var codepoints = dir + '/codepoints.json';
+
+            t.equal(family, 'Noto Kufi Arabic');
+            t.equal(style, 'Regular');
+
+            if (UPDATE) {
+                mkdirp(dir);
+                fs.writeFileSync(codepoints, JSON.stringify(faces[0].points));
+            }
+
+            t.deepEqual(faces[0].points, JSON.parse(fs.readFileSync(codepoints)))
 
             t.end();
         });
@@ -66,7 +77,7 @@ test('load', function(t) {
 
     t.test('load typeerror callback', function(t) {
         t.throws(function() {
-            fontnik.load(firasans);
+            fontnik.load(opensans);
         }, /Callback must be a function/);
         t.end();
     });
