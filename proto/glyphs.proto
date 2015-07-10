@@ -1,14 +1,14 @@
 // Protocol Version 1
 
-package llmr.glyphs;
+package mbgl.glyphs;
 
 option optimize_for = LITE_RUNTIME;
 
 // Stores a glyph with metrics and optional SDF bitmap information.
-message glyph {
+message Glyph {
     required uint32 id = 1;
 
-    // A signed distance field of the glyph with a border of 3 pixels.
+    // Signed distance field of a glyph with buffer documented in metadata.
     optional bytes bitmap = 2;
 
     // Glyph metrics.
@@ -17,19 +17,33 @@ message glyph {
     required sint32 left = 5;
     required sint32 top = 6;
     required uint32 advance = 7;
-    optional uint32 ascender = 8;
-    optional uint32 descender = 9;
 }
 
-// Stores fontstack information and a list of faces.
-message fontstack {
-    required string name = 1;
-    required string range = 2;
-    repeated glyph glyphs = 3;
+// Store a face with glyphs and optional metadata.
+message Face {
+    repeated Glyph glyphs = 1;
+
+    // Store SDF metadata.
+    message Metadata {
+        optional uint32 size = 1;
+        optional uint32 buffer = 2;
+        optional float cutoff = 3;
+        optional float scale = 4;
+        optional uint32 granularity = 5;
+        optional float offset = 6;
+        optional uint32 radius = 7;
+    }
+
+    optional Metadata metadata = 2;
+
+    optional string family_name = 3;
+    optional string style_name = 4;
+    optional double ascender = 5;
+    optional double descender = 6;
+    optional double line_height = 7;
 }
 
-message glyphs {
-    repeated fontstack stacks = 1;
-
+message Glyphs {
+    repeated Face faces = 1;
     extensions 16 to 8191;
 }

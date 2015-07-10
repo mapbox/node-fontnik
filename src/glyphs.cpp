@@ -283,7 +283,7 @@ void RangeAsync(uv_work_t* req) {
 
     FT_Face ft_face = 0;
 
-    llmr::glyphs::glyphs glyphs;
+    mbgl::glyphs::Glyphs glyphs;
 
     int num_faces = 0;
     for (int i = 0; ft_face == 0 || i < num_faces; ++i) {
@@ -293,9 +293,23 @@ void RangeAsync(uv_work_t* req) {
             return;
         }
 
-        llmr::glyphs::fontstack *mutable_fontstack = glyphs.add_stacks();
-        mutable_fontstack->set_name(std::string(ft_face->family_name) + " " + ft_face->style_name);
-        mutable_fontstack->set_range(std::to_string(baton->start) + "-" + std::to_string(baton->end));
+        mbgl::glyphs::Face *mutable_face = glyphs.add_faces();
+        // mutable_face->set_range(std::to_string(baton->start) + "-" + std::to_string(baton->end));
+        mutable_face->set_family_name(ft_face->family_name);
+        mutable_face->set_style_name(ft_face->style_name);
+        mutable_face->set_ascender(ft_face->ascender);
+        mutable_face->set_descender(ft_face->descender);
+        mutable_face->set_line_height(ft_face->height);
+
+        // Add metadata to face.
+        mbgl::glyphs::Face::Metadata mutable_metadata = mutable_face->metadata();
+        mutable_metadata.set_size(char_size);
+        mutable_metadata.set_buffer(buffer_size);
+        mutable_metadata.set_cutoff(cutoff_size);
+        mutable_metadata.set_scale(scale_factor);
+        mutable_metadata.set_granularity(granularity);
+        mutable_metadata.set_offset(offset_size);
+        mutable_metadata.set_radius(radius_size);
 
         // Set character sizes.
         double size = char_size * scale_factor;
@@ -313,15 +327,14 @@ void RangeAsync(uv_work_t* req) {
             glyph.glyph_index = char_index;
             RenderSDF(glyph, char_size, buffer_size, cutoff_size, ft_face);
 
-            // Add glyph to fontstack.
-            llmr::glyphs::glyph *mutable_glyph = mutable_fontstack->add_glyphs();
+            // Add glyph to face.
+            mbgl::glyphs::Glyph *mutable_glyph = mutable_face->add_glyphs();
             mutable_glyph->set_id(char_code);
             mutable_glyph->set_width(glyph.width);
             mutable_glyph->set_height(glyph.height);
             mutable_glyph->set_left(glyph.left);
             mutable_glyph->set_top(glyph.top);
             mutable_glyph->set_advance(glyph.advance);
-            mutable_glyph->set_ascender(glyph.ascender);
 
             if (glyph.width > 0) {
                 mutable_glyph->set_bitmap(glyph.bitmap);
