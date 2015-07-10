@@ -8,12 +8,8 @@
 #include "agg_curves.h"
 
 // boost
-// undef B0 to workaround https://svn.boost.org/trac/boost/ticket/10467
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wshadow"
-#pragma GCC diagnostic ignored "-Wunused-parameter"
-#pragma GCC diagnostic ignored "-Wunused-variable"
-#undef B0
 #include <boost/geometry.hpp>
 #include <boost/geometry/geometries/point.hpp>
 #include <boost/geometry/geometries/box.hpp>
@@ -77,7 +73,7 @@ struct LoadBaton {
 struct RangeBaton {
     v8::Persistent<v8::Function> callback;
     v8::Persistent<v8::Object> buffer;
-    const char * font_data;
+    const char* font_data;
     std::size_t font_size;
     std::string error_name;
     std::uint32_t start;
