@@ -25,21 +25,32 @@ var faces = [];
 if (argv.face) {
     faces = [argv.face];
 } else {
-    faces = fontnik.faces();
+    var register = path.resolve(argv.register);
+    faces = fs.readdirSync(register).map(function(f) { return path.join(register, f); });
 }
 
 if (argv.verbose) {
-    console.error('resolved ', faces);
+    console.error('resolved', faces);
 }
 
-var coverages = [];
-faces.forEach(function(face) {
-    var glyphs = new fontnik.Glyphs();
-    var codepoints = glyphs.codepoints(face);
-    coverages.push({
-        face: face,
-        coverage: codepoints
-    });
-});
+var q = queue();
 
-process.stdout.write(JSON.stringify(coverages, null, 2));
+function getCoverage(face, cb) {
+    fs.readFile(face, function(err, res) {
+        if (err) return cb(err);
+        fontnik.load(res, function(err, faces) {
+            if (err) return cb(err);
+            return cb(null, {
+                face: [faces[0].family_name, faces[0].style_name].join(' '),
+                coverage: faces[0].points
+            });
+        });
+    });
+}
+
+faces.forEach(function(f) { q.defer(getCoverage, f) });
+
+q.awaitAll(function(err, res) {
+    if (err) console.error(err);
+    process.stdout.write(JSON.stringify(res, null, 2));
+});
