@@ -80,7 +80,6 @@ before_install:
     pyenv rehash;
   fi;
 - ./scripts/install_node.sh
-- source ~/.nvm/nvm.sh
 
 install:
 - if [[ ${COVERAGE} == true ]]; then
