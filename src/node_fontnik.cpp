@@ -8,10 +8,9 @@
 namespace node_fontnik
 {
 
-void RegisterModule(v8::Handle<v8::Object> target) {
-    NODE_SET_METHOD(target, "load", node_fontnik::Load);
-    NODE_SET_METHOD(target, "range", node_fontnik::Range);
-
+NAN_MODULE_INIT(RegisterModule) {
+    target->Set(Nan::New("load").ToLocalChecked(), Nan::New<v8::FunctionTemplate>(Load)->GetFunction());
+    target->Set(Nan::New("range").ToLocalChecked(), Nan::New<v8::FunctionTemplate>(Range)->GetFunction());
 }
 
 NODE_MODULE(fontnik, RegisterModule);

@@ -3,7 +3,11 @@
 
 #include "glyphs.pb.h"
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wshadow"
 #include <node.h>
+#pragma GCC diagnostic pop
+
 #include <nan.h>
 
 // freetype2
