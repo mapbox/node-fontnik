@@ -10,6 +10,7 @@
 // boost
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wshadow"
+#pragma GCC diagnostic ignored "-Wunused-local-typedef"
 #include <boost/geometry.hpp>
 #include <boost/geometry/geometries/point.hpp>
 #include <boost/geometry/geometries/box.hpp>
@@ -46,8 +47,8 @@ struct FaceMetadata {
 };
 
 struct LoadBaton {
-    v8::Persistent<v8::Function> callback;
-    v8::Persistent<v8::Object> buffer;
+    Nan::Persistent<v8::Function> callback;
+    Nan::Persistent<v8::Object> buffer;
     const char * font_data;
     std::size_t font_size;
     std::string error_name;
@@ -61,18 +62,18 @@ struct LoadBaton {
         faces(),
         request() {
             request.data = this;
-            NanAssignPersistent(callback, cb.As<v8::Function>());
-            NanAssignPersistent(buffer, buf.As<v8::Object>());
+            callback.Reset(cb.As<v8::Function>());
+            buffer.Reset(buf.As<v8::Object>());
         }
     ~LoadBaton() {
-        NanDisposePersistent(callback);
-        NanDisposePersistent(buffer);
+        callback.Reset();
+        buffer.Reset();
     }
 };
 
 struct RangeBaton {
-    v8::Persistent<v8::Function> callback;
-    v8::Persistent<v8::Object> buffer;
+    Nan::Persistent<v8::Function> callback;
+    Nan::Persistent<v8::Object> buffer;
     const char* font_data;
     std::size_t font_size;
     std::string error_name;
@@ -94,79 +95,73 @@ struct RangeBaton {
         message(),
         request() {
             request.data = this;
-            NanAssignPersistent(callback, cb.As<v8::Function>());
-            NanAssignPersistent(buffer, buf.As<v8::Object>());
+            callback.Reset(cb.As<v8::Function>());
+            buffer.Reset(buf.As<v8::Object>());
         }
     ~RangeBaton() {
-        NanDisposePersistent(callback);
-        NanDisposePersistent(buffer);
+        callback.Reset();
+        buffer.Reset();
     }
 };
 
 NAN_METHOD(Load) {
-    NanScope();
-
     // Validate arguments.
-    if (!args[0]->IsObject()) {
-        return NanThrowTypeError("First argument must be a font buffer");
+    if (!info[0]->IsObject()) {
+        return Nan::ThrowTypeError("First argument must be a font buffer");
     }
-    v8::Local<v8::Object> obj = args[0]->ToObject();
+    v8::Local<v8::Object> obj = info[0]->ToObject();
     if (obj->IsNull() || obj->IsUndefined() || !node::Buffer::HasInstance(obj)) {
-        return NanThrowTypeError("First argument must be a font buffer");
+        return Nan::ThrowTypeError("First argument must be a font buffer");
     }
 
-    if (args.Length() < 2 || !args[1]->IsFunction()) {
-        return NanThrowTypeError("Callback must be a function");
+    if (info.Length() < 2 || !info[1]->IsFunction()) {
+        return Nan::ThrowTypeError("Callback must be a function");
     }
 
-    LoadBaton* baton = new LoadBaton(obj,args[1]);
+    LoadBaton* baton = new LoadBaton(obj,info[1]);
     uv_queue_work(uv_default_loop(), &baton->request, LoadAsync, (uv_after_work_cb)AfterLoad);
-    NanReturnUndefined();
 }
 
 NAN_METHOD(Range) {
-    NanScope();
-
     // Validate arguments.
-    if (args.Length() < 1 || !args[0]->IsObject()) {
-        return NanThrowTypeError("First argument must be an object of options");
+    if (info.Length() < 1 || !info[0]->IsObject()) {
+        return Nan::ThrowTypeError("First argument must be an object of options");
     }
 
-    v8::Local<v8::Object> options = args[0].As<v8::Object>();
-    v8::Local<v8::Value> font_buffer = options->Get(NanNew<v8::String>("font"));
+    v8::Local<v8::Object> options = info[0].As<v8::Object>();
+    v8::Local<v8::Value> font_buffer = options->Get(Nan::New<v8::String>("font").ToLocalChecked());
     if (!font_buffer->IsObject()) {
-        return NanThrowTypeError("Font buffer is not an object");
+        return Nan::ThrowTypeError("Font buffer is not an object");
     }
     v8::Local<v8::Object> obj = font_buffer->ToObject();
-    v8::Local<v8::Value> start = options->Get(NanNew<v8::String>("start"));
-    v8::Local<v8::Value> end = options->Get(NanNew<v8::String>("end"));
+    v8::Local<v8::Value> start = options->Get(Nan::New<v8::String>("start").ToLocalChecked());
+    v8::Local<v8::Value> end = options->Get(Nan::New<v8::String>("end").ToLocalChecked());
 
     if (obj->IsNull() || obj->IsUndefined() || !node::Buffer::HasInstance(obj)) {
-        return NanThrowTypeError("First argument must be a font buffer");
+        return Nan::ThrowTypeError("First argument must be a font buffer");
     }
 
     if (!start->IsNumber() || start->IntegerValue() < 0) {
-        return NanThrowTypeError("option `start` must be a number from 0-65535");
+        return Nan::ThrowTypeError("option `start` must be a number from 0-65535");
     }
 
     if (!end->IsNumber() || end->IntegerValue() > 65535) {
-        return NanThrowTypeError("option `end` must be a number from 0-65535");
+        return Nan::ThrowTypeError("option `end` must be a number from 0-65535");
     }
 
     if (end->IntegerValue() < start->IntegerValue()) {
-        return NanThrowTypeError("`start` must be less than or equal to `end`");
+        return Nan::ThrowTypeError("`start` must be less than or equal to `end`");
     }
 
-    if (args.Length() < 2 || !args[1]->IsFunction()) {
-        return NanThrowTypeError("Callback must be a function");
+    if (info.Length() < 2 || !info[1]->IsFunction()) {
+        return Nan::ThrowTypeError("Callback must be a function");
     }
 
     RangeBaton* baton = new RangeBaton(obj,
-                                       args[1],
+                                       info[1],
                                        start->IntegerValue(),
                                        end->IntegerValue());
     uv_queue_work(uv_default_loop(), &baton->request, RangeAsync, (uv_after_work_cb)AfterRange);
-    NanReturnUndefined();
 }
 
 struct ft_library_guard {
@@ -234,29 +229,30 @@ void LoadAsync(uv_work_t* req) {
 };
 
 void AfterLoad(uv_work_t* req) {
-    NanScope();
+    Nan::HandleScope scope;
+
     LoadBaton* baton = static_cast<LoadBaton*>(req->data);
 
     if (!baton->error_name.empty()) {
-        v8::Local<v8::Value> argv[1] = { NanError(baton->error_name.c_str()) };
-        NanMakeCallback(NanGetCurrentContext()->Global(), NanNew(baton->callback), 1, argv);
+        v8::Local<v8::Value> argv[1] = { Nan::Error(baton->error_name.c_str()) };
+        Nan::MakeCallback(Nan::GetCurrentContext()->Global(), Nan::New(baton->callback), 1, argv);
     } else {
-        v8::Local<v8::Array> js_faces = NanNew<v8::Array>();
+        v8::Local<v8::Array> js_faces = Nan::New<v8::Array>(baton->faces.size());
         unsigned idx = 0;
         for (auto const& face : baton->faces) {
-            v8::Local<v8::Object> js_face = NanNew<v8::Object>();
-            js_face->Set(NanNew("family_name"),NanNew(face.family_name));
-            js_face->Set(NanNew("style_name"),NanNew(face.style_name));
-            v8::Local<v8::Array> js_points = NanNew<v8::Array>(face.points.size());
+            v8::Local<v8::Object> js_face = Nan::New<v8::Object>();
+            js_face->Set(Nan::New("family_name").ToLocalChecked(), Nan::New(face.family_name).ToLocalChecked());
+            js_face->Set(Nan::New("style_name").ToLocalChecked(), Nan::New(face.style_name).ToLocalChecked());
+            v8::Local<v8::Array> js_points = Nan::New<v8::Array>(face.points.size());
             unsigned p_idx = 0;
             for (auto const& pt : face.points) {
-                js_points->Set(p_idx++,NanNew(pt));
+                js_points->Set(p_idx++,Nan::New(pt));
             }
-            js_face->Set(NanNew("points"),js_points);
+            js_face->Set(Nan::New("points").ToLocalChecked(), js_points);
             js_faces->Set(idx++,js_face);
         }
-        v8::Local<v8::Value> argv[2] = { NanNull(), js_faces };
-        NanMakeCallback(NanGetCurrentContext()->Global(), NanNew(baton->callback), 2, argv);
+        v8::Local<v8::Value> argv[2] = { Nan::Null(), js_faces };
+        Nan::MakeCallback(Nan::GetCurrentContext()->Global(), Nan::New(baton->callback), 2, argv);
     }
     delete baton;
 };
@@ -338,17 +334,18 @@ void RangeAsync(uv_work_t* req) {
 }
 
 void AfterRange(uv_work_t* req) {
-    NanScope();
+    Nan::HandleScope scope;
+
     RangeBaton* baton = static_cast<RangeBaton*>(req->data);
 
     if (!baton->error_name.empty()) {
-        v8::Local<v8::Value> argv[1] = { NanError(baton->error_name.c_str()) };
-        NanMakeCallback(NanGetCurrentContext()->Global(), NanNew(baton->callback), 1, argv);
+        v8::Local<v8::Value> argv[1] = { Nan::Error(baton->error_name.c_str()) };
+        Nan::MakeCallback(Nan::GetCurrentContext()->Global(), Nan::New(baton->callback), 1, argv);
     } else {
-        v8::Local<v8::Array> js_faces = NanNew<v8::Array>();
+        v8::Local<v8::Array> js_faces = Nan::New<v8::Array>();
         unsigned idx = 0;
-        v8::Local<v8::Value> argv[2] = { NanNull(), NanNewBufferHandle(baton->message.data(), baton->message.size()) };
-        NanMakeCallback(NanGetCurrentContext()->Global(), NanNew(baton->callback), 2, argv);
+        v8::Local<v8::Value> argv[2] = { Nan::Null(), Nan::CopyBuffer(baton->message.data(), baton->message.size()).ToLocalChecked() };
+        Nan::MakeCallback(Nan::GetCurrentContext()->Global(), Nan::New(baton->callback), 2, argv);
     }
 
     delete baton;

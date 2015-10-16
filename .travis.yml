@@ -8,59 +8,35 @@ matrix:
 # Coverage
   - os: osx
     compiler: clang
-    env:
-    - NODE_EXE: "node"
-    - NODE_VERSION: 0.10
-    - COVERAGE: true
-    - CXXFLAGS: "--coverage"
-    - LDFLAGS: "--coverage"
+    env: NODE_VERSION=0.10 COVERAGE=true CXXFLAGS="--coverage" LDFLAGS="--coverage"
 # Linux
   - os: linux
     compiler: clang
-    env:
-    - CXX: clang++-3.5
-    - NODE_EXE: "node"
-    - NODE_VERSION: 0.10
-    addons:
-      apt:
-        sources: [ 'ubuntu-toolchain-r-test', 'llvm-toolchain-precise-3.5' ]
-        packages: [ 'clang-3.5', 'libstdc++-4.9-dev', 'libstdc++6' ]
+    env: CXX=clang++-3.5 NODE_VERSION=0.10
   - os: linux
     compiler: clang
-    env:
-    - CXX: clang++-3.5
-    - NODE_EXE: "node"
-    - NODE_VERSION: 0.12
-    addons:
-      apt:
-        sources: [ 'ubuntu-toolchain-r-test', 'llvm-toolchain-precise-3.5' ]
-        packages: [ 'clang-3.5', 'libstdc++-4.9-dev', 'libstdc++6' ]
+    env: CXX=clang++-3.5 NODE_VERSION=0.12
   - os: linux
     compiler: clang
-    env:
-    - CXX: clang++-3.5
-    - NODE_EXE: "iojs"
-    - NODE_VERSION: 2.3
-    addons:
-      apt:
-        sources: [ 'ubuntu-toolchain-r-test', 'llvm-toolchain-precise-3.5' ]
-        packages: [ 'clang-3.5', 'libstdc++-4.9-dev', 'libstdc++6' ]
+    env: CXX=clang++-3.5 NODE_VERSION=4
 # OS X
   - os: osx
+    osx_image: xcode7
     compiler: clang
-    env:
-    - NODE_EXE: "node"
-    - NODE_VERSION: 0.10
+    env: NODE_VERSION=0.10
   - os: osx
+    osx_image: xcode7
     compiler: clang
-    env:
-    - NODE_EXE: "node"
-    - NODE_VERSION: 0.12
+    env: NODE_VERSION=0.12
   - os: osx
+    osx_image: xcode7
     compiler: clang
-    env:
-    - NODE_EXE: "iojs"
-    - NODE_VERSION: 2.3
+    env: NODE_VERSION=4
+
+addons:
+  apt:
+    sources: [ 'ubuntu-toolchain-r-test', 'llvm-toolchain-precise-3.5' ]
+    packages: [ 'clang-3.5', 'libstdc++-4.9-dev', 'libstdc++6' ]
 
 env:
   global:
@@ -82,21 +58,14 @@ before_install:
 - ./scripts/install_node.sh
 
 install:
-- if [[ ${COVERAGE} == true ]]; then
-    npm install --build-from-source --debug --clang;
-  else
-    npm install --build-from-source --clang;
-  fi;
+- ./scripts/install.sh
 
 before_script:
 - ulimit -c unlimited -S
 - ulimit -a
 
 script:
-- npm test
-- if [[ ${COVERAGE} == true ]]; then
-    cpp-coveralls --exclude node_modules --exclude tests --build-root build --gcov-options '\-lp' --exclude doc --exclude build/Debug/obj/gen;
-  fi;
+- ./scripts/test.sh
 
 after_success:
 - ./scripts/travis_publish.sh
