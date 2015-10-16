@@ -3,12 +3,13 @@ var path = require('path');
 var exec = require('child_process').exec;
 var test = require('tape');
 var queue = require('queue-async');
+var mkdirp = require('mkdirp');
 
 var bin_output = path.resolve(__dirname + '/bin_output');
 
 test('setup', function(t) {
-    fs.mkdir(bin_output, function(err) {
-        t.ifError(err, 'setup');
+    mkdirp(bin_output, function(err) {
+        t.error(err, 'setup');
         t.end();
     });
 });
@@ -18,8 +19,8 @@ test('bin/build-glyphs', function(t) {
         font = path.normalize(__dirname + '/../fonts/open-sans/OpenSans-Regular.ttf'),
         dir = path.resolve(__dirname + '/bin_output');
     exec([script, font, dir].join(' '), function(err, stdout, stderr) {
-        t.ifError(err);
-        t.ifError(stderr);
+        t.error(err);
+        t.error(stderr);
         fs.readdir(bin_output, function(err, files) {
             t.equal(files.length, 256, 'outputs 256 files');
             t.equal(files.indexOf('0-255.pbf'), 0, 'expected .pbf');
@@ -39,8 +40,8 @@ test('bin/font-inspect', function(t) {
 
     t.test(' --face', function(q) {
         exec([script, '--face=' + opensans].join(' '), function(err, stdout, stderr) {
-            q.ifError(err);
-            q.ifError(stderr);
+            q.error(err);
+            q.error(stderr);
             q.ok(stdout.length, 'outputs to console');
             var output = JSON.parse(stdout);
             q.equal(output.length, 1, 'single face');
@@ -53,8 +54,8 @@ test('bin/font-inspect', function(t) {
 
     t.test(' --register', function(q) {
         exec([script, '--register=' + registry].join(' '), function(err, stdout, stderr) {
-            q.ifError(err);
-            q.ifError(stderr);
+            q.error(err);
+            q.error(stderr);
             q.ok(stdout.length, 'outputs to console');
             var output = JSON.parse(stdout);
             q.equal(output.length, 2, 'both faces in register');
@@ -68,7 +69,7 @@ test('bin/font-inspect', function(t) {
 
     t.test(' --register --verbose', function(q) {
         exec([script, '--verbose', '--register=' + registry].join(' '), function(err, stdout, stderr) {
-            q.ifError(err);
+            q.error(err);
             q.ok(stderr.length, 'writes verbose output to stderr');
             q.equal(stderr.indexOf('resolved'), 0);
             var verboseOutput = JSON.parse(stderr.slice(9).trim().replace(/'/g, '"'));
@@ -92,9 +93,9 @@ test('teardown', function(t) {
         });
 
         q.awaitAll(function(err) {
-            t.ifError(err, 'teardown');
+            t.error(err, 'teardown');
             fs.rmdir(bin_output, function(err) {
-                t.ifError(err, 'teardown');
+                t.error(err, 'teardown');
                 t.end();
             });
         });
