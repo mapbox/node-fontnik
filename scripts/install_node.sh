@@ -3,10 +3,14 @@
 set -e
 set -o pipefail
 
-git clone https://github.com/creationix/nvm.git ../.nvm
-source ../.nvm/nvm.sh
+if [ ! -d ~/.nvm ]; then
+    curl -o- https://raw.githubusercontent.com/creationix/nvm/v0.28.0/install.sh | bash
+fi
 
-nvm install ${NODE_EXE} ${NODE_VERSION}
+source ~/.nvm/nvm.sh
 
-${NODE_EXE} --version
+nvm install ${NODE_VERSION}
+nvm alias default ${NODE_VERSION}
+
+node --version
 npm --version
