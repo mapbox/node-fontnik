@@ -42,7 +42,7 @@
     "font-inspect": "./bin/font-inspect"
   },
   "scripts": {
-    "install": ". ./scripts/install_mason.sh && node-pre-gyp install --fallback-to-build",
+    "install": "node-pre-gyp install --fallback-to-build=false || (. ./scripts/install_mason.sh && node-pre-gyp install --build-from-source)",
     "test": "./node_modules/.bin/tape test/**/*.test.js | ./node_modules/.bin/faucet"
   },
   "binary": {
