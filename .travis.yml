@@ -79,7 +79,7 @@ before_install:
     pip install cpp-coveralls;
     pyenv rehash;
   fi;
-- ./scripts/install_node.sh
+- source ./scripts/install_node.sh
 
 install:
 - if [[ ${COVERAGE} == true ]]; then
