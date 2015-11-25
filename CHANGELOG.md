@@ -1,3 +1,8 @@
+# 0.4.1
+
+- Publish Node.js v5.x binaries.
+- Autopublish binaries on git tags.
+
 # 0.4.0
 
 - Fixes bounds for short ranges.
