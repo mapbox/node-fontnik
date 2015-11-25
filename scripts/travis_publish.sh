@@ -27,5 +27,5 @@ if [[ ${TRAVIS_TAG} == v${PACKAGE_JSON_VERSION} ]] || test "${COMMIT_MESSAGE#*'[
     npm install --fallback-to-build=false
     npm test
 
-    node-pre-gyp info
+    ./node_modules/.bin/node-pre-gyp info
 fi
