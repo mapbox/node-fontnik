@@ -19,6 +19,7 @@
 
 // std
 #include <cmath> // std::sqrt
+#include <iostream>
 
 namespace bg = boost::geometry;
 namespace bgm = bg::model;
@@ -221,6 +222,10 @@ void LoadAsync(uv_work_t* req) {
         }
 
         std::vector<int> points_vec(points.begin(), points.end());
+
+        std::cout << "family_name: " << ft_face->family_name << std::endl;
+        std::cout << "style_name: " << ft_face->style_name << std::endl;
+
         baton->faces.emplace_back(ft_face->family_name, ft_face->style_name, std::move(points_vec));
         if (ft_face) {
             FT_Done_Face(ft_face);
