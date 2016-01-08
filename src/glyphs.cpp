@@ -44,6 +44,10 @@ struct FaceMetadata {
         family_name(_family_name),
         style_name(_style_name),
         points(std::move(_points)) {}
+    FaceMetadata(std::string const& _family_name,
+                 std::vector<int> && _points) :
+        family_name(_family_name),
+        points(std::move(_points)) {}
 };
 
 struct LoadBaton {
@@ -221,7 +225,13 @@ void LoadAsync(uv_work_t* req) {
         }
 
         std::vector<int> points_vec(points.begin(), points.end());
-        baton->faces.emplace_back(ft_face->family_name, ft_face->style_name, std::move(points_vec));
+
+        if (ft_face->style_name) {
+            baton->faces.emplace_back(ft_face->family_name, ft_face->style_name, std::move(points_vec));
+        } else {
+            baton->faces.emplace_back(ft_face->family_name, std::move(points_vec));
+        }
+
         if (ft_face) {
             FT_Done_Face(ft_face);
         }
@@ -242,7 +252,7 @@ void AfterLoad(uv_work_t* req) {
         for (auto const& face : baton->faces) {
             v8::Local<v8::Object> js_face = Nan::New<v8::Object>();
             js_face->Set(Nan::New("family_name").ToLocalChecked(), Nan::New(face.family_name).ToLocalChecked());
-            js_face->Set(Nan::New("style_name").ToLocalChecked(), Nan::New(face.style_name).ToLocalChecked());
+            if (!face.style_name.empty()) js_face->Set(Nan::New("style_name").ToLocalChecked(), Nan::New(face.style_name).ToLocalChecked());
             v8::Local<v8::Array> js_points = Nan::New<v8::Array>(face.points.size());
             unsigned p_idx = 0;
             for (auto const& pt : face.points) {
