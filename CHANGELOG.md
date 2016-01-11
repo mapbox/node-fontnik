@@ -1,3 +1,7 @@
+# 0.4.2
+
+- Handle `ft_face->style_name` null value.
+
 # 0.4.1
 
 - Publish Node.js v5.x binaries.
