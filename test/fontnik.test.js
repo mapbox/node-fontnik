@@ -24,9 +24,10 @@ function jsonEqual(t, key, json) {
 var expected = JSON.parse(fs.readFileSync(__dirname + '/expected/load.json').toString());
 var firasans = fs.readFileSync(path.resolve(__dirname + '/../fonts/firasans-medium/FiraSans-Medium.ttf'));
 var opensans = fs.readFileSync(path.resolve(__dirname + '/../fonts/open-sans/OpenSans-Regular.ttf'));
+var guardianbold = fs.readFileSync(path.resolve(__dirname + '/../fonts/GuardianTextSansWeb/GuardianTextSansWeb-Bold.ttf'));
 
 test('load', function(t) {
-    t.test('loads: fira sans', function(t) {
+    t.test('loads: Fira Sans', function(t) {
         fontnik.load(firasans, function(err, faces) {
             t.error(err);
             t.equal(faces[0].points.length, 789);
@@ -36,12 +37,22 @@ test('load', function(t) {
         });
     });
 
-    t.test('loads: open sans', function(t) {
+    t.test('loads: Open Sans', function(t) {
         fontnik.load(opensans, function(err, faces) {
             t.error(err);
             t.equal(faces[0].points.length, 882);
             t.equal(faces[0].family_name, 'Open Sans');
             t.equal(faces[0].style_name, 'Regular');
+            t.end();
+        });
+    });
+
+    t.test('loads: Guardian Bold', function(t) {
+        fontnik.load(guardianbold, function(err, faces) {
+            t.error(err);
+            t.equal(faces[0].points.length, 227);
+            t.equal(faces[0].family_name, '?');
+            t.equal(faces[0].style_name, undefined);
             t.end();
         });
     });
