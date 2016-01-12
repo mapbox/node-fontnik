@@ -51,7 +51,9 @@ test('load', function(t) {
         fontnik.load(guardianbold, function(err, faces) {
             t.error(err);
             t.equal(faces[0].points.length, 227);
+            t.equal(faces[0].hasOwnProperty('family_name'), true);
             t.equal(faces[0].family_name, '?');
+            t.equal(faces[0].hasOwnProperty('style_name'), false);
             t.equal(faces[0].style_name, undefined);
             t.end();
         });
@@ -110,7 +112,9 @@ test('range', function(t) {
 
     t.test('shortrange', function(t) {
         fontnik.range({font: opensans, start: 34, end: 38}, function(err, res) {
+            t.error(err);
             var vt = new Glyphs(new Protobuf(new Uint8Array(res)));
+            t.equal(vt.stacks.hasOwnProperty('Open Sans Regular'), true);
             var codes = Object.keys(vt.stacks['Open Sans Regular'].glyphs);
             t.deepEqual(codes, ['34','35','36','37','38']);
             t.end();
@@ -167,5 +171,16 @@ test('range', function(t) {
             fontnik.range({font: opensans, start: 0, end: 256});
         }, /Callback must be a function/);
         t.end();
+    });
+
+    t.test('range with undefined style_name', function(t) {
+        fontnik.range({font: guardianbold, start: 0, end: 256}, function(err, data) {
+            t.error(err);
+            var vt = new Glyphs(new Protobuf(new Uint8Array(data)));
+            t.equal(vt.stacks.hasOwnProperty('?'), true);
+            t.equal(vt.stacks['?'].hasOwnProperty('name'), true);
+            t.equal(vt.stacks['?'].name, '?');
+            t.end();
+        });
     });
 });
