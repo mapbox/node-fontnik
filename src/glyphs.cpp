@@ -300,7 +300,13 @@ void RangeAsync(uv_work_t* req) {
         }
 
         llmr::glyphs::fontstack *mutable_fontstack = glyphs.add_stacks();
-        mutable_fontstack->set_name(std::string(ft_face->family_name) + " " + ft_face->style_name);
+
+        if (ft_face->style_name) {
+            mutable_fontstack->set_name(std::string(ft_face->family_name) + " " + std::string(ft_face->style_name));
+        } else {
+            mutable_fontstack->set_name(std::string(ft_face->family_name));
+        }
+
         mutable_fontstack->set_range(std::to_string(baton->start) + "-" + std::to_string(baton->end));
 
         const double scale_factor = 1.0;
