@@ -1,6 +1,10 @@
+# 0.4.3
+
+- Handle `ft_face->style_name` null value in `RangeAsync`.
+
 # 0.4.2
 
-- Handle `ft_face->style_name` null value.
+- Handle `ft_face->style_name` null value in `LoadAsync`.
 
 # 0.4.1
 
