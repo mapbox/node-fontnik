@@ -22,7 +22,7 @@ if (!fs.existsSync(dir)) {
     process.exit(1);
 }
 
-var q = queue(Math.max(4, require('os').cpus()));
+var q = queue(Math.max(4, require('os').cpus().length));
 var queue = [];
 for (var i = 0; i < 65536; (i = i + 256)) {
     q.defer(writeGlyphs, {
