@@ -1,3 +1,7 @@
+# 0.4.4
+
+- Fix initialization of `queue-async` in `bin/build-glyphs`.
+
 # 0.4.3
 
 - Handle `ft_face->style_name` null value in `RangeAsync`.
