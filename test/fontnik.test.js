@@ -25,6 +25,7 @@ var expected = JSON.parse(fs.readFileSync(__dirname + '/expected/load.json').toS
 var firasans = fs.readFileSync(path.resolve(__dirname + '/../fonts/firasans-medium/FiraSans-Medium.ttf'));
 var opensans = fs.readFileSync(path.resolve(__dirname + '/../fonts/open-sans/OpenSans-Regular.ttf'));
 var guardianbold = fs.readFileSync(path.resolve(__dirname + '/../fonts/GuardianTextSansWeb/GuardianTextSansWeb-Bold.ttf'));
+var osaka = fs.readFileSync(path.resolve(__dirname + '/../fonts/osaka/Osaka.ttf'));
 
 test('load', function(t) {
     t.test('loads: Fira Sans', function(t) {
@@ -55,6 +56,15 @@ test('load', function(t) {
             t.equal(faces[0].family_name, '?');
             t.equal(faces[0].hasOwnProperty('style_name'), false);
             t.equal(faces[0].style_name, undefined);
+            t.end();
+        });
+    });
+
+    t.test('loads: Osaka', function(t) {
+        fontnik.load(osaka, function(err, faces) {
+            t.error(err);
+            t.equal(faces[0].family_name, 'Osaka');
+            t.equal(faces[0].style_name, 'Regular');
             t.end();
         });
     });
@@ -180,6 +190,13 @@ test('range', function(t) {
             t.equal(vt.stacks.hasOwnProperty('?'), true);
             t.equal(vt.stacks['?'].hasOwnProperty('name'), true);
             t.equal(vt.stacks['?'].name, '?');
+            t.end();
+        });
+    });
+
+    t.test('range with osaka', function(t) {
+        fontnik.range({font: osaka, start:0, end: 256}, function(err, data) {
+            t.error(err);
             t.end();
         });
     });
