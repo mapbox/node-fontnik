@@ -437,6 +437,30 @@ void ShapeAsync(uv_work_t* req) {
         }
 
         if (ft_face) {
+            hb_blob_t* hb_blob = hb_blob_create(font_data, font_size, HB_MEMORY_MODE_WRITABLE, font_data, [](void* data) {
+                delete[] static_cast<char*>(data);
+            });
+
+            hb_face_t* hb_face = hb_face_create(hb_blob, i);
+            hb_blob_destroy(hb_blob);
+
+            hb_font_t* hb_font(hb_font_create(hb_face));
+
+            unsigned int upem = hb_face_get_upem(hb_face);
+            hb_face_destroy(hb_face);
+
+            hb_font_set_scale(hb_font, upem, upem);
+            hb_ft_font_set_funcs(hb_font);
+
+            hb_buffer_t* hb_buffer(hb_buffer_create());
+
+            // TODO: harfbuzz shaping
+
+            hb_buffer_destroy(hb_buffer);
+            hb_font_destroy(hb_font);
+
+            // TODO: render SDFs from shaped text
+
             FT_UInt gindex;
             FT_ULong char_code = FT_Get_First_Char(ft_face, &gindex);
 
