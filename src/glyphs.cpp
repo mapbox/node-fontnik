@@ -19,6 +19,7 @@
 
 // std
 #include <cmath> // std::sqrt
+#include <fstream>
 
 namespace bg = boost::geometry;
 namespace bgm = bg::model;
@@ -107,6 +108,15 @@ struct RangeBaton {
     }
 };
 
+struct ShapeBaton {
+    uv_work_t request;
+    ShapeBaton() :
+        request() {
+            request.data = this;
+        }
+    ~ShapeBaton() {}
+};
+
 NAN_METHOD(Load) {
     // Validate arguments.
     if (!info[0]->IsObject()) {
@@ -167,6 +177,11 @@ NAN_METHOD(Range) {
     uv_queue_work(uv_default_loop(), &baton->request, RangeAsync, (uv_after_work_cb)AfterRange);
 
     NanReturnUndefined();
+}
+
+NAN_METHOD(Shape) {
+    ShapeBaton* baton = new ShapeBaton();
+    uv_queue_work(uv_default_loop(), &baton->request, ShapeAsync, (uv_after_work_cb)AfterShape);
 }
 
 struct ft_library_guard {
@@ -372,6 +387,67 @@ void AfterRange(uv_work_t* req) {
         Nan::MakeCallback(Nan::GetCurrentContext()->Global(), Nan::New(baton->callback), 2, argv);
     }
 
+    delete baton;
+};
+
+void ShapeAsync(uv_work_t* req) {
+    ShapeBaton* baton = static_cast<ShapeBaton*>(req->data);
+
+    std::string filename("/Users/mikemorris/Desktop/Open_Sans/OpenSans-Regular.ttf");
+
+    char* font_data;
+    size_t font_size;
+
+    std::ifstream file(filename.c_str(), std::ios::in|std::ios::binary|std::ios::ate);
+    if (file.is_open())
+    {
+        font_size = file.tellg();
+        font_data = new char[font_size];
+        file.seekg(0, std::ios::beg);
+        file.read(font_data, font_size);
+        file.close();
+    } else {
+        std::cerr << "Could not open font!\n";
+        return;
+    }
+
+    FT_Library library = nullptr;
+    ft_library_guard library_guard(&library);
+    FT_Error error = FT_Init_FreeType(&library);
+    if (error) {
+        /* LCOV_EXCL_START */
+        throw std::runtime_error("Could not open FreeType library");
+        /* LCOV_EXCL_END */
+    }
+
+    FT_Face ft_face = 0;
+
+    int num_faces = 0;
+    for (int i = 0; ft_face == 0 || i < num_faces; ++i) {
+        FT_Error face_error = FT_New_Memory_Face(library, reinterpret_cast<FT_Byte const*>(font_data), static_cast<FT_Long>(font_size), i, &ft_face);
+        if (face_error) {
+            throw std::runtime_error("Could not open font file");
+        }
+
+        if (num_faces == 0) {
+            num_faces = ft_face->num_faces;
+        }
+
+        if (ft_face) {
+            FT_UInt gindex;
+            FT_ULong char_code = FT_Get_First_Char(ft_face, &gindex);
+
+            std::cout << "charcode: " << char_code <<
+                         " glyph_index: " << gindex <<
+                         std::endl;
+
+            FT_Done_Face(ft_face);
+        }
+    }
+};
+
+void AfterShape(uv_work_t* req) {
+    ShapeBaton* baton = static_cast<ShapeBaton*>(req->data);
     delete baton;
 };
 

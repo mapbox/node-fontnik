@@ -19,6 +19,25 @@ extern "C" {
 
 namespace node_fontnik {
 
+NAN_METHOD(Load);
+void LoadAsync(uv_work_t* req);
+void AfterLoad(uv_work_t* req);
+
+NAN_METHOD(Range);
+void RangeAsync(uv_work_t* req);
+void AfterRange(uv_work_t* req);
+
+NAN_METHOD(Shape);
+void ShapeAsync(uv_work_t* req);
+void AfterShape(uv_work_t* req);
+
+struct glyph_info;
+void RenderSDF(glyph_info &glyph,
+               int size,
+               int buffer,
+               float cutoff,
+               FT_Face ft_face);
+
 struct glyph_info {
    glyph_info()
        : glyph_index(0),
@@ -34,16 +53,20 @@ struct glyph_info {
          descender(0.0) {}
    unsigned glyph_index;
    std::string bitmap;
+
    // Position in the string of all characters i.e. before itemizing
    unsigned char_index;
+
    int32_t left;
    int32_t top;
    uint32_t width;
    uint32_t height;
    double advance;
+
    // Line height returned by FreeType, includes normal font
    // line spacing, but not additional user defined spacing
    double line_height;
+
    // Ascender and descender from baseline returned by FreeType
    double ascender;
    double descender;
