@@ -23,15 +23,17 @@
       'sources': [
         'src/node_fontnik.cpp',
         'src/glyphs.cpp',
+        'src/hb-ft.cc',
         'vendor/agg/src/agg_curves.cpp',
         '<(SHARED_INTERMEDIATE_DIR)/glyphs.pb.cc'
       ],
       'include_dirs': [
-        './include',
         './vendor/agg/include',
+        './vendor/harfbuzz/src',
         '<(SHARED_INTERMEDIATE_DIR)/',
         '<!@(mason cflags boost ${BOOST_VERSION} | sed s/-I//g)',
-        '<!@(mason cflags harfbuzz ${HARFBUZZ_VERSION} | sed s/-I//g)',
+        # This is ONLY to include hb-version.h
+        '<!@(mason cflags harfbuzz ${HARFBUZZ_VERSION} | sed s/-I//g)/harfbuzz',
         '<!@(mason cflags freetype ${FREETYPE_VERSION} | sed s/-I//g)',
         '<!@(mason cflags protobuf ${PROTOBUF_VERSION} | sed s/-I//g)',
         "<!(node -e \"require('nan')\")"

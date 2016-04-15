@@ -22,8 +22,8 @@
 #include <fstream>
 #include <codecvt>
 
-#include <harfbuzz/hb.h>
-#include <harfbuzz/hb-ft.h>
+#include "hb.h"
+#include "hb-ft.h"
 
 namespace bg = boost::geometry;
 namespace bgm = bg::model;
