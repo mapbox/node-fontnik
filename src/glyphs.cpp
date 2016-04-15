@@ -20,6 +20,7 @@
 // std
 #include <cmath> // std::sqrt
 #include <fstream>
+#include <codecvt>
 
 #include <harfbuzz/hb.h>
 #include <harfbuzz/hb-ft.h>
@@ -56,8 +57,8 @@ struct FaceMetadata {
 struct LoadBaton {
     Nan::Persistent<v8::Function> callback;
     Nan::Persistent<v8::Object> buffer;
-    const char * font_data;
-    std::size_t font_size;
+    const char* font_data;
+    size_t font_size;
     std::string error_name;
     std::vector<FaceMetadata> faces;
     uv_work_t request;
@@ -82,7 +83,7 @@ struct RangeBaton {
     Nan::Persistent<v8::Function> callback;
     Nan::Persistent<v8::Object> buffer;
     const char* font_data;
-    std::size_t font_size;
+    size_t font_size;
     std::string error_name;
     std::uint32_t start;
     std::uint32_t end;
@@ -217,7 +218,7 @@ void LoadAsync(uv_work_t* req) {
     FT_Error error = FT_Init_FreeType(&library);
     if (error) {
         /* LCOV_EXCL_START */
-        baton->error_name = std::string("could not open FreeType library");
+        baton->error_name = std::string("Could not open FreeType library");
         return;
         /* LCOV_EXCL_END */
     }
@@ -226,7 +227,7 @@ void LoadAsync(uv_work_t* req) {
     for (int i = 0; ft_face == 0 || i < num_faces; ++i) {
         FT_Error face_error = FT_New_Memory_Face(library, reinterpret_cast<FT_Byte const*>(baton->font_data), static_cast<FT_Long>(baton->font_size), i, &ft_face);
         if (face_error) {
-            baton->error_name = std::string("could not open font file");
+            baton->error_name = std::string("Could not open font file");
             return;
         }
         std::set<int> points;
@@ -297,7 +298,7 @@ void RangeAsync(uv_work_t* req) {
     FT_Error error = FT_Init_FreeType(&library);
     if (error) {
         /* LCOV_EXCL_START */
-        baton->error_name = std::string("could not open FreeType library");
+        baton->error_name = std::string("Could not open FreeType library");
         return;
         /* LCOV_EXCL_END */
     }
@@ -310,7 +311,7 @@ void RangeAsync(uv_work_t* req) {
     for (int i = 0; ft_face == 0 || i < num_faces; ++i) {
         FT_Error face_error = FT_New_Memory_Face(library, reinterpret_cast<FT_Byte const*>(baton->font_data), static_cast<FT_Long>(baton->font_size), i, &ft_face);
         if (face_error) {
-            baton->error_name = std::string("could not open font");
+            baton->error_name = std::string("Could not open font");
             return;
         }
 
@@ -410,8 +411,7 @@ void ShapeAsync(uv_work_t* req) {
         file.read(font_data, font_size);
         file.close();
     } else {
-        std::cerr << "Could not open font!\n";
-        return;
+        throw std::runtime_error("Failed to open font file");
     }
 
     FT_Library library = nullptr;
@@ -419,17 +419,17 @@ void ShapeAsync(uv_work_t* req) {
     FT_Error error = FT_Init_FreeType(&library);
     if (error) {
         /* LCOV_EXCL_START */
-        throw std::runtime_error("Could not open FreeType library");
+        throw std::runtime_error("Failed to open FreeType library");
         /* LCOV_EXCL_END */
     }
 
     FT_Face ft_face = 0;
 
     int num_faces = 0;
-    for (int i = 0; ft_face == 0 || i < num_faces; ++i) {
+    for (size_t i = 0; ft_face == 0 || i < num_faces; ++i) {
         FT_Error face_error = FT_New_Memory_Face(library, reinterpret_cast<FT_Byte const*>(font_data), static_cast<FT_Long>(font_size), i, &ft_face);
         if (face_error) {
-            throw std::runtime_error("Could not open font file");
+            throw std::runtime_error("Failed to create FreeType face");
         }
 
         if (num_faces == 0) {
@@ -437,6 +437,12 @@ void ShapeAsync(uv_work_t* req) {
         }
 
         if (ft_face) {
+            // Set character sizes.
+            // This is mandatory before calling FT_Load_Glyph.
+            const double scale_factor = 1.0;
+            double size = 24 * scale_factor;
+            FT_Set_Char_Size(ft_face, 0, (FT_F26Dot6)(size * (1<<6)), 0, 0);
+
             hb_blob_t* hb_blob = hb_blob_create(font_data, font_size, HB_MEMORY_MODE_WRITABLE, font_data, [](void* data) {
                 delete[] static_cast<char*>(data);
             });
@@ -446,7 +452,7 @@ void ShapeAsync(uv_work_t* req) {
 
             hb_font_t* hb_font(hb_font_create(hb_face));
 
-            unsigned int upem = hb_face_get_upem(hb_face);
+            const unsigned int upem = hb_face_get_upem(hb_face);
             hb_face_destroy(hb_face);
 
             hb_font_set_scale(hb_font, upem, upem);
@@ -454,19 +460,62 @@ void ShapeAsync(uv_work_t* req) {
 
             hb_buffer_t* hb_buffer(hb_buffer_create());
 
-            // TODO: harfbuzz shaping
+            // TODO: itemize string here
+            const std::u32string text(U"Hello world!");
+
+            hb_buffer_reset(hb_buffer);
+            hb_buffer_add_utf32(hb_buffer, reinterpret_cast<const uint32_t*>(text.c_str()), text.length(), 0, text.length());
+
+            hb_buffer_set_direction(hb_buffer, HB_DIRECTION_LTR);
+            // hb_buffer_set_direction(buffer, hb_direction_from_string (direction, -1));
+
+            hb_buffer_set_script(hb_buffer, HB_SCRIPT_LATIN);
+            // hb_buffer_set_script(buffer, hb_script_from_string (script, -1));
+
+            hb_buffer_set_language(hb_buffer, hb_language_from_string("en", -1));
+            // hb_buffer_set_language(buffer, hb_language_from_string (language, -1));
+
+            hb_shape(hb_font, hb_buffer, 0 /*features*/, 0 /*num_features*/);
+
+            const size_t num_glyphs = hb_buffer_get_length(hb_buffer);
+            hb_glyph_info_t* hb_glyph_infos = hb_buffer_get_glyph_infos(hb_buffer, NULL);
+            hb_glyph_position_t* hb_glyph_positions = hb_buffer_get_glyph_positions(hb_buffer, NULL);
+
+            std::wstring_convert<std::codecvt_utf8<char32_t>, char32_t> cv;
+            std::cout << "text: " << cv.to_bytes(text) << 
+                         " num_glyphs: " << num_glyphs << std::endl;
+
+            uint32_t glyph_index;
+            for (size_t j = 0; j < num_glyphs; j++) {
+                /**
+                 * hb_glyph_info_t:
+                 * @codepoint: either a Unicode code point (before 
+                 * shaping) or a glyph index (after shaping).
+                 */
+                glyph_index = hb_glyph_infos[j].codepoint;
+
+                std::cout << "glyph_index: " << glyph_index <<
+                             " hb_cluster: " << hb_glyph_infos[j].cluster <<
+                             " hb_mask: " << hb_glyph_infos[j].mask <<
+                             " hb_x_advance: " << hb_glyph_positions[j].x_advance <<
+                             // " hb_y_advance: " << hb_glyph_positions[j].y_advance <<
+                             // " hb_x_offset: " << hb_glyph_positions[j].x_offset <<
+                             // " hb_y_offset: " << hb_glyph_positions[j].y_offset << 
+                             std::endl;
+
+                if (FT_Load_Glyph(ft_face, static_cast<FT_UInt>(glyph_index), FT_LOAD_NO_HINTING)) continue;
+
+                FT_Glyph ft_glyph = nullptr;
+                ft_glyph_guard glyph_guard(&ft_glyph);
+                if (FT_Get_Glyph(ft_face->glyph, &ft_glyph)) continue;
+
+                std::cout << "ft_glyph loaded" << std::endl;
+
+                // TODO: RenderSDF(glyph_index);
+            }
 
             hb_buffer_destroy(hb_buffer);
             hb_font_destroy(hb_font);
-
-            // TODO: render SDFs from shaped text
-
-            FT_UInt gindex;
-            FT_ULong char_code = FT_Get_First_Char(ft_face, &gindex);
-
-            std::cout << "charcode: " << char_code <<
-                         " glyph_index: " << gindex <<
-                         std::endl;
 
             FT_Done_Face(ft_face);
         }
