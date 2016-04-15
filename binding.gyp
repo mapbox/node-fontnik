@@ -31,11 +31,13 @@
         './vendor/agg/include',
         '<(SHARED_INTERMEDIATE_DIR)/',
         '<!@(mason cflags boost ${BOOST_VERSION} | sed s/-I//g)',
+        '<!@(mason cflags harfbuzz ${HARFBUZZ_VERSION} | sed s/-I//g)',
         '<!@(mason cflags freetype ${FREETYPE_VERSION} | sed s/-I//g)',
         '<!@(mason cflags protobuf ${PROTOBUF_VERSION} | sed s/-I//g)',
         "<!(node -e \"require('nan')\")"
       ],
       'libraries': [
+        '<!@(mason static_libs harfbuzz ${HARFBUZZ_VERSION})',
         '<!@(mason static_libs freetype ${FREETYPE_VERSION})',
         '<!@(mason static_libs protobuf ${PROTOBUF_VERSION})'
       ],

@@ -21,6 +21,9 @@
 #include <cmath> // std::sqrt
 #include <fstream>
 
+#include <harfbuzz/hb.h>
+#include <harfbuzz/hb-ft.h>
+
 namespace bg = boost::geometry;
 namespace bgm = bg::model;
 namespace bgi = bg::index;
