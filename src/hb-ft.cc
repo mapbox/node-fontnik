@@ -168,6 +168,8 @@ hb_ft_get_nominal_glyph (hb_font_t *font HB_UNUSED,
   const hb_ft_font_t *ft_font = (const hb_ft_font_t *) font_data;
   unsigned int g = FT_Get_Char_Index (ft_font->ft_face, unicode);
 
+  std::cout << "INTERCEPTING hb_ft_get_nominal_glyph: " << g << std::endl;
+
   if (unlikely (!g))
     return false;
 
