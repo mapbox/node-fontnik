@@ -305,7 +305,7 @@ void RangeAsync(uv_work_t* req) {
 
     FT_Face ft_face = 0;
 
-    mapbox::fontnik::Glyphs glyphs;
+    mapbox::fontnik::Font font;
 
     int num_faces = 0;
     for (int i = 0; ft_face == 0 || i < num_faces; ++i) {
@@ -315,9 +315,12 @@ void RangeAsync(uv_work_t* req) {
             return;
         }
 
-        mapbox::fontnik::Face *mutable_face = glyphs.add_faces();
+        mapbox::fontnik::Face *mutable_face = font.add_faces();
         // mutable_face->set_range(std::to_string(baton->start) + "-" + std::to_string(baton->end));
-        mutable_face->set_family_name(ft_face->family_name);
+
+        if (ft_face->family_name) {
+            mutable_face->set_family_name(ft_face->family_name);
+        }
 
         if (ft_face->style_name) {
             mutable_face->set_style_name(ft_face->style_name);
@@ -355,7 +358,8 @@ void RangeAsync(uv_work_t* req) {
 
             // Add glyph to face.
             mapbox::fontnik::Glyph *mutable_glyph = mutable_face->add_glyphs();
-            mutable_glyph->set_id(char_code);
+            mutable_glyph->set_glyph_index(glyph_index);
+            mutable_glyph->set_codepoint(char_code);
             mutable_glyph->set_width(glyph.width);
             mutable_glyph->set_height(glyph.height);
             mutable_glyph->set_left(glyph.left);
@@ -373,7 +377,7 @@ void RangeAsync(uv_work_t* req) {
         }
     }
 
-    baton->message = glyphs.SerializeAsString();
+    baton->message = font.SerializeAsString();
 }
 
 void AfterRange(uv_work_t* req) {
