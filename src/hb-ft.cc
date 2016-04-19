@@ -33,6 +33,7 @@
 
 #include "hb-font-private.hh"
 
+#include "glyphs.pb.h"
 #include <iostream>
 
 #include FT_ADVANCES_H

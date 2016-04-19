@@ -1,6 +1,6 @@
-// Protocol Version 1
+// Protocol Version 2
 
-package mbgl.glyphs;
+package mapbox.fontnik;
 
 option optimize_for = LITE_RUNTIME;
 
