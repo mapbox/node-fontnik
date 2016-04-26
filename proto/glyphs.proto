@@ -8,14 +8,17 @@ message Glyph {
     // FreeType glyph index
     required uint32 glyph_index = 1;
 
+    // FreeType glyph variation
+    optional uint32 variation = 2;
+
     // Unicode codepoint
-    optional uint32 codepoint = 2;
+    optional uint32 codepoint = 3;
 
     // Glyph metrics
-    optional Metrics metrics = 3;
+    optional Metrics metrics = 4;
 
     // Signed distance field bitmap rendered from glyph outlines.
-    optional bytes bitmap = 4;
+    optional bytes bitmap = 5;
 
     message Metrics {
         required uint32 width = 1;
@@ -44,12 +47,13 @@ message Face {
     // Signed distance field encoding metadata
     message Metadata {
         optional uint32 size = 1;
-        optional uint32 buffer = 2;
-        optional float cutoff = 3;
         optional float scale = 4;
-        optional uint32 granularity = 5;
-        optional float offset = 6;
+
+        optional uint32 buffer = 2;
         optional uint32 radius = 7;
+        optional float offset = 6;
+        optional float cutoff = 3;
+        optional uint32 granularity = 5;
     }
 }
 

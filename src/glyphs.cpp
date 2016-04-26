@@ -334,11 +334,11 @@ void RangeAsync(uv_work_t* req) {
         mapbox::fontnik::Face::Metadata mutable_metadata = mutable_face->metadata();
         mutable_metadata.set_size(char_size);
         mutable_metadata.set_buffer(buffer_size);
-        mutable_metadata.set_cutoff(cutoff_size);
         mutable_metadata.set_scale(scale_factor);
         mutable_metadata.set_granularity(granularity);
         mutable_metadata.set_offset(offset_size);
         mutable_metadata.set_radius(radius_size);
+        mutable_metadata.set_cutoff(cutoff_size);
 
         // Set character sizes.
         double size = char_size * scale_factor;
@@ -354,7 +354,7 @@ void RangeAsync(uv_work_t* req) {
             if (!char_index) continue;
 
             glyph.glyph_index = char_index;
-            RenderSDF(glyph, char_size, buffer_size, cutoff_size, ft_face);
+            RenderSDF(ft_face, glyph);
 
             // Add glyph to face.
             mapbox::fontnik::Glyph *mutable_glyph = mutable_face->add_glyphs();
@@ -443,8 +443,7 @@ void ShapeAsync(uv_work_t* req) {
         if (ft_face) {
             // Set character sizes.
             // This is mandatory before calling FT_Load_Glyph.
-            const double scale_factor = 1.0;
-            double size = 24 * scale_factor;
+            double size = char_size * scale_factor;
             FT_Set_Char_Size(ft_face, 0, (FT_F26Dot6)(size * (1<<6)), 0, 0);
 
             hb_blob_t* hb_blob = hb_blob_create(font_data, font_size, HB_MEMORY_MODE_WRITABLE, font_data, [](void* data) {
@@ -690,11 +689,8 @@ double MinDistanceToLineSegment(const Tree &tree,
     return std::sqrt(sqaured_distance);
 }
 
-void RenderSDF(glyph_info &glyph,
-               int size,
-               int buffer,
-               float cutoff,
-               FT_Face ft_face) {
+void RenderSDF(FT_Face ft_face,
+               glyph_info &glyph) {
     if (FT_Load_Glyph (ft_face, glyph.glyph_index, FT_LOAD_NO_HINTING)) {
         return;
     }
@@ -758,8 +754,8 @@ void RenderSDF(glyph_info &glyph,
     // Offset so that glyph outlines are in the bounding box.
     for (Points &ring : user.rings) {
         for (Point &point : ring) {
-            point.set<0>(point.get<0>() + -bbox_xmin + buffer);
-            point.set<1>(point.get<1>() + -bbox_ymin + buffer);
+            point.set<0>(point.get<0>() + -bbox_xmin + buffer_size);
+            point.set<1>(point.get<1>() + -bbox_ymin + buffer_size);
         }
     }
 
@@ -771,8 +767,6 @@ void RenderSDF(glyph_info &glyph,
     glyph.height = bbox_ymax - bbox_ymin;
 
     Tree tree;
-    float offset = offset_size;
-    int radius = radius_size;
 
     for (const Points &ring : user.rings) {
         auto p1 = ring.begin();
@@ -798,8 +792,8 @@ void RenderSDF(glyph_info &glyph,
     }
 
     // Loop over every pixel and determine the positive/negative distance to the outline.
-    unsigned int buffered_width = glyph.width + 2 * buffer;
-    unsigned int buffered_height = glyph.height + 2 * buffer;
+    unsigned int buffered_width = glyph.width + 2 * buffer_size;
+    unsigned int buffered_height = glyph.height + 2 * buffer_size;
     unsigned int bitmap_size = buffered_width * buffered_height;
     glyph.bitmap.resize(bitmap_size);
 
@@ -808,17 +802,17 @@ void RenderSDF(glyph_info &glyph,
             unsigned int ypos = buffered_height - y - 1;
             unsigned int i = ypos * buffered_width + x;
 
-            double d = MinDistanceToLineSegment(tree, Point {x + offset, y + offset}, radius) * (256 / radius);
+            double d = MinDistanceToLineSegment(tree, Point {x + offset_size, y + offset_size, radius_size) * (256 / radius_size);
 
             // Invert if point is inside.
-            const bool inside = PolyContainsPoint(user.rings, Point {x + offset, y + offset});
+            const bool inside = PolyContainsPoint(user.rings, Point {x + offset_size, y + offset_size});
             if (inside) {
                 d = -d;
             }
 
             // Shift the 0 so that we can fit a few negative values
             // into our 8 bits.
-            d += cutoff * 256;
+            d += cutoff_size * 256;
 
             // Clamp to 0-255 to prevent overflows or underflows.
             int n = d > 255 ? 255 : d;
