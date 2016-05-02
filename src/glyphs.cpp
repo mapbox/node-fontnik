@@ -179,8 +179,6 @@ NAN_METHOD(Range) {
                                        start->IntegerValue(),
                                        end->IntegerValue());
     uv_queue_work(uv_default_loop(), &baton->request, RangeAsync, (uv_after_work_cb)AfterRange);
-
-    NanReturnUndefined();
 }
 
 NAN_METHOD(Shape) {
@@ -326,9 +324,22 @@ void RangeAsync(uv_work_t* req) {
             mutable_face->set_style_name(ft_face->style_name);
         }
 
+        /*
+        // TODO: verify if these values match following values?
         mutable_face->set_ascender(ft_face->ascender);
         mutable_face->set_descender(ft_face->descender);
         mutable_face->set_line_height(ft_face->height);
+        */
+
+        // Add metrics to face.
+        mapbox::fontnik::Face_Metrics *mutable_face_metrics = mutable_face->mutable_metrics();
+        // Line height returned by FreeType, includes normal font
+        // line spacing, but not additional user defined spacing
+        mutable_face_metrics->set_line_height(ft_face->size->metrics.height);
+
+        // Ascender and descender from baseline returned by FreeType
+        mutable_face_metrics->set_ascender(ft_face->size->metrics.ascender / 64);
+        mutable_face_metrics->set_descender(ft_face->size->metrics.descender / 64);
 
         // Add metadata to face.
         mapbox::fontnik::Face::Metadata mutable_metadata = mutable_face->metadata();
@@ -345,26 +356,30 @@ void RangeAsync(uv_work_t* req) {
         FT_Set_Char_Size(ft_face,0,(FT_F26Dot6)(size * (1<<6)),0,0);
 
         for (std::vector<uint32_t>::size_type x = 0; x != baton->chars.size(); x++) {
-            FT_ULong char_code = baton->chars[x];
+            FT_ULong codepoint = baton->chars[x];
+
+            // Return the glyph index of a given character code.
+            FT_UInt glyph_index = FT_Get_Char_Index(ft_face, codepoint);
+
+            if (!glyph_index) continue;
+
             glyph_info glyph;
+            glyph.glyph_index = glyph_index;
+            glyph.codepoint = codepoint;
 
-            // Get FreeType face from face_ptr.
-            FT_UInt char_index = FT_Get_Char_Index(ft_face, char_code);
-
-            if (!char_index) continue;
-
-            glyph.glyph_index = char_index;
             RenderSDF(ft_face, glyph);
 
             // Add glyph to face.
             mapbox::fontnik::Glyph *mutable_glyph = mutable_face->add_glyphs();
             mutable_glyph->set_glyph_index(glyph_index);
-            mutable_glyph->set_codepoint(char_code);
-            mutable_glyph->set_width(glyph.width);
-            mutable_glyph->set_height(glyph.height);
-            mutable_glyph->set_left(glyph.left);
-            mutable_glyph->set_top(glyph.top);
-            mutable_glyph->set_advance(glyph.advance);
+            mutable_glyph->set_codepoint(codepoint);
+
+            mapbox::fontnik::Glyph_Metrics *mutable_glyph_metrics = mutable_glyph->mutable_metrics();
+            mutable_glyph_metrics->set_width(glyph.width);
+            mutable_glyph_metrics->set_height(glyph.height);
+            mutable_glyph_metrics->set_advance(glyph.advance);
+            mutable_glyph_metrics->set_left(glyph.left);
+            mutable_glyph_metrics->set_top(glyph.top);
 
             if (glyph.width > 0) {
                 mutable_glyph->set_bitmap(glyph.bitmap);
@@ -699,14 +714,7 @@ void RenderSDF(FT_Face ft_face,
     ft_glyph_guard glyph_guard(&ft_glyph);
     if (FT_Get_Glyph(ft_face->glyph, &ft_glyph)) return;
 
-    int advance = ft_face->glyph->metrics.horiAdvance / 64;
-    int ascender = ft_face->size->metrics.ascender / 64;
-    int descender = ft_face->size->metrics.descender / 64;
-
-    glyph.line_height = ft_face->size->metrics.height;
-    glyph.advance = advance;
-    glyph.ascender = ascender;
-    glyph.descender = descender;
+    glyph.advance = ft_face->glyph->metrics.horiAdvance / 64;
 
     FT_Outline_Funcs func_interface = {
         .move_to = &MoveTo,
@@ -802,7 +810,7 @@ void RenderSDF(FT_Face ft_face,
             unsigned int ypos = buffered_height - y - 1;
             unsigned int i = ypos * buffered_width + x;
 
-            double d = MinDistanceToLineSegment(tree, Point {x + offset_size, y + offset_size, radius_size) * (256 / radius_size);
+            double d = MinDistanceToLineSegment(tree, Point {x + offset_size, y + offset_size}, radius_size) * (256 / radius_size);
 
             // Invert if point is inside.
             const bool inside = PolyContainsPoint(user.rings, Point {x + offset_size, y + offset_size});

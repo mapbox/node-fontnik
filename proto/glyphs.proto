@@ -8,9 +8,6 @@ message Glyph {
     // FreeType glyph index
     required uint32 glyph_index = 1;
 
-    // FreeType glyph variation
-    optional uint32 variation = 2;
-
     // Unicode codepoint
     optional uint32 codepoint = 3;
 
@@ -23,9 +20,9 @@ message Glyph {
     message Metrics {
         required uint32 width = 1;
         required uint32 height = 2;
-        required sint32 left = 3;
-        required sint32 top = 4;
-        required uint32 advance = 5;
+        required uint32 advance = 3;
+        required sint32 left = 4;
+        required sint32 top = 5;
     }
 }
 
@@ -39,9 +36,9 @@ message Face {
     optional Metadata metadata = 5;
 
     message Metrics {
-        optional double ascender = 1;
-        optional double descender = 2;
-        optional double line_height = 3;
+        optional double line_height = 1;
+        optional double ascender = 2;
+        optional double descender = 3;
     }
 
     // Signed distance field encoding metadata
