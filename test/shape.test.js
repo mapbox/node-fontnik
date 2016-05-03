@@ -12,7 +12,7 @@ var UPDATE = process.env.UPDATE;
 
 var opensans = fs.readFileSync(path.resolve(__dirname + '/../fonts/open-sans/OpenSans-Regular.ttf'));
 
-function nobuffer(key, val) {
+function noBuffer(key, val) {
     return key !== '_buffer' && key !== 'bitmap' ? val : undefined;
 }
 
@@ -26,7 +26,7 @@ test('range', function(t) {
         t.ok(res);
 
         var pbf = new Protobuf(new Uint8Array(res));
-        var json = JSON.parse(JSON.stringify(new Font(pbf), nobuffer));
+        var json = JSON.parse(JSON.stringify(new Font(pbf), noBuffer));
 
         var expected = [__dirname, 'expected', 'range', key].join('/');
 
