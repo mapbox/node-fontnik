@@ -46,7 +46,7 @@
   "scripts": {
     "install": "node-pre-gyp install --fallback-to-build=false || (source ./scripts/install_mason.sh && node-pre-gyp install --build-from-source)",
     "pretest": "./node_modules/.bin/pbf proto/glyphs.proto > test/format/glyphs.js",
-    "test": "./node_modules/.bin/tap test/range.test.js"
+    "test": "./node_modules/.bin/tap test/shape.test.js"
   },
   "binary": {
     "module_name": "fontnik",
