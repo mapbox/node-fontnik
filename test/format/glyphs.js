@@ -1,83 +1,137 @@
 'use strict';
 
-module.exports = Glyphs;
-function Glyphs(buffer, end) {
-    // Public
-    this.stacks = {};
-    // Private
-    this._buffer = buffer;
+// Glyph ========================================
 
-    var val, tag;
-    if (typeof end === 'undefined') end = buffer.length;
-    while (buffer.pos < end) {
-        val = buffer.readVarint();
-        tag = val >> 3;
-        if (tag == 1) {
-            var fontstack = this.readFontstack();
-            this.stacks[fontstack.name] = fontstack;
-        } else {
-            // console.warn('skipping tile tag ' + tag);
-            buffer.skip(val);
-        }
-    }
+exports.Glyph = {read: readGlyph, write: writeGlyph};
+
+function readGlyph(pbf, end) {
+    return pbf.readFields(readGlyphField, {}, end);
 }
 
-Glyphs.prototype.readFontstack = function() {
-    var buffer = this._buffer;
-    var fontstack = { glyphs: {} };
+function readGlyphField(tag, glyph, pbf) {
+    if (tag === 1) glyph.glyph_index = pbf.readVarint();
+    else if (tag === 2) glyph.codepoint = pbf.readVarint();
+    else if (tag === 3) glyph.metrics = readGlyphMetrics(pbf, pbf.readVarint() + pbf.pos);
+    else if (tag === 4) glyph.bitmap = pbf.readBytes();
+}
 
-    var bytes = buffer.readVarint();
-    var val, tag;
-    var end = buffer.pos + bytes;
-    while (buffer.pos < end) {
-        val = buffer.readVarint();
-        tag = val >> 3;
+function writeGlyph(glyph, pbf) {
+    if (glyph.glyph_index !== undefined) pbf.writeVarintField(1, glyph.glyph_index);
+    if (glyph.codepoint !== undefined) pbf.writeVarintField(2, glyph.codepoint);
+    if (glyph.metrics !== undefined) pbf.writeMessage(3, writeGlyphMetrics, glyph.metrics);
+    if (glyph.bitmap !== undefined) pbf.writeBytesField(4, glyph.bitmap);
+}
 
-        if (tag == 1) {
-            fontstack.name = buffer.readString();
-        } else if (tag == 2) {
-            var range = buffer.readString();
-            fontstack.range = range;
-        } else if (tag == 3) {
-            var glyph = this.readGlyph();
-            fontstack.glyphs[glyph.id] = glyph;
-        } else {
-            buffer.skip(val);
-        }
-    }
+// GlyphMetrics ========================================
 
-    return fontstack;
-};
+exports.GlyphMetrics = {read: readGlyphMetrics, write: writeGlyphMetrics};
 
-Glyphs.prototype.readGlyph = function() {
-    var buffer = this._buffer;
-    var glyph = {};
+function readGlyphMetrics(pbf, end) {
+    return pbf.readFields(readGlyphMetricsField, {}, end);
+}
 
-    var bytes = buffer.readVarint();
-    var val, tag;
-    var end = buffer.pos + bytes;
-    while (buffer.pos < end) {
-        val = buffer.readVarint();
-        tag = val >> 3;
+function readGlyphMetricsField(tag, glyphmetrics, pbf) {
+    if (tag === 1) glyphmetrics.x_bearing = pbf.readSVarint();
+    else if (tag === 2) glyphmetrics.y_bearing = pbf.readSVarint();
+    else if (tag === 3) glyphmetrics.width = pbf.readVarint();
+    else if (tag === 4) glyphmetrics.height = pbf.readVarint();
+    else if (tag === 5) glyphmetrics.advance = pbf.readVarint();
+}
 
-        if (tag == 1) {
-            glyph.id = buffer.readVarint();
-        } else if (tag == 2) {
-            glyph.bitmap = buffer.readBytes();
-        } else if (tag == 3) {
-            glyph.width = buffer.readVarint();
-        } else if (tag == 4) {
-            glyph.height = buffer.readVarint();
-        } else if (tag == 5) {
-            glyph.left = buffer.readSVarint();
-        } else if (tag == 6) {
-            glyph.top = buffer.readSVarint();
-        } else if (tag == 7) {
-            glyph.advance = buffer.readVarint();
-        } else {
-            buffer.skip(val);
-        }
-    }
+function writeGlyphMetrics(glyphmetrics, pbf) {
+    if (glyphmetrics.x_bearing !== undefined) pbf.writeSVarintField(1, glyphmetrics.x_bearing);
+    if (glyphmetrics.y_bearing !== undefined) pbf.writeSVarintField(2, glyphmetrics.y_bearing);
+    if (glyphmetrics.width !== undefined) pbf.writeVarintField(3, glyphmetrics.width);
+    if (glyphmetrics.height !== undefined) pbf.writeVarintField(4, glyphmetrics.height);
+    if (glyphmetrics.advance !== undefined) pbf.writeVarintField(5, glyphmetrics.advance);
+}
 
-    return glyph;
-};
+// Face ========================================
+
+exports.Face = {read: readFace, write: writeFace};
+
+function readFace(pbf, end) {
+    return pbf.readFields(readFaceField, {"glyphs": []}, end);
+}
+
+function readFaceField(tag, face, pbf) {
+    if (tag === 1) face.family_name = pbf.readString();
+    else if (tag === 2) face.style_name = pbf.readString();
+    else if (tag === 3) face.glyphs.push(readGlyph(pbf, pbf.readVarint() + pbf.pos));
+    else if (tag === 4) face.metrics = readFaceMetrics(pbf, pbf.readVarint() + pbf.pos);
+}
+
+function writeFace(face, pbf) {
+    if (face.family_name !== undefined) pbf.writeStringField(1, face.family_name);
+    if (face.style_name !== undefined) pbf.writeStringField(2, face.style_name);
+    var i;
+    if (face.glyphs !== undefined) for (i = 0; i < face.glyphs.length; i++) pbf.writeMessage(3, writeGlyph, face.glyphs[i]);
+    if (face.metrics !== undefined) pbf.writeMessage(4, writeFaceMetrics, face.metrics);
+}
+
+// FaceMetrics ========================================
+
+exports.FaceMetrics = {read: readFaceMetrics, write: writeFaceMetrics};
+
+function readFaceMetrics(pbf, end) {
+    return pbf.readFields(readFaceMetricsField, {}, end);
+}
+
+function readFaceMetricsField(tag, facemetrics, pbf) {
+    if (tag === 1) facemetrics.ascender = pbf.readDouble();
+    else if (tag === 2) facemetrics.descender = pbf.readDouble();
+    else if (tag === 3) facemetrics.line_height = pbf.readDouble();
+}
+
+function writeFaceMetrics(facemetrics, pbf) {
+    if (facemetrics.ascender !== undefined) pbf.writeDoubleField(1, facemetrics.ascender);
+    if (facemetrics.descender !== undefined) pbf.writeDoubleField(2, facemetrics.descender);
+    if (facemetrics.line_height !== undefined) pbf.writeDoubleField(3, facemetrics.line_height);
+}
+
+// Font ========================================
+
+exports.Font = {read: readFont, write: writeFont};
+
+function readFont(pbf, end) {
+    return pbf.readFields(readFontField, {"faces": []}, end);
+}
+
+function readFontField(tag, font, pbf) {
+    if (tag === 1) font.faces.push(readFace(pbf, pbf.readVarint() + pbf.pos));
+    else if (tag === 2) font.metadata = readMetadata(pbf, pbf.readVarint() + pbf.pos);
+}
+
+function writeFont(font, pbf) {
+    var i;
+    if (font.faces !== undefined) for (i = 0; i < font.faces.length; i++) pbf.writeMessage(1, writeFace, font.faces[i]);
+    if (font.metadata !== undefined) pbf.writeMessage(2, writeMetadata, font.metadata);
+}
+
+// Metadata ========================================
+
+exports.Metadata = {read: readMetadata, write: writeMetadata};
+
+function readMetadata(pbf, end) {
+    return pbf.readFields(readMetadataField, {}, end);
+}
+
+function readMetadataField(tag, metadata, pbf) {
+    if (tag === 1) metadata.size = pbf.readVarint();
+    else if (tag === 2) metadata.scale = pbf.readFloat();
+    else if (tag === 3) metadata.buffer = pbf.readVarint();
+    else if (tag === 4) metadata.radius = pbf.readVarint();
+    else if (tag === 5) metadata.offset = pbf.readFloat();
+    else if (tag === 6) metadata.cutoff = pbf.readFloat();
+    else if (tag === 7) metadata.granularity = pbf.readVarint();
+}
+
+function writeMetadata(metadata, pbf) {
+    if (metadata.size !== undefined) pbf.writeVarintField(1, metadata.size);
+    if (metadata.scale !== undefined) pbf.writeFloatField(2, metadata.scale);
+    if (metadata.buffer !== undefined) pbf.writeVarintField(3, metadata.buffer);
+    if (metadata.radius !== undefined) pbf.writeVarintField(4, metadata.radius);
+    if (metadata.offset !== undefined) pbf.writeFloatField(5, metadata.offset);
+    if (metadata.cutoff !== undefined) pbf.writeFloatField(6, metadata.cutoff);
+    if (metadata.granularity !== undefined) pbf.writeVarintField(7, metadata.granularity);
+}

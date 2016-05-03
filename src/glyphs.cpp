@@ -303,7 +303,17 @@ void RangeAsync(uv_work_t* req) {
 
     FT_Face ft_face = 0;
 
-    mapbox::fontnik::Font font;
+    mapbox::fontnik::Font mutable_font;
+
+    // Add metadata to font.
+    mapbox::fontnik::Metadata *mutable_metadata = mutable_font.mutable_metadata();
+    mutable_metadata->set_size(char_size);
+    mutable_metadata->set_buffer(buffer_size);
+    mutable_metadata->set_scale(scale_factor);
+    mutable_metadata->set_granularity(granularity);
+    mutable_metadata->set_offset(offset_size);
+    mutable_metadata->set_radius(radius_size);
+    mutable_metadata->set_cutoff(cutoff_size);
 
     int num_faces = 0;
     for (int i = 0; ft_face == 0 || i < num_faces; ++i) {
@@ -313,7 +323,7 @@ void RangeAsync(uv_work_t* req) {
             return;
         }
 
-        mapbox::fontnik::Face *mutable_face = font.add_faces();
+        mapbox::fontnik::Face *mutable_face = mutable_font.add_faces();
         // mutable_face->set_range(std::to_string(baton->start) + "-" + std::to_string(baton->end));
 
         if (ft_face->family_name) {
@@ -332,24 +342,14 @@ void RangeAsync(uv_work_t* req) {
         */
 
         // Add metrics to face.
-        mapbox::fontnik::Face_Metrics *mutable_face_metrics = mutable_face->mutable_metrics();
-        // Line height returned by FreeType, includes normal font
-        // line spacing, but not additional user defined spacing
-        mutable_face_metrics->set_line_height(ft_face->size->metrics.height);
-
+        mapbox::fontnik::FaceMetrics *mutable_face_metrics = mutable_face->mutable_metrics();
         // Ascender and descender from baseline returned by FreeType
         mutable_face_metrics->set_ascender(ft_face->size->metrics.ascender / 64);
         mutable_face_metrics->set_descender(ft_face->size->metrics.descender / 64);
 
-        // Add metadata to face.
-        mapbox::fontnik::Face::Metadata mutable_metadata = mutable_face->metadata();
-        mutable_metadata.set_size(char_size);
-        mutable_metadata.set_buffer(buffer_size);
-        mutable_metadata.set_scale(scale_factor);
-        mutable_metadata.set_granularity(granularity);
-        mutable_metadata.set_offset(offset_size);
-        mutable_metadata.set_radius(radius_size);
-        mutable_metadata.set_cutoff(cutoff_size);
+        // Line height returned by FreeType, includes normal font
+        // line spacing, but not additional user defined spacing
+        mutable_face_metrics->set_line_height(ft_face->size->metrics.height);
 
         // Set character sizes.
         double size = char_size * scale_factor;
@@ -374,12 +374,12 @@ void RangeAsync(uv_work_t* req) {
             mutable_glyph->set_glyph_index(glyph_index);
             mutable_glyph->set_codepoint(codepoint);
 
-            mapbox::fontnik::Glyph_Metrics *mutable_glyph_metrics = mutable_glyph->mutable_metrics();
+            mapbox::fontnik::GlyphMetrics *mutable_glyph_metrics = mutable_glyph->mutable_metrics();
+            mutable_glyph_metrics->set_x_bearing(glyph.left);
+            mutable_glyph_metrics->set_y_bearing(glyph.top);
             mutable_glyph_metrics->set_width(glyph.width);
             mutable_glyph_metrics->set_height(glyph.height);
             mutable_glyph_metrics->set_advance(glyph.advance);
-            mutable_glyph_metrics->set_left(glyph.left);
-            mutable_glyph_metrics->set_top(glyph.top);
 
             if (glyph.width > 0) {
                 mutable_glyph->set_bitmap(glyph.bitmap);
@@ -392,7 +392,7 @@ void RangeAsync(uv_work_t* req) {
         }
     }
 
-    baton->message = font.SerializeAsString();
+    baton->message = mutable_font.SerializeAsString();
 }
 
 void AfterRange(uv_work_t* req) {

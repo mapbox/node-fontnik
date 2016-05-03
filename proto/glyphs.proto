@@ -9,21 +9,22 @@ message Glyph {
     required uint32 glyph_index = 1;
 
     // Unicode codepoint
-    optional uint32 codepoint = 3;
+    optional uint32 codepoint = 2;
 
     // Glyph metrics
-    optional Metrics metrics = 4;
+    optional GlyphMetrics metrics = 3;
 
     // Signed distance field bitmap rendered from glyph outlines.
-    optional bytes bitmap = 5;
+    optional bytes bitmap = 4;
+}
 
-    message Metrics {
-        required uint32 width = 1;
-        required uint32 height = 2;
-        required uint32 advance = 3;
-        required sint32 left = 4;
-        required sint32 top = 5;
-    }
+message GlyphMetrics {
+    // Encoded as int32_t in Harfbuzz?
+    required sint32 x_bearing = 1;
+    required sint32 y_bearing = 2;
+    required uint32 width = 3;
+    required uint32 height = 4;
+    required uint32 advance = 5;
 }
 
 message Face {
@@ -32,29 +33,30 @@ message Face {
 
     repeated Glyph glyphs = 3;
 
-    optional Metrics metrics = 4;
-    optional Metadata metadata = 5;
+    optional FaceMetrics metrics = 4;
+}
 
-    message Metrics {
-        optional double line_height = 1;
-        optional double ascender = 2;
-        optional double descender = 3;
-    }
-
-    // Signed distance field encoding metadata
-    message Metadata {
-        optional uint32 size = 1;
-        optional float scale = 4;
-
-        optional uint32 buffer = 2;
-        optional uint32 radius = 7;
-        optional float offset = 6;
-        optional float cutoff = 3;
-        optional uint32 granularity = 5;
-    }
+message FaceMetrics {
+    // Encoded as int32_t in Harfbuzz?
+    optional double ascender = 1;
+    optional double descender = 2;
+    optional double line_height = 3;
 }
 
 message Font {
     repeated Face faces = 1;
+    optional Metadata metadata = 2;
     extensions 16 to 8191;
+}
+
+// Signed distance field encoding metadata
+message Metadata {
+    optional uint32 size = 1;
+    optional float scale = 2;
+
+    optional uint32 buffer = 3;
+    optional uint32 radius = 4;
+    optional float offset = 5;
+    optional float cutoff = 6;
+    optional uint32 granularity = 7;
 }
