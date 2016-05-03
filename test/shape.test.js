@@ -7,7 +7,7 @@ var test = require('tap').test;
 var fs = require('fs');
 var path = require('path');
 var Protobuf = require('pbf');
-var Glyphs = require('./format/glyphs').Font.read;
+var Font = require('./format/glyphs').Font.read;
 var UPDATE = process.env.UPDATE;
 
 var opensans = fs.readFileSync(path.resolve(__dirname + '/../fonts/open-sans/OpenSans-Regular.ttf'));
@@ -17,11 +17,30 @@ function nobuffer(key, val) {
 }
 
 test('range', function(t) {
-    fontnik.range({font: opensans, start: 0, end: 255}, function(err, res) {
+    var start = 0;
+    var end = 255;
+    var key = [start, end].join('-');
+
+    fontnik.range({font: opensans, start: start, end: end}, function(err, res) {
         t.error(err);
         t.ok(res);
-        var font = new Glyphs(new Protobuf(new Uint8Array(res)));
-        var json = JSON.parse(JSON.stringify(font, nobuffer));
+
+        var pbf = new Protobuf(new Uint8Array(res));
+        var json = JSON.parse(JSON.stringify(new Font(pbf), nobuffer));
+
+        var expected = [__dirname, 'expected', 'range', key].join('/');
+
+        var pbfPath = [expected, '.pbf'].join('');
+        var jsonPath = [expected, '.json'].join('');
+
+        if (UPDATE) {
+            fs.writeFileSync(pbfPath, pbf.buf);
+            fs.writeFileSync(jsonPath, JSON.stringify(json, null, 2));
+        }
+
+        t.deepEqual(pbf.buf, new Protobuf(fs.readFileSync(pbfPath)).buf);
+        t.deepEqual(json, require(jsonPath));
+
         t.end();
     });
 });

@@ -1,0 +1,2125 @@
+{
+  "faces": [
+    {
+      "glyphs": [
+        {
+          "glyph_index": 3,
+          "codepoint": 32,
+          "metrics": {
+            "x_bearing": 0,
+            "y_bearing": 0,
+            "width": 0,
+            "height": 0,
+            "advance": 6
+          }
+        },
+        {
+          "glyph_index": 4,
+          "codepoint": 33,
+          "metrics": {
+            "x_bearing": 2,
+            "y_bearing": 17,
+            "width": 3,
+            "height": 17,
+            "advance": 6
+          }
+        },
+        {
+          "glyph_index": 5,
+          "codepoint": 34,
+          "metrics": {
+            "x_bearing": 2,
+            "y_bearing": 17,
+            "width": 6,
+            "height": 6,
+            "advance": 9
+          }
+        },
+        {
+          "glyph_index": 6,
+          "codepoint": 35,
+          "metrics": {
+            "x_bearing": 1,
+            "y_bearing": 17,
+            "width": 14,
+            "height": 17,
+            "advance": 15
+          }
+        },
+        {
+          "glyph_index": 7,
+          "codepoint": 36,
+          "metrics": {
+            "x_bearing": 2,
+            "y_bearing": 18,
+            "width": 10,
+            "height": 19,
+            "advance": 13
+          }
+        },
+        {
+          "glyph_index": 8,
+          "codepoint": 37,
+          "metrics": {
+            "x_bearing": 1,
+            "y_bearing": 17,
+            "width": 18,
+            "height": 17,
+            "advance": 19
+          }
+        },
+        {
+          "glyph_index": 9,
+          "codepoint": 38,
+          "metrics": {
+            "x_bearing": 1,
+            "y_bearing": 17,
+            "width": 16,
+            "height": 17,
+            "advance": 17
+          }
+        },
+        {
+          "glyph_index": 10,
+          "codepoint": 39,
+          "metrics": {
+            "x_bearing": 2,
+            "y_bearing": 17,
+            "width": 2,
+            "height": 6,
+            "advance": 5
+          }
+        },
+        {
+          "glyph_index": 11,
+          "codepoint": 40,
+          "metrics": {
+            "x_bearing": 1,
+            "y_bearing": 17,
+            "width": 5,
+            "height": 21,
+            "advance": 7
+          }
+        },
+        {
+          "glyph_index": 12,
+          "codepoint": 41,
+          "metrics": {
+            "x_bearing": 1,
+            "y_bearing": 17,
+            "width": 5,
+            "height": 21,
+            "advance": 7
+          }
+        },
+        {
+          "glyph_index": 13,
+          "codepoint": 42,
+          "metrics": {
+            "x_bearing": 1,
+            "y_bearing": 18,
+            "width": 11,
+            "height": 11,
+            "advance": 13
+          }
+        },
+        {
+          "glyph_index": 14,
+          "codepoint": 43,
+          "metrics": {
+            "x_bearing": 1,
+            "y_bearing": 14,
+            "width": 11,
+            "height": 11,
+            "advance": 13
+          }
+        },
+        {
+          "glyph_index": 15,
+          "codepoint": 44,
+          "metrics": {
+            "x_bearing": 1,
+            "y_bearing": 3,
+            "width": 3,
+            "height": 6,
+            "advance": 5
+          }
+        },
+        {
+          "glyph_index": 16,
+          "codepoint": 45,
+          "metrics": {
+            "x_bearing": 1,
+            "y_bearing": 7,
+            "width": 6,
+            "height": 1,
+            "advance": 7
+          }
+        },
+        {
+          "glyph_index": 17,
+          "codepoint": 46,
+          "metrics": {
+            "x_bearing": 2,
+            "y_bearing": 3,
+            "width": 3,
+            "height": 3,
+            "advance": 6
+          }
+        },
+        {
+          "glyph_index": 18,
+          "codepoint": 47,
+          "metrics": {
+            "x_bearing": 0,
+            "y_bearing": 17,
+            "width": 9,
+            "height": 17,
+            "advance": 8
+          }
+        },
+        {
+          "glyph_index": 19,
+          "codepoint": 48,
+          "metrics": {
+            "x_bearing": 1,
+            "y_bearing": 17,
+            "width": 12,
+            "height": 17,
+            "advance": 13
+          }
+        },
+        {
+          "glyph_index": 20,
+          "codepoint": 49,
+          "metrics": {
+            "x_bearing": 2,
+            "y_bearing": 17,
+            "width": 6,
+            "height": 17,
+            "advance": 13
+          }
+        },
+        {
+          "glyph_index": 21,
+          "codepoint": 50,
+          "metrics": {
+            "x_bearing": 1,
+            "y_bearing": 17,
+            "width": 11,
+            "height": 17,
+            "advance": 13
+          }
+        },
+        {
+          "glyph_index": 22,
+          "codepoint": 51,
+          "metrics": {
+            "x_bearing": 1,
+            "y_bearing": 17,
+            "width": 11,
+            "height": 17,
+            "advance": 13
+          }
+        },
+        {
+          "glyph_index": 23,
+          "codepoint": 52,
+          "metrics": {
+            "x_bearing": 1,
+            "y_bearing": 17,
+            "width": 12,
+            "height": 17,
+            "advance": 13
+          }
+        },
+        {
+          "glyph_index": 24,
+          "codepoint": 53,
+          "metrics": {
+            "x_bearing": 2,
+            "y_bearing": 17,
+            "width": 10,
+            "height": 17,
+            "advance": 13
+          }
+        },
+        {
+          "glyph_index": 25,
+          "codepoint": 54,
+          "metrics": {
+            "x_bearing": 1,
+            "y_bearing": 17,
+            "width": 12,
+            "height": 17,
+            "advance": 13
+          }
+        },
+        {
+          "glyph_index": 26,
+          "codepoint": 55,
+          "metrics": {
+            "x_bearing": 1,
+            "y_bearing": 17,
+            "width": 12,
+            "height": 17,
+            "advance": 13
+          }
+        },
+        {
+          "glyph_index": 27,
+          "codepoint": 56,
+          "metrics": {
+            "x_bearing": 1,
+            "y_bearing": 17,
+            "width": 11,
+            "height": 17,
+            "advance": 13
+          }
+        },
+        {
+          "glyph_index": 28,
+          "codepoint": 57,
+          "metrics": {
+            "x_bearing": 1,
+            "y_bearing": 17,
+            "width": 11,
+            "height": 17,
+            "advance": 13
+          }
+        },
+        {
+          "glyph_index": 29,
+          "codepoint": 58,
+          "metrics": {
+            "x_bearing": 2,
+            "y_bearing": 13,
+            "width": 3,
+            "height": 13,
+            "advance": 6
+          }
+        },
+        {
+          "glyph_index": 30,
+          "codepoint": 59,
+          "metrics": {
+            "x_bearing": 1,
+            "y_bearing": 13,
+            "width": 4,
+            "height": 16,
+            "advance": 6
+          }
+        },
+        {
+          "glyph_index": 31,
+          "codepoint": 60,
+          "metrics": {
+            "x_bearing": 1,
+            "y_bearing": 15,
+            "width": 11,
+            "height": 12,
+            "advance": 13
+          }
+        },
+        {
+          "glyph_index": 32,
+          "codepoint": 61,
+          "metrics": {
+            "x_bearing": 1,
+            "y_bearing": 12,
+            "width": 11,
+            "height": 7,
+            "advance": 13
+          }
+        },
+        {
+          "glyph_index": 33,
+          "codepoint": 62,
+          "metrics": {
+            "x_bearing": 1,
+            "y_bearing": 15,
+            "width": 11,
+            "height": 12,
+            "advance": 13
+          }
+        },
+        {
+          "glyph_index": 34,
+          "codepoint": 63,
+          "metrics": {
+            "x_bearing": 0,
+            "y_bearing": 17,
+            "width": 10,
+            "height": 17,
+            "advance": 10
+          }
+        },
+        {
+          "glyph_index": 35,
+          "codepoint": 64,
+          "metrics": {
+            "x_bearing": 1,
+            "y_bearing": 17,
+            "width": 19,
+            "height": 19,
+            "advance": 21
+          }
+        },
+        {
+          "glyph_index": 36,
+          "codepoint": 65,
+          "metrics": {
+            "x_bearing": 0,
+            "y_bearing": 17,
+            "width": 15,
+            "height": 17,
+            "advance": 15
+          }
+        },
+        {
+          "glyph_index": 37,
+          "codepoint": 66,
+          "metrics": {
+            "x_bearing": 2,
+            "y_bearing": 17,
+            "width": 12,
+            "height": 17,
+            "advance": 15
+          }
+        },
+        {
+          "glyph_index": 38,
+          "codepoint": 67,
+          "metrics": {
+            "x_bearing": 1,
+            "y_bearing": 17,
+            "width": 13,
+            "height": 17,
+            "advance": 15
+          }
+        },
+        {
+          "glyph_index": 39,
+          "codepoint": 68,
+          "metrics": {
+            "x_bearing": 2,
+            "y_bearing": 17,
+            "width": 14,
+            "height": 17,
+            "advance": 17
+          }
+        },
+        {
+          "glyph_index": 40,
+          "codepoint": 69,
+          "metrics": {
+            "x_bearing": 2,
+            "y_bearing": 17,
+            "width": 10,
+            "height": 17,
+            "advance": 13
+          }
+        },
+        {
+          "glyph_index": 41,
+          "codepoint": 70,
+          "metrics": {
+            "x_bearing": 2,
+            "y_bearing": 17,
+            "width": 10,
+            "height": 17,
+            "advance": 12
+          }
+        },
+        {
+          "glyph_index": 42,
+          "codepoint": 71,
+          "metrics": {
+            "x_bearing": 1,
+            "y_bearing": 17,
+            "width": 15,
+            "height": 17,
+            "advance": 17
+          }
+        },
+        {
+          "glyph_index": 43,
+          "codepoint": 72,
+          "metrics": {
+            "x_bearing": 2,
+            "y_bearing": 17,
+            "width": 13,
+            "height": 17,
+            "advance": 17
+          }
+        },
+        {
+          "glyph_index": 918,
+          "codepoint": 73,
+          "metrics": {
+            "x_bearing": 2,
+            "y_bearing": 17,
+            "width": 2,
+            "height": 17,
+            "advance": 6
+          }
+        },
+        {
+          "glyph_index": 45,
+          "codepoint": 74,
+          "metrics": {
+            "x_bearing": -2,
+            "y_bearing": 17,
+            "width": 6,
+            "height": 22,
+            "advance": 6
+          }
+        },
+        {
+          "glyph_index": 46,
+          "codepoint": 75,
+          "metrics": {
+            "x_bearing": 2,
+            "y_bearing": 17,
+            "width": 13,
+            "height": 17,
+            "advance": 14
+          }
+        },
+        {
+          "glyph_index": 47,
+          "codepoint": 76,
+          "metrics": {
+            "x_bearing": 2,
+            "y_bearing": 17,
+            "width": 10,
+            "height": 17,
+            "advance": 12
+          }
+        },
+        {
+          "glyph_index": 48,
+          "codepoint": 77,
+          "metrics": {
+            "x_bearing": 2,
+            "y_bearing": 17,
+            "width": 17,
+            "height": 17,
+            "advance": 21
+          }
+        },
+        {
+          "glyph_index": 49,
+          "codepoint": 78,
+          "metrics": {
+            "x_bearing": 2,
+            "y_bearing": 17,
+            "width": 14,
+            "height": 17,
+            "advance": 18
+          }
+        },
+        {
+          "glyph_index": 50,
+          "codepoint": 79,
+          "metrics": {
+            "x_bearing": 1,
+            "y_bearing": 17,
+            "width": 16,
+            "height": 17,
+            "advance": 18
+          }
+        },
+        {
+          "glyph_index": 51,
+          "codepoint": 80,
+          "metrics": {
+            "x_bearing": 2,
+            "y_bearing": 17,
+            "width": 11,
+            "height": 17,
+            "advance": 14
+          }
+        },
+        {
+          "glyph_index": 52,
+          "codepoint": 81,
+          "metrics": {
+            "x_bearing": 1,
+            "y_bearing": 17,
+            "width": 16,
+            "height": 21,
+            "advance": 18
+          }
+        },
+        {
+          "glyph_index": 53,
+          "codepoint": 82,
+          "metrics": {
+            "x_bearing": 2,
+            "y_bearing": 17,
+            "width": 12,
+            "height": 17,
+            "advance": 14
+          }
+        },
+        {
+          "glyph_index": 54,
+          "codepoint": 83,
+          "metrics": {
+            "x_bearing": 1,
+            "y_bearing": 17,
+            "width": 11,
+            "height": 17,
+            "advance": 13
+          }
+        },
+        {
+          "glyph_index": 55,
+          "codepoint": 84,
+          "metrics": {
+            "x_bearing": 0,
+            "y_bearing": 17,
+            "width": 13,
+            "height": 17,
+            "advance": 13
+          }
+        },
+        {
+          "glyph_index": 56,
+          "codepoint": 85,
+          "metrics": {
+            "x_bearing": 2,
+            "y_bearing": 17,
+            "width": 13,
+            "height": 17,
+            "advance": 17
+          }
+        },
+        {
+          "glyph_index": 57,
+          "codepoint": 86,
+          "metrics": {
+            "x_bearing": 0,
+            "y_bearing": 17,
+            "width": 14,
+            "height": 17,
+            "advance": 14
+          }
+        },
+        {
+          "glyph_index": 58,
+          "codepoint": 87,
+          "metrics": {
+            "x_bearing": 0,
+            "y_bearing": 17,
+            "width": 22,
+            "height": 17,
+            "advance": 22
+          }
+        },
+        {
+          "glyph_index": 59,
+          "codepoint": 88,
+          "metrics": {
+            "x_bearing": 0,
+            "y_bearing": 17,
+            "width": 14,
+            "height": 17,
+            "advance": 13
+          }
+        },
+        {
+          "glyph_index": 60,
+          "codepoint": 89,
+          "metrics": {
+            "x_bearing": 0,
+            "y_bearing": 17,
+            "width": 13,
+            "height": 17,
+            "advance": 13
+          }
+        },
+        {
+          "glyph_index": 61,
+          "codepoint": 90,
+          "metrics": {
+            "x_bearing": 1,
+            "y_bearing": 17,
+            "width": 12,
+            "height": 17,
+            "advance": 13
+          }
+        },
+        {
+          "glyph_index": 62,
+          "codepoint": 91,
+          "metrics": {
+            "x_bearing": 2,
+            "y_bearing": 17,
+            "width": 5,
+            "height": 21,
+            "advance": 7
+          }
+        },
+        {
+          "glyph_index": 63,
+          "codepoint": 92,
+          "metrics": {
+            "x_bearing": 0,
+            "y_bearing": 17,
+            "width": 9,
+            "height": 17,
+            "advance": 8
+          }
+        },
+        {
+          "glyph_index": 64,
+          "codepoint": 93,
+          "metrics": {
+            "x_bearing": 1,
+            "y_bearing": 17,
+            "width": 5,
+            "height": 21,
+            "advance": 7
+          }
+        },
+        {
+          "glyph_index": 65,
+          "codepoint": 94,
+          "metrics": {
+            "x_bearing": 1,
+            "y_bearing": 17,
+            "width": 11,
+            "height": 11,
+            "advance": 13
+          }
+        },
+        {
+          "glyph_index": 66,
+          "codepoint": 95,
+          "metrics": {
+            "x_bearing": 0,
+            "y_bearing": -2,
+            "width": 11,
+            "height": 2,
+            "advance": 10
+          }
+        },
+        {
+          "glyph_index": 67,
+          "codepoint": 96,
+          "metrics": {
+            "x_bearing": 5,
+            "y_bearing": 18,
+            "width": 4,
+            "height": 3,
+            "advance": 13
+          }
+        },
+        {
+          "glyph_index": 68,
+          "codepoint": 97,
+          "metrics": {
+            "x_bearing": 1,
+            "y_bearing": 13,
+            "width": 10,
+            "height": 13,
+            "advance": 13
+          }
+        },
+        {
+          "glyph_index": 69,
+          "codepoint": 98,
+          "metrics": {
+            "x_bearing": 2,
+            "y_bearing": 18,
+            "width": 11,
+            "height": 18,
+            "advance": 14
+          }
+        },
+        {
+          "glyph_index": 70,
+          "codepoint": 99,
+          "metrics": {
+            "x_bearing": 1,
+            "y_bearing": 13,
+            "width": 10,
+            "height": 13,
+            "advance": 11
+          }
+        },
+        {
+          "glyph_index": 71,
+          "codepoint": 100,
+          "metrics": {
+            "x_bearing": 1,
+            "y_bearing": 18,
+            "width": 12,
+            "height": 18,
+            "advance": 14
+          }
+        },
+        {
+          "glyph_index": 72,
+          "codepoint": 101,
+          "metrics": {
+            "x_bearing": 1,
+            "y_bearing": 13,
+            "width": 11,
+            "height": 13,
+            "advance": 13
+          }
+        },
+        {
+          "glyph_index": 73,
+          "codepoint": 102,
+          "metrics": {
+            "x_bearing": 0,
+            "y_bearing": 18,
+            "width": 9,
+            "height": 18,
+            "advance": 8
+          }
+        },
+        {
+          "glyph_index": 74,
+          "codepoint": 103,
+          "metrics": {
+            "x_bearing": 0,
+            "y_bearing": 13,
+            "width": 13,
+            "height": 19,
+            "advance": 13
+          }
+        },
+        {
+          "glyph_index": 75,
+          "codepoint": 104,
+          "metrics": {
+            "x_bearing": 2,
+            "y_bearing": 18,
+            "width": 11,
+            "height": 18,
+            "advance": 14
+          }
+        },
+        {
+          "glyph_index": 76,
+          "codepoint": 105,
+          "metrics": {
+            "x_bearing": 2,
+            "y_bearing": 18,
+            "width": 2,
+            "height": 18,
+            "advance": 6
+          }
+        },
+        {
+          "glyph_index": 77,
+          "codepoint": 106,
+          "metrics": {
+            "x_bearing": -1,
+            "y_bearing": 18,
+            "width": 5,
+            "height": 24,
+            "advance": 6
+          }
+        },
+        {
+          "glyph_index": 78,
+          "codepoint": 107,
+          "metrics": {
+            "x_bearing": 2,
+            "y_bearing": 18,
+            "width": 10,
+            "height": 18,
+            "advance": 12
+          }
+        },
+        {
+          "glyph_index": 79,
+          "codepoint": 108,
+          "metrics": {
+            "x_bearing": 2,
+            "y_bearing": 18,
+            "width": 2,
+            "height": 18,
+            "advance": 6
+          }
+        },
+        {
+          "glyph_index": 80,
+          "codepoint": 109,
+          "metrics": {
+            "x_bearing": 2,
+            "y_bearing": 13,
+            "width": 18,
+            "height": 13,
+            "advance": 22
+          }
+        },
+        {
+          "glyph_index": 81,
+          "codepoint": 110,
+          "metrics": {
+            "x_bearing": 2,
+            "y_bearing": 13,
+            "width": 11,
+            "height": 13,
+            "advance": 14
+          }
+        },
+        {
+          "glyph_index": 82,
+          "codepoint": 111,
+          "metrics": {
+            "x_bearing": 1,
+            "y_bearing": 13,
+            "width": 12,
+            "height": 13,
+            "advance": 14
+          }
+        },
+        {
+          "glyph_index": 83,
+          "codepoint": 112,
+          "metrics": {
+            "x_bearing": 2,
+            "y_bearing": 13,
+            "width": 11,
+            "height": 19,
+            "advance": 14
+          }
+        },
+        {
+          "glyph_index": 84,
+          "codepoint": 113,
+          "metrics": {
+            "x_bearing": 1,
+            "y_bearing": 13,
+            "width": 12,
+            "height": 19,
+            "advance": 14
+          }
+        },
+        {
+          "glyph_index": 85,
+          "codepoint": 114,
+          "metrics": {
+            "x_bearing": 2,
+            "y_bearing": 13,
+            "width": 7,
+            "height": 13,
+            "advance": 9
+          }
+        },
+        {
+          "glyph_index": 86,
+          "codepoint": 115,
+          "metrics": {
+            "x_bearing": 1,
+            "y_bearing": 13,
+            "width": 9,
+            "height": 13,
+            "advance": 11
+          }
+        },
+        {
+          "glyph_index": 87,
+          "codepoint": 116,
+          "metrics": {
+            "x_bearing": 0,
+            "y_bearing": 16,
+            "width": 8,
+            "height": 16,
+            "advance": 8
+          }
+        },
+        {
+          "glyph_index": 88,
+          "codepoint": 117,
+          "metrics": {
+            "x_bearing": 2,
+            "y_bearing": 13,
+            "width": 11,
+            "height": 13,
+            "advance": 14
+          }
+        },
+        {
+          "glyph_index": 89,
+          "codepoint": 118,
+          "metrics": {
+            "x_bearing": 0,
+            "y_bearing": 13,
+            "width": 12,
+            "height": 13,
+            "advance": 12
+          }
+        },
+        {
+          "glyph_index": 90,
+          "codepoint": 119,
+          "metrics": {
+            "x_bearing": 0,
+            "y_bearing": 13,
+            "width": 18,
+            "height": 13,
+            "advance": 18
+          }
+        },
+        {
+          "glyph_index": 91,
+          "codepoint": 120,
+          "metrics": {
+            "x_bearing": 0,
+            "y_bearing": 13,
+            "width": 12,
+            "height": 13,
+            "advance": 12
+          }
+        },
+        {
+          "glyph_index": 92,
+          "codepoint": 121,
+          "metrics": {
+            "x_bearing": 0,
+            "y_bearing": 13,
+            "width": 12,
+            "height": 19,
+            "advance": 12
+          }
+        },
+        {
+          "glyph_index": 93,
+          "codepoint": 122,
+          "metrics": {
+            "x_bearing": 1,
+            "y_bearing": 13,
+            "width": 9,
+            "height": 13,
+            "advance": 11
+          }
+        },
+        {
+          "glyph_index": 94,
+          "codepoint": 123,
+          "metrics": {
+            "x_bearing": 1,
+            "y_bearing": 17,
+            "width": 7,
+            "height": 21,
+            "advance": 9
+          }
+        },
+        {
+          "glyph_index": 95,
+          "codepoint": 124,
+          "metrics": {
+            "x_bearing": 6,
+            "y_bearing": 18,
+            "width": 1,
+            "height": 24,
+            "advance": 13
+          }
+        },
+        {
+          "glyph_index": 96,
+          "codepoint": 125,
+          "metrics": {
+            "x_bearing": 1,
+            "y_bearing": 17,
+            "width": 7,
+            "height": 21,
+            "advance": 9
+          }
+        },
+        {
+          "glyph_index": 97,
+          "codepoint": 126,
+          "metrics": {
+            "x_bearing": 1,
+            "y_bearing": 10,
+            "width": 11,
+            "height": 3,
+            "advance": 13
+          }
+        },
+        {
+          "glyph_index": 98,
+          "codepoint": 160,
+          "metrics": {
+            "x_bearing": 0,
+            "y_bearing": 0,
+            "width": 0,
+            "height": 0,
+            "advance": 6
+          }
+        },
+        {
+          "glyph_index": 99,
+          "codepoint": 161,
+          "metrics": {
+            "x_bearing": 2,
+            "y_bearing": 13,
+            "width": 3,
+            "height": 17,
+            "advance": 6
+          }
+        },
+        {
+          "glyph_index": 100,
+          "codepoint": 162,
+          "metrics": {
+            "x_bearing": 2,
+            "y_bearing": 17,
+            "width": 10,
+            "height": 17,
+            "advance": 13
+          }
+        },
+        {
+          "glyph_index": 101,
+          "codepoint": 163,
+          "metrics": {
+            "x_bearing": 1,
+            "y_bearing": 17,
+            "width": 12,
+            "height": 17,
+            "advance": 13
+          }
+        },
+        {
+          "glyph_index": 102,
+          "codepoint": 164,
+          "metrics": {
+            "x_bearing": 1,
+            "y_bearing": 14,
+            "width": 11,
+            "height": 11,
+            "advance": 13
+          }
+        },
+        {
+          "glyph_index": 103,
+          "codepoint": 165,
+          "metrics": {
+            "x_bearing": 0,
+            "y_bearing": 17,
+            "width": 13,
+            "height": 17,
+            "advance": 13
+          }
+        },
+        {
+          "glyph_index": 104,
+          "codepoint": 166,
+          "metrics": {
+            "x_bearing": 6,
+            "y_bearing": 18,
+            "width": 1,
+            "height": 24,
+            "advance": 13
+          }
+        },
+        {
+          "glyph_index": 105,
+          "codepoint": 167,
+          "metrics": {
+            "x_bearing": 1,
+            "y_bearing": 18,
+            "width": 10,
+            "height": 18,
+            "advance": 12
+          }
+        },
+        {
+          "glyph_index": 106,
+          "codepoint": 168,
+          "metrics": {
+            "x_bearing": 4,
+            "y_bearing": 17,
+            "width": 6,
+            "height": 2,
+            "advance": 13
+          }
+        },
+        {
+          "glyph_index": 107,
+          "codepoint": 169,
+          "metrics": {
+            "x_bearing": 1,
+            "y_bearing": 17,
+            "width": 18,
+            "height": 17,
+            "advance": 19
+          }
+        },
+        {
+          "glyph_index": 108,
+          "codepoint": 170,
+          "metrics": {
+            "x_bearing": 1,
+            "y_bearing": 17,
+            "width": 6,
+            "height": 8,
+            "advance": 8
+          }
+        },
+        {
+          "glyph_index": 109,
+          "codepoint": 171,
+          "metrics": {
+            "x_bearing": 1,
+            "y_bearing": 11,
+            "width": 10,
+            "height": 10,
+            "advance": 11
+          }
+        },
+        {
+          "glyph_index": 110,
+          "codepoint": 172,
+          "metrics": {
+            "x_bearing": 1,
+            "y_bearing": 9,
+            "width": 11,
+            "height": 6,
+            "advance": 13
+          }
+        },
+        {
+          "glyph_index": 111,
+          "codepoint": 173,
+          "metrics": {
+            "x_bearing": 1,
+            "y_bearing": 7,
+            "width": 6,
+            "height": 1,
+            "advance": 7
+          }
+        },
+        {
+          "glyph_index": 112,
+          "codepoint": 174,
+          "metrics": {
+            "x_bearing": 1,
+            "y_bearing": 17,
+            "width": 18,
+            "height": 17,
+            "advance": 19
+          }
+        },
+        {
+          "glyph_index": 113,
+          "codepoint": 175,
+          "metrics": {
+            "x_bearing": 0,
+            "y_bearing": 20,
+            "width": 12,
+            "height": 2,
+            "advance": 12
+          }
+        },
+        {
+          "glyph_index": 114,
+          "codepoint": 176,
+          "metrics": {
+            "x_bearing": 1,
+            "y_bearing": 17,
+            "width": 8,
+            "height": 7,
+            "advance": 10
+          }
+        },
+        {
+          "glyph_index": 115,
+          "codepoint": 177,
+          "metrics": {
+            "x_bearing": 1,
+            "y_bearing": 14,
+            "width": 11,
+            "height": 14,
+            "advance": 13
+          }
+        },
+        {
+          "glyph_index": 116,
+          "codepoint": 178,
+          "metrics": {
+            "x_bearing": 1,
+            "y_bearing": 17,
+            "width": 7,
+            "height": 10,
+            "advance": 8
+          }
+        },
+        {
+          "glyph_index": 117,
+          "codepoint": 179,
+          "metrics": {
+            "x_bearing": 0,
+            "y_bearing": 17,
+            "width": 8,
+            "height": 10,
+            "advance": 8
+          }
+        },
+        {
+          "glyph_index": 118,
+          "codepoint": 180,
+          "metrics": {
+            "x_bearing": 5,
+            "y_bearing": 18,
+            "width": 4,
+            "height": 3,
+            "advance": 13
+          }
+        },
+        {
+          "glyph_index": 119,
+          "codepoint": 181,
+          "metrics": {
+            "x_bearing": 2,
+            "y_bearing": 13,
+            "width": 11,
+            "height": 19,
+            "advance": 14
+          }
+        },
+        {
+          "glyph_index": 120,
+          "codepoint": 182,
+          "metrics": {
+            "x_bearing": 1,
+            "y_bearing": 18,
+            "width": 12,
+            "height": 21,
+            "advance": 15
+          }
+        },
+        {
+          "glyph_index": 121,
+          "codepoint": 183,
+          "metrics": {
+            "x_bearing": 2,
+            "y_bearing": 10,
+            "width": 3,
+            "height": 3,
+            "advance": 6
+          }
+        },
+        {
+          "glyph_index": 122,
+          "codepoint": 184,
+          "metrics": {
+            "x_bearing": 0,
+            "y_bearing": 0,
+            "width": 5,
+            "height": 6,
+            "advance": 5
+          }
+        },
+        {
+          "glyph_index": 123,
+          "codepoint": 185,
+          "metrics": {
+            "x_bearing": 1,
+            "y_bearing": 17,
+            "width": 5,
+            "height": 10,
+            "advance": 8
+          }
+        },
+        {
+          "glyph_index": 124,
+          "codepoint": 186,
+          "metrics": {
+            "x_bearing": 1,
+            "y_bearing": 17,
+            "width": 7,
+            "height": 8,
+            "advance": 9
+          }
+        },
+        {
+          "glyph_index": 125,
+          "codepoint": 187,
+          "metrics": {
+            "x_bearing": 1,
+            "y_bearing": 11,
+            "width": 10,
+            "height": 10,
+            "advance": 11
+          }
+        },
+        {
+          "glyph_index": 126,
+          "codepoint": 188,
+          "metrics": {
+            "x_bearing": 1,
+            "y_bearing": 17,
+            "width": 16,
+            "height": 17,
+            "advance": 18
+          }
+        },
+        {
+          "glyph_index": 127,
+          "codepoint": 189,
+          "metrics": {
+            "x_bearing": 1,
+            "y_bearing": 17,
+            "width": 17,
+            "height": 17,
+            "advance": 18
+          }
+        },
+        {
+          "glyph_index": 128,
+          "codepoint": 190,
+          "metrics": {
+            "x_bearing": 0,
+            "y_bearing": 17,
+            "width": 18,
+            "height": 17,
+            "advance": 18
+          }
+        },
+        {
+          "glyph_index": 129,
+          "codepoint": 191,
+          "metrics": {
+            "x_bearing": 1,
+            "y_bearing": 13,
+            "width": 9,
+            "height": 18,
+            "advance": 10
+          }
+        },
+        {
+          "glyph_index": 130,
+          "codepoint": 192,
+          "metrics": {
+            "x_bearing": 0,
+            "y_bearing": 22,
+            "width": 15,
+            "height": 22,
+            "advance": 15
+          }
+        },
+        {
+          "glyph_index": 131,
+          "codepoint": 193,
+          "metrics": {
+            "x_bearing": 0,
+            "y_bearing": 22,
+            "width": 15,
+            "height": 22,
+            "advance": 15
+          }
+        },
+        {
+          "glyph_index": 132,
+          "codepoint": 194,
+          "metrics": {
+            "x_bearing": 0,
+            "y_bearing": 22,
+            "width": 15,
+            "height": 22,
+            "advance": 15
+          }
+        },
+        {
+          "glyph_index": 133,
+          "codepoint": 195,
+          "metrics": {
+            "x_bearing": 0,
+            "y_bearing": 22,
+            "width": 15,
+            "height": 22,
+            "advance": 15
+          }
+        },
+        {
+          "glyph_index": 134,
+          "codepoint": 196,
+          "metrics": {
+            "x_bearing": 0,
+            "y_bearing": 21,
+            "width": 15,
+            "height": 21,
+            "advance": 15
+          }
+        },
+        {
+          "glyph_index": 135,
+          "codepoint": 197,
+          "metrics": {
+            "x_bearing": 0,
+            "y_bearing": 22,
+            "width": 15,
+            "height": 22,
+            "advance": 15
+          }
+        },
+        {
+          "glyph_index": 136,
+          "codepoint": 198,
+          "metrics": {
+            "x_bearing": 0,
+            "y_bearing": 17,
+            "width": 20,
+            "height": 17,
+            "advance": 20
+          }
+        },
+        {
+          "glyph_index": 137,
+          "codepoint": 199,
+          "metrics": {
+            "x_bearing": 1,
+            "y_bearing": 17,
+            "width": 13,
+            "height": 23,
+            "advance": 15
+          }
+        },
+        {
+          "glyph_index": 138,
+          "codepoint": 200,
+          "metrics": {
+            "x_bearing": 2,
+            "y_bearing": 22,
+            "width": 10,
+            "height": 22,
+            "advance": 13
+          }
+        },
+        {
+          "glyph_index": 139,
+          "codepoint": 201,
+          "metrics": {
+            "x_bearing": 2,
+            "y_bearing": 22,
+            "width": 10,
+            "height": 22,
+            "advance": 13
+          }
+        },
+        {
+          "glyph_index": 140,
+          "codepoint": 202,
+          "metrics": {
+            "x_bearing": 2,
+            "y_bearing": 22,
+            "width": 10,
+            "height": 22,
+            "advance": 13
+          }
+        },
+        {
+          "glyph_index": 141,
+          "codepoint": 203,
+          "metrics": {
+            "x_bearing": 2,
+            "y_bearing": 21,
+            "width": 10,
+            "height": 21,
+            "advance": 13
+          }
+        },
+        {
+          "glyph_index": 919,
+          "codepoint": 204,
+          "metrics": {
+            "x_bearing": 0,
+            "y_bearing": 22,
+            "width": 4,
+            "height": 22,
+            "advance": 6
+          }
+        },
+        {
+          "glyph_index": 920,
+          "codepoint": 205,
+          "metrics": {
+            "x_bearing": 2,
+            "y_bearing": 22,
+            "width": 4,
+            "height": 22,
+            "advance": 6
+          }
+        },
+        {
+          "glyph_index": 921,
+          "codepoint": 206,
+          "metrics": {
+            "x_bearing": -1,
+            "y_bearing": 22,
+            "width": 8,
+            "height": 22,
+            "advance": 6
+          }
+        },
+        {
+          "glyph_index": 922,
+          "codepoint": 207,
+          "metrics": {
+            "x_bearing": 0,
+            "y_bearing": 21,
+            "width": 6,
+            "height": 21,
+            "advance": 6
+          }
+        },
+        {
+          "glyph_index": 146,
+          "codepoint": 208,
+          "metrics": {
+            "x_bearing": 1,
+            "y_bearing": 17,
+            "width": 15,
+            "height": 17,
+            "advance": 17
+          }
+        },
+        {
+          "glyph_index": 147,
+          "codepoint": 209,
+          "metrics": {
+            "x_bearing": 2,
+            "y_bearing": 22,
+            "width": 14,
+            "height": 22,
+            "advance": 18
+          }
+        },
+        {
+          "glyph_index": 148,
+          "codepoint": 210,
+          "metrics": {
+            "x_bearing": 1,
+            "y_bearing": 22,
+            "width": 16,
+            "height": 22,
+            "advance": 18
+          }
+        },
+        {
+          "glyph_index": 149,
+          "codepoint": 211,
+          "metrics": {
+            "x_bearing": 1,
+            "y_bearing": 22,
+            "width": 16,
+            "height": 22,
+            "advance": 18
+          }
+        },
+        {
+          "glyph_index": 150,
+          "codepoint": 212,
+          "metrics": {
+            "x_bearing": 1,
+            "y_bearing": 22,
+            "width": 16,
+            "height": 22,
+            "advance": 18
+          }
+        },
+        {
+          "glyph_index": 151,
+          "codepoint": 213,
+          "metrics": {
+            "x_bearing": 1,
+            "y_bearing": 22,
+            "width": 16,
+            "height": 22,
+            "advance": 18
+          }
+        },
+        {
+          "glyph_index": 152,
+          "codepoint": 214,
+          "metrics": {
+            "x_bearing": 1,
+            "y_bearing": 21,
+            "width": 16,
+            "height": 21,
+            "advance": 18
+          }
+        },
+        {
+          "glyph_index": 153,
+          "codepoint": 215,
+          "metrics": {
+            "x_bearing": 2,
+            "y_bearing": 14,
+            "width": 10,
+            "height": 11,
+            "advance": 13
+          }
+        },
+        {
+          "glyph_index": 154,
+          "codepoint": 216,
+          "metrics": {
+            "x_bearing": 1,
+            "y_bearing": 18,
+            "width": 16,
+            "height": 19,
+            "advance": 18
+          }
+        },
+        {
+          "glyph_index": 155,
+          "codepoint": 217,
+          "metrics": {
+            "x_bearing": 2,
+            "y_bearing": 22,
+            "width": 13,
+            "height": 22,
+            "advance": 17
+          }
+        },
+        {
+          "glyph_index": 156,
+          "codepoint": 218,
+          "metrics": {
+            "x_bearing": 2,
+            "y_bearing": 22,
+            "width": 13,
+            "height": 22,
+            "advance": 17
+          }
+        },
+        {
+          "glyph_index": 157,
+          "codepoint": 219,
+          "metrics": {
+            "x_bearing": 2,
+            "y_bearing": 22,
+            "width": 13,
+            "height": 22,
+            "advance": 17
+          }
+        },
+        {
+          "glyph_index": 158,
+          "codepoint": 220,
+          "metrics": {
+            "x_bearing": 2,
+            "y_bearing": 21,
+            "width": 13,
+            "height": 21,
+            "advance": 17
+          }
+        },
+        {
+          "glyph_index": 159,
+          "codepoint": 221,
+          "metrics": {
+            "x_bearing": 0,
+            "y_bearing": 22,
+            "width": 13,
+            "height": 22,
+            "advance": 13
+          }
+        },
+        {
+          "glyph_index": 160,
+          "codepoint": 222,
+          "metrics": {
+            "x_bearing": 2,
+            "y_bearing": 17,
+            "width": 11,
+            "height": 17,
+            "advance": 14
+          }
+        },
+        {
+          "glyph_index": 161,
+          "codepoint": 223,
+          "metrics": {
+            "x_bearing": 2,
+            "y_bearing": 18,
+            "width": 12,
+            "height": 18,
+            "advance": 14
+          }
+        },
+        {
+          "glyph_index": 162,
+          "codepoint": 224,
+          "metrics": {
+            "x_bearing": 1,
+            "y_bearing": 18,
+            "width": 10,
+            "height": 18,
+            "advance": 13
+          }
+        },
+        {
+          "glyph_index": 163,
+          "codepoint": 225,
+          "metrics": {
+            "x_bearing": 1,
+            "y_bearing": 18,
+            "width": 10,
+            "height": 18,
+            "advance": 13
+          }
+        },
+        {
+          "glyph_index": 164,
+          "codepoint": 226,
+          "metrics": {
+            "x_bearing": 1,
+            "y_bearing": 18,
+            "width": 10,
+            "height": 18,
+            "advance": 13
+          }
+        },
+        {
+          "glyph_index": 165,
+          "codepoint": 227,
+          "metrics": {
+            "x_bearing": 1,
+            "y_bearing": 18,
+            "width": 10,
+            "height": 18,
+            "advance": 13
+          }
+        },
+        {
+          "glyph_index": 166,
+          "codepoint": 228,
+          "metrics": {
+            "x_bearing": 1,
+            "y_bearing": 17,
+            "width": 10,
+            "height": 17,
+            "advance": 13
+          }
+        },
+        {
+          "glyph_index": 167,
+          "codepoint": 229,
+          "metrics": {
+            "x_bearing": 1,
+            "y_bearing": 20,
+            "width": 10,
+            "height": 20,
+            "advance": 13
+          }
+        },
+        {
+          "glyph_index": 168,
+          "codepoint": 230,
+          "metrics": {
+            "x_bearing": 1,
+            "y_bearing": 13,
+            "width": 18,
+            "height": 13,
+            "advance": 20
+          }
+        },
+        {
+          "glyph_index": 169,
+          "codepoint": 231,
+          "metrics": {
+            "x_bearing": 1,
+            "y_bearing": 13,
+            "width": 10,
+            "height": 19,
+            "advance": 11
+          }
+        },
+        {
+          "glyph_index": 170,
+          "codepoint": 232,
+          "metrics": {
+            "x_bearing": 1,
+            "y_bearing": 18,
+            "width": 11,
+            "height": 18,
+            "advance": 13
+          }
+        },
+        {
+          "glyph_index": 171,
+          "codepoint": 233,
+          "metrics": {
+            "x_bearing": 1,
+            "y_bearing": 18,
+            "width": 11,
+            "height": 18,
+            "advance": 13
+          }
+        },
+        {
+          "glyph_index": 172,
+          "codepoint": 234,
+          "metrics": {
+            "x_bearing": 1,
+            "y_bearing": 18,
+            "width": 11,
+            "height": 18,
+            "advance": 13
+          }
+        },
+        {
+          "glyph_index": 173,
+          "codepoint": 235,
+          "metrics": {
+            "x_bearing": 1,
+            "y_bearing": 17,
+            "width": 11,
+            "height": 17,
+            "advance": 13
+          }
+        },
+        {
+          "glyph_index": 174,
+          "codepoint": 236,
+          "metrics": {
+            "x_bearing": 0,
+            "y_bearing": 18,
+            "width": 4,
+            "height": 18,
+            "advance": 6
+          }
+        },
+        {
+          "glyph_index": 175,
+          "codepoint": 237,
+          "metrics": {
+            "x_bearing": 2,
+            "y_bearing": 18,
+            "width": 4,
+            "height": 18,
+            "advance": 6
+          }
+        },
+        {
+          "glyph_index": 176,
+          "codepoint": 238,
+          "metrics": {
+            "x_bearing": -1,
+            "y_bearing": 18,
+            "width": 8,
+            "height": 18,
+            "advance": 6
+          }
+        },
+        {
+          "glyph_index": 177,
+          "codepoint": 239,
+          "metrics": {
+            "x_bearing": 0,
+            "y_bearing": 17,
+            "width": 6,
+            "height": 17,
+            "advance": 6
+          }
+        },
+        {
+          "glyph_index": 178,
+          "codepoint": 240,
+          "metrics": {
+            "x_bearing": 1,
+            "y_bearing": 18,
+            "width": 12,
+            "height": 18,
+            "advance": 14
+          }
+        },
+        {
+          "glyph_index": 179,
+          "codepoint": 241,
+          "metrics": {
+            "x_bearing": 2,
+            "y_bearing": 18,
+            "width": 11,
+            "height": 18,
+            "advance": 14
+          }
+        },
+        {
+          "glyph_index": 180,
+          "codepoint": 242,
+          "metrics": {
+            "x_bearing": 1,
+            "y_bearing": 18,
+            "width": 12,
+            "height": 18,
+            "advance": 14
+          }
+        },
+        {
+          "glyph_index": 181,
+          "codepoint": 243,
+          "metrics": {
+            "x_bearing": 1,
+            "y_bearing": 18,
+            "width": 12,
+            "height": 18,
+            "advance": 14
+          }
+        },
+        {
+          "glyph_index": 182,
+          "codepoint": 244,
+          "metrics": {
+            "x_bearing": 1,
+            "y_bearing": 18,
+            "width": 12,
+            "height": 18,
+            "advance": 14
+          }
+        },
+        {
+          "glyph_index": 183,
+          "codepoint": 245,
+          "metrics": {
+            "x_bearing": 1,
+            "y_bearing": 18,
+            "width": 12,
+            "height": 18,
+            "advance": 14
+          }
+        },
+        {
+          "glyph_index": 184,
+          "codepoint": 246,
+          "metrics": {
+            "x_bearing": 1,
+            "y_bearing": 17,
+            "width": 12,
+            "height": 17,
+            "advance": 14
+          }
+        },
+        {
+          "glyph_index": 185,
+          "codepoint": 247,
+          "metrics": {
+            "x_bearing": 1,
+            "y_bearing": 14,
+            "width": 11,
+            "height": 11,
+            "advance": 13
+          }
+        },
+        {
+          "glyph_index": 186,
+          "codepoint": 248,
+          "metrics": {
+            "x_bearing": 1,
+            "y_bearing": 14,
+            "width": 12,
+            "height": 15,
+            "advance": 14
+          }
+        },
+        {
+          "glyph_index": 187,
+          "codepoint": 249,
+          "metrics": {
+            "x_bearing": 2,
+            "y_bearing": 18,
+            "width": 11,
+            "height": 18,
+            "advance": 14
+          }
+        },
+        {
+          "glyph_index": 188,
+          "codepoint": 250,
+          "metrics": {
+            "x_bearing": 2,
+            "y_bearing": 18,
+            "width": 11,
+            "height": 18,
+            "advance": 14
+          }
+        },
+        {
+          "glyph_index": 189,
+          "codepoint": 251,
+          "metrics": {
+            "x_bearing": 2,
+            "y_bearing": 18,
+            "width": 11,
+            "height": 18,
+            "advance": 14
+          }
+        },
+        {
+          "glyph_index": 190,
+          "codepoint": 252,
+          "metrics": {
+            "x_bearing": 2,
+            "y_bearing": 17,
+            "width": 11,
+            "height": 17,
+            "advance": 14
+          }
+        },
+        {
+          "glyph_index": 191,
+          "codepoint": 253,
+          "metrics": {
+            "x_bearing": 0,
+            "y_bearing": 18,
+            "width": 12,
+            "height": 24,
+            "advance": 12
+          }
+        },
+        {
+          "glyph_index": 192,
+          "codepoint": 254,
+          "metrics": {
+            "x_bearing": 2,
+            "y_bearing": 18,
+            "width": 11,
+            "height": 24,
+            "advance": 14
+          }
+        },
+        {
+          "glyph_index": 193,
+          "codepoint": 255,
+          "metrics": {
+            "x_bearing": 0,
+            "y_bearing": 17,
+            "width": 12,
+            "height": 23,
+            "advance": 12
+          }
+        }
+      ],
+      "family_name": "Open Sans",
+      "style_name": "Regular",
+      "metrics": {
+        "ascender": 0,
+        "descender": 0,
+        "line_height": 0
+      }
+    }
+  ],
+  "metadata": {
+    "size": 24,
+    "scale": 1,
+    "buffer": 3,
+    "radius": 8,
+    "offset": 0.5,
+    "cutoff": 0.25,
+    "granularity": 1
+  }
+}
