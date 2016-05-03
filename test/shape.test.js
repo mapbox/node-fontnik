@@ -25,7 +25,7 @@ test('range', function(t) {
         t.error(err);
         t.ok(res);
 
-        var pbf = new Protobuf(new Uint8Array(res));
+        var pbf = new Protobuf(res);
         var json = JSON.parse(JSON.stringify(new Font(pbf), noBuffer));
 
         var expected = [__dirname, 'expected', 'range', key].join('/');
