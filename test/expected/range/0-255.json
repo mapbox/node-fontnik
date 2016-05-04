@@ -1051,10 +1051,10 @@
           "glyph_index": 98,
           "codepoint": 160,
           "metrics": {
-            "x_bearing": 0,
-            "y_bearing": 0,
-            "width": 0,
-            "height": 0,
+            "x_bearing": 1,
+            "y_bearing": 10,
+            "width": 11,
+            "height": 3,
             "advance": 6
           }
         },

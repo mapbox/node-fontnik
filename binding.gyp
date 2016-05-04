@@ -36,6 +36,7 @@
         '<!@(mason cflags harfbuzz ${HARFBUZZ_VERSION} | sed s/-I//g)/harfbuzz',
         '<!@(mason cflags freetype ${FREETYPE_VERSION} | sed s/-I//g)',
         '<!@(mason cflags protobuf ${PROTOBUF_VERSION} | sed s/-I//g)',
+        '<!@(mason cflags protozero ${PROTOZERO_VERSION} | sed s/-I//g)',
         "<!(node -e \"require('nan')\")"
       ],
       'libraries': [

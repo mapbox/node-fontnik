@@ -19,27 +19,21 @@ extern "C" {
 
 namespace node_fontnik {
 
-struct glyph_info {
-   glyph_info()
-       : glyph_index(0),
-         codepoint(0),
-         width(0),
-         height(0),
-         advance(0.0),
-         left(0),
-         top(0),
-         bitmap("") {}
-
-   uint32_t glyph_index;
-   uint32_t codepoint;
+struct GlyphMetrics {
+   int32_t x_bearing;
+   int32_t y_bearing;
 
    uint32_t width;
    uint32_t height;
 
    double advance;
+};
 
-   int32_t left;
-   int32_t top;
+struct Glyph {
+   uint32_t glyph_index;
+   uint32_t codepoint;
+
+   GlyphMetrics metrics;
 
    std::string bitmap;
 };
@@ -57,7 +51,7 @@ void ShapeAsync(uv_work_t* req);
 void AfterShape(uv_work_t* req);
 
 void RenderSDF(FT_Face ft_face,
-               glyph_info &glyph);
+               Glyph &glyph);
 
 const static int char_size = 24;
 const static float scale_factor = 1.0;

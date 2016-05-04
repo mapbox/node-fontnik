@@ -1,4 +1,4 @@
-// Protocol Version 2
+// Protocol Version 1
 
 package mapbox.fontnik;
 
@@ -53,7 +53,6 @@ message Font {
 message Metadata {
     optional uint32 size = 1;
     optional float scale = 2;
-
     optional uint32 buffer = 3;
     optional uint32 radius = 4;
     optional float offset = 5;

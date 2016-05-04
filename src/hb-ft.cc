@@ -33,7 +33,8 @@
 
 #include "hb-font-private.hh"
 
-#include "glyphs.pb.h"
+#include <protozero/pbf_reader.hpp>
+
 #include <iostream>
 
 #include FT_ADVANCES_H
@@ -79,7 +80,8 @@ struct hb_ft_font_t
 static hb_ft_font_t *
 _hb_ft_font_create (FT_Face ft_face, bool unref)
 {
-  std::cout << "INTERCEPTING hb_ft_font_create" << std::endl;
+  std::cout << "INTERCEPTING _hb_ft_font_create" << std::endl;
+  std::cout << ft_face << std::endl;
 
   hb_ft_font_t *ft_font = (hb_ft_font_t *) calloc (1, sizeof (hb_ft_font_t));
 
@@ -496,11 +498,132 @@ reference_table  (hb_face_t *face HB_UNUSED, hb_tag_t tag, void *user_data)
  * Since: 0.9.2
  **/
 hb_face_t *
-hb_ft_face_create (FT_Face           ft_face,
+hb_ft_face_create (char*           ft_face,
 		   hb_destroy_func_t destroy)
 {
-  hb_face_t *face;
+  std::cout << "INTERCEPTING hb_ft_face_create" << std::endl;
 
+  hb_face_t *face = nullptr;
+
+  struct GlyphMetrics {
+      operator bool() const {
+          return !(width == 0 && height == 0 && advance == 0);
+      }
+
+      // Glyph metrics.
+      int32_t x_bearing = 0;
+      int32_t y_bearing = 0;
+      uint32_t width = 0;
+      uint32_t height = 0;
+      uint32_t advance = 0;
+
+  };
+
+  class Glyph {
+  public:
+      uint32_t glyph_index = 0;
+      uint32_t codepoint = 0;
+
+      // Glyph metrics
+      GlyphMetrics metrics;
+
+      // A signed distance field of the glyph
+      std::string bitmap;
+  };
+
+  const std::string& font_string(ft_face);
+  protozero::pbf_reader font_pbf(font_string);
+
+  while (font_pbf.next(1)) {
+      std::cout << "font_pbf.tag() " << font_pbf.tag() << std::endl;
+      std::cout << "font_pbf.get_message()" << std::endl;
+      protozero::pbf_reader face_pbf;
+
+      try {
+          face_pbf = font_pbf.get_message();
+      } catch(protozero::end_of_buffer_exception e) {
+          std::cout << e.what() << std::endl;
+      }
+
+      std::cout << "face_pbf.next()" << std::endl;
+      while (face_pbf.next()) {
+          std::cout << "face_pbf.tag()" << std::endl;
+          switch (face_pbf.tag()) {
+          case 1: // family_name
+          case 2: // style_name
+              std::cout << face_pbf.get_string() << std::endl;
+              break;
+          case 3: // glyphs
+          default:
+              face_pbf.skip();
+              break;
+          }
+      }
+
+      /*
+      while (face_pbf.next(3)) {
+          auto glyph_pbf = face_pbf.get_message();
+          std::cout << "glyph_pbf" << std::endl;
+
+          protozero::pbf_reader glyph_metrics_pbf
+          std::cout << "glyph_metrics_pbf" << std::endl;
+
+          Glyph glyph;
+
+          while (glyph_pbf.next()) {
+              std::cout << "glyph_pbf" << std::endl;
+
+              switch (glyph_pbf.tag()) {
+              case 1: // glyph_index
+                  glyph.glyph_index = glyph_pbf.get_uint32();
+                  break;
+              case 2: // codepoint
+                  glyph.codepoint = glyph_pbf.get_uint32();
+                  break;
+              case 3: // metrics
+                  glyph_metrics_pbf = glyph_pbf.get_message();
+                  while (glyph_metrics_pbf.next()) {
+                      switch (glyph_metrics_pbf.tag()) {
+                      case 1: // x_bearing
+                          glyph.metrics.x_bearing = glyph_metrics_pbf.get_sint32();
+                          break;
+                      case 2: // y_bearing
+                          glyph.metrics.y_bearing = glyph_metrics_pbf.get_sint32();
+                          break;
+                      case 3: // width
+                          glyph.metrics.width = glyph_metrics_pbf.get_uint32();
+                          break;
+                      case 4: // height
+                          glyph.metrics.height = glyph_metrics_pbf.get_uint32();
+                          break;
+                      case 5: // advance
+                          glyph.metrics.advance = glyph_metrics_pbf.get_uint32();
+                          break;
+                      default:
+                          glyph_metrics_pbf.skip();
+                          break;
+                      }
+                  }
+                  break;
+              case 4: // bitmap
+                  glyph.bitmap = glyph_pbf.get_string();
+                  break;
+              default:
+                  glyph_pbf.skip();
+                  break;
+              }
+          }
+
+          // glyphSet.insert(glyph.id, glyph);
+
+          std::cout << "glyph_index: " << glyph.glyph_index << 
+                       "codepoint: " << glyph.codepoint << 
+                       std::endl;
+      }
+      */
+  }
+
+  /*
   if (ft_face->stream->read == NULL) {
     hb_blob_t *blob;
 
@@ -516,6 +639,7 @@ hb_ft_face_create (FT_Face           ft_face,
 
   hb_face_set_index (face, ft_face->face_index);
   hb_face_set_upem (face, ft_face->units_per_EM);
+  */
 
   return face;
 }
@@ -529,12 +653,14 @@ hb_ft_face_create (FT_Face           ft_face,
  * Return value: (transfer full): 
  * Since: 0.9.38
  **/
+/*
 hb_face_t *
 hb_ft_face_create_referenced (FT_Face ft_face)
 {
   FT_Reference_Face (ft_face);
   return hb_ft_face_create (ft_face, (hb_destroy_func_t) FT_Done_Face);
 }
+*/
 
 static void
 hb_ft_face_finalize (FT_Face ft_face)
@@ -551,6 +677,7 @@ hb_ft_face_finalize (FT_Face ft_face)
  * Return value: (transfer full): 
  * Since: 0.9.2
  **/
+/*
 hb_face_t *
 hb_ft_face_create_cached (FT_Face ft_face)
 {
@@ -565,6 +692,7 @@ hb_ft_face_create_cached (FT_Face ft_face)
 
   return hb_face_reference ((hb_face_t *) ft_face->generic.data);
 }
+*/
 
 
 /**
@@ -578,19 +706,25 @@ hb_ft_face_create_cached (FT_Face ft_face)
  * Since: 0.9.2
  **/
 hb_font_t *
-hb_ft_font_create (FT_Face           ft_face,
+hb_ft_font_create (char*           ft_face,
 		   hb_destroy_func_t destroy)
 {
+  std::cout << "INTERCEPTING hb_ft_font_create" << std::endl;
+
   hb_font_t *font;
   hb_face_t *face;
 
   face = hb_ft_face_create (ft_face, destroy);
   font = hb_font_create (face);
   hb_face_destroy (face);
+
+  /*
   _hb_ft_font_set_funcs (font, ft_face, false);
   hb_font_set_scale (font,
 		     (int) (((uint64_t) ft_face->size->metrics.x_scale * (uint64_t) ft_face->units_per_EM + (1<<15)) >> 16),
 		     (int) (((uint64_t) ft_face->size->metrics.y_scale * (uint64_t) ft_face->units_per_EM + (1<<15)) >> 16));
+   */
+
 #if 0 /* hb-ft works in no-hinting model */
   hb_font_set_ppem (font,
 		    ft_face->size->metrics.x_ppem,
@@ -609,12 +743,14 @@ hb_ft_font_create (FT_Face           ft_face,
  * Return value: (transfer full): 
  * Since: 0.9.38
  **/
+/*
 hb_font_t *
 hb_ft_font_create_referenced (FT_Face ft_face)
 {
   FT_Reference_Face (ft_face);
   return hb_ft_font_create (ft_face, (hb_destroy_func_t) FT_Done_Face);
 }
+*/
 
 
 /* Thread-safe, lock-free, FT_Library */

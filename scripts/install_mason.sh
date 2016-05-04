@@ -21,11 +21,13 @@ export BOOST_VERSION=1.58.0
 export HARFBUZZ_VERSION=1.2.6
 export FREETYPE_VERSION=2.6
 export PROTOBUF_VERSION=2.6.1
+export PROTOZERO_VERSION=1.3.0
 
 mason install boost ${BOOST_VERSION}
 mason install harfbuzz ${HARFBUZZ_VERSION}
 mason install freetype ${FREETYPE_VERSION}
 mason install protobuf ${PROTOBUF_VERSION}
+mason install protozero ${PROTOZERO_VERSION}
 
 # Add protoc to $PATH
 export PATH="`mason prefix protobuf ${PROTOBUF_VERSION}`/bin:${PATH}"

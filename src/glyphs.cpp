@@ -25,6 +25,8 @@
 #include "hb.h"
 #include "hb-ft.h"
 
+#include <protozero/pbf_reader.hpp>
+
 namespace bg = boost::geometry;
 namespace bgm = bg::model;
 namespace bgi = bg::index;
@@ -282,6 +284,112 @@ void AfterLoad(uv_work_t* req) {
     delete baton;
 };
 
+
+void parseGlyphMetrics(Glyph *glyph, protozero::pbf_reader glyph_metrics_pbf) {
+    while (glyph_metrics_pbf.next()) {
+        switch (glyph_metrics_pbf.tag()) {
+        case 1: // x_bearing
+            glyph->metrics.x_bearing = glyph_metrics_pbf.get_sint32();
+            break;
+        case 2: // y_bearing
+            glyph->metrics.y_bearing = glyph_metrics_pbf.get_sint32();
+            break;
+        case 3: // width
+            glyph->metrics.width = glyph_metrics_pbf.get_uint32();
+            break;
+        case 4: // height
+            glyph->metrics.height = glyph_metrics_pbf.get_uint32();
+            break;
+        case 5: // advance
+            glyph->metrics.advance = glyph_metrics_pbf.get_uint32();
+            break;
+        default:
+            glyph_metrics_pbf.skip();
+            break;
+        }
+    }
+}
+
+void parseGlyph(protozero::pbf_reader glyph_pbf) {
+    Glyph glyph;
+
+    while (glyph_pbf.next()) {
+        switch (glyph_pbf.tag()) {
+        case 1: // glyph_index
+            glyph.glyph_index = glyph_pbf.get_uint32();
+            break;
+        case 2: // codepoint
+            glyph.codepoint = glyph_pbf.get_uint32();
+            break;
+        case 3: // metrics
+            parseGlyphMetrics(&glyph, glyph_pbf.get_message());
+            break;
+        case 4: // bitmap
+            glyph.bitmap = glyph_pbf.get_string();
+            break;
+        default:
+            glyph_pbf.skip();
+            break;
+        }
+    }
+
+    // glyphSet.insert(glyph.id, glyph);
+
+    std::cout << "glyph_index: " << glyph.glyph_index << 
+                 " codepoint: " << glyph.codepoint << 
+                 std::endl;
+}
+
+void parseFaceMetrics(protozero::pbf_reader face_metrics_pbf) {
+    while (face_metrics_pbf.next()) {
+        switch (face_metrics_pbf.tag()) {
+        case 1: // ascender
+            std::cout << "ascender: " << face_metrics_pbf.get_double() << std::endl;
+            break;
+        case 2: // descender
+            std::cout << "descender: " << face_metrics_pbf.get_double() << std::endl;
+            break;
+        case 3: // line_height
+            std::cout << "line_height: " << face_metrics_pbf.get_double() << std::endl;
+            break;
+        default:
+            face_metrics_pbf.skip();
+            break;
+        }
+    }
+}
+
+void parseFontMetadata(protozero::pbf_reader metadata_pbf) {
+    while (metadata_pbf.next()) {
+        switch (metadata_pbf.tag()) {
+        case 1: // size
+            std::cout << "size: " << metadata_pbf.get_uint32() << std::endl;
+            break;
+        case 2: // scale
+            std::cout << "scale: " << metadata_pbf.get_float() << std::endl;
+            break;
+        case 3: // buffer
+            std::cout << "buffer: " << metadata_pbf.get_uint32() << std::endl;
+            break;
+        case 4: // radius
+            std::cout << "radius: " << metadata_pbf.get_uint32() << std::endl;
+            break;
+        case 5: // offset
+            std::cout << "offset: " << metadata_pbf.get_float() << std::endl;
+            break;
+        case 6: // cutoff
+            std::cout << "cutoff: " << metadata_pbf.get_float() << std::endl;
+            break;
+        case 7: // granularity
+            std::cout << "granularity: " << metadata_pbf.get_uint32() << std::endl;
+            break;
+        default:
+            metadata_pbf.skip();
+            break;
+        }
+    }
+}
+
 void RangeAsync(uv_work_t* req) {
     RangeBaton* baton = static_cast<RangeBaton*>(req->data);
 
@@ -363,7 +471,7 @@ void RangeAsync(uv_work_t* req) {
 
             if (!glyph_index) continue;
 
-            glyph_info glyph;
+            Glyph glyph;
             glyph.glyph_index = glyph_index;
             glyph.codepoint = codepoint;
 
@@ -375,13 +483,13 @@ void RangeAsync(uv_work_t* req) {
             mutable_glyph->set_codepoint(codepoint);
 
             mapbox::fontnik::GlyphMetrics *mutable_glyph_metrics = mutable_glyph->mutable_metrics();
-            mutable_glyph_metrics->set_x_bearing(glyph.left);
-            mutable_glyph_metrics->set_y_bearing(glyph.top);
-            mutable_glyph_metrics->set_width(glyph.width);
-            mutable_glyph_metrics->set_height(glyph.height);
-            mutable_glyph_metrics->set_advance(glyph.advance);
+            mutable_glyph_metrics->set_x_bearing(glyph.metrics.x_bearing);
+            mutable_glyph_metrics->set_y_bearing(glyph.metrics.y_bearing);
+            mutable_glyph_metrics->set_width(glyph.metrics.width);
+            mutable_glyph_metrics->set_height(glyph.metrics.height);
+            mutable_glyph_metrics->set_advance(glyph.metrics.advance);
 
-            if (glyph.width > 0) {
+            if (glyph.metrics.width > 0) {
                 mutable_glyph->set_bitmap(glyph.bitmap);
             }
 
@@ -393,6 +501,43 @@ void RangeAsync(uv_work_t* req) {
     }
 
     baton->message = mutable_font.SerializeAsString();
+
+    protozero::pbf_reader font_pbf(baton->message);
+
+    while (font_pbf.next()) {
+        protozero::pbf_reader face_pbf;
+        protozero::pbf_reader metadata_pbf;
+
+        switch (font_pbf.tag()) {
+        case 1: // faces
+            face_pbf = font_pbf.get_message();
+
+            while (face_pbf.next()) {
+                switch (face_pbf.tag()) {
+                case 1: // family_name
+                case 2: // style_name
+                    std::cout << face_pbf.get_string() << std::endl;
+                    break;
+                case 3: // glyphs
+                    parseGlyph(face_pbf.get_message());
+                    break;
+                case 4: // metrics
+                    parseFaceMetrics(face_pbf.get_message());
+                    break;
+                default:
+                    face_pbf.skip();
+                    break;
+                }
+            }
+            break;
+        case 2: // metadata
+            parseFontMetadata(font_pbf.get_message());
+            break;
+        default:
+            font_pbf.skip();
+            break;
+        }
+    }
 }
 
 void AfterRange(uv_work_t* req) {
@@ -433,13 +578,15 @@ void ShapeAsync(uv_work_t* req) {
         throw std::runtime_error("Failed to open font file");
     }
 
+    hb_font_t* hb_font(hb_ft_font_create(font_data, [](void* data) {
+        delete[] static_cast<char*>(data);
+    }));
+
     FT_Library library = nullptr;
     ft_library_guard library_guard(&library);
     FT_Error error = FT_Init_FreeType(&library);
     if (error) {
-        /* LCOV_EXCL_START */
         throw std::runtime_error("Failed to open FreeType library");
-        /* LCOV_EXCL_END */
     }
 
     FT_Face ft_face = 0;
@@ -470,10 +617,17 @@ void ShapeAsync(uv_work_t* req) {
 
             hb_font_t* hb_font(hb_font_create(hb_face));
 
+            /*
+            hb_font_t* hb_font(hb_ft_font_create(font_data, [](void* data) {
+                delete[] static_cast<char*>(data);
+            }));
+            */
+
             const unsigned int upem = hb_face_get_upem(hb_face);
             hb_face_destroy(hb_face);
 
-            hb_font_set_scale(hb_font, upem, upem);
+            // hb_font_set_scale(hb_font, upem, upem);
+            hb_font_set_scale(hb_font, 1, 1);
             hb_ft_font_set_funcs(hb_font);
 
             hb_buffer_t* hb_buffer(hb_buffer_create());
@@ -705,7 +859,7 @@ double MinDistanceToLineSegment(const Tree &tree,
 }
 
 void RenderSDF(FT_Face ft_face,
-               glyph_info &glyph) {
+               Glyph &glyph) {
     if (FT_Load_Glyph (ft_face, glyph.glyph_index, FT_LOAD_NO_HINTING)) {
         return;
     }
@@ -714,7 +868,7 @@ void RenderSDF(FT_Face ft_face,
     ft_glyph_guard glyph_guard(&ft_glyph);
     if (FT_Get_Glyph(ft_face->glyph, &ft_glyph)) return;
 
-    glyph.advance = ft_face->glyph->metrics.horiAdvance / 64;
+    glyph.metrics.advance = ft_face->glyph->metrics.horiAdvance / 64;
 
     FT_Outline_Funcs func_interface = {
         .move_to = &MoveTo,
@@ -769,10 +923,10 @@ void RenderSDF(FT_Face ft_face,
 
     if (bbox_xmax - bbox_xmin == 0 || bbox_ymax - bbox_ymin == 0) return;
 
-    glyph.left = bbox_xmin;
-    glyph.top = bbox_ymax;
-    glyph.width = bbox_xmax - bbox_xmin;
-    glyph.height = bbox_ymax - bbox_ymin;
+    glyph.metrics.x_bearing = bbox_xmin;
+    glyph.metrics.y_bearing = bbox_ymax;
+    glyph.metrics.width = bbox_xmax - bbox_xmin;
+    glyph.metrics.height = bbox_ymax - bbox_ymin;
 
     Tree tree;
 
@@ -800,8 +954,8 @@ void RenderSDF(FT_Face ft_face,
     }
 
     // Loop over every pixel and determine the positive/negative distance to the outline.
-    unsigned int buffered_width = glyph.width + 2 * buffer_size;
-    unsigned int buffered_height = glyph.height + 2 * buffer_size;
+    unsigned int buffered_width = glyph.metrics.width + 2 * buffer_size;
+    unsigned int buffered_height = glyph.metrics.height + 2 * buffer_size;
     unsigned int bitmap_size = buffered_width * buffered_height;
     glyph.bitmap.resize(bitmap_size);
 
