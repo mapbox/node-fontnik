@@ -81,7 +81,6 @@ static hb_ft_font_t *
 _hb_ft_font_create (FT_Face ft_face, bool unref)
 {
   std::cout << "INTERCEPTING _hb_ft_font_create" << std::endl;
-  std::cout << ft_face << std::endl;
 
   hb_ft_font_t *ft_font = (hb_ft_font_t *) calloc (1, sizeof (hb_ft_font_t));
 

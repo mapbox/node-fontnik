@@ -105,8 +105,8 @@ struct RangeBaton {
         message(),
         request() {
             request.data = this;
-            callback.Reset(cb.As<v8::Function>());
             buffer.Reset(buf.As<v8::Object>());
+            callback.Reset(cb.As<v8::Function>());
         }
     ~RangeBaton() {
         callback.Reset();
@@ -115,12 +115,30 @@ struct RangeBaton {
 };
 
 struct ShapeBaton {
+    Nan::Persistent<v8::Object> font;
+    Nan::Persistent<v8::Object> pbf;
+    Nan::Persistent<v8::Function> callback;
+    char* font_data;
+    size_t font_size;
+    std::string pbf_data;
     uv_work_t request;
-    ShapeBaton() :
+    ShapeBaton(v8::Local<v8::Object> font_,
+               v8::Local<v8::Object> pbf_,
+               v8::Local<v8::Function> callback_) :
+        font_data(node::Buffer::Data(font_)),
+        font_size(node::Buffer::Length(font_)),
+        pbf_data(node::Buffer::Data(pbf_), node::Buffer::Length(pbf_)),
         request() {
             request.data = this;
+            font.Reset(font_);
+            pbf.Reset(pbf_);
+            callback.Reset(callback_);
         }
-    ~ShapeBaton() {}
+    ~ShapeBaton() {
+        font.Reset();
+        pbf.Reset();
+        callback.Reset();
+    }
 };
 
 NAN_METHOD(Load) {
@@ -184,7 +202,30 @@ NAN_METHOD(Range) {
 }
 
 NAN_METHOD(Shape) {
-    ShapeBaton* baton = new ShapeBaton();
+    // Validate font buffer
+    if (info.Length() < 1 ||
+        !info[0]->IsObject() ||
+        info[0]->ToObject()->IsNull() ||
+        info[0]->ToObject()->IsUndefined() ||
+        !node::Buffer::HasInstance(info[0]->ToObject())) {
+        Nan::ThrowTypeError("First argument must be a font buffer");
+    }
+
+    // Validate PBF buffer
+    if (info.Length() < 2 ||
+        !info[1]->IsObject() ||
+        info[1]->ToObject()->IsNull() ||
+        info[1]->ToObject()->IsUndefined() ||
+        !node::Buffer::HasInstance(info[1]->ToObject())) {
+        Nan::ThrowTypeError("Second argument must be a PBF buffer");
+    }
+
+    // Validate callback
+    if (info.Length() < 3 || !info[2]->IsFunction()) {
+        Nan::ThrowTypeError("Third argument must be a callback function");
+    }
+
+    ShapeBaton* baton = new ShapeBaton(info[0]->ToObject(), info[1]->ToObject(), info[2].As<v8::Function>());
     uv_queue_work(uv_default_loop(), &baton->request, ShapeAsync, (uv_after_work_cb)AfterShape);
 }
 
@@ -359,6 +400,26 @@ void parseFaceMetrics(protozero::pbf_reader face_metrics_pbf) {
     }
 }
 
+void parseFaces(protozero::pbf_reader face_pbf) {
+    while (face_pbf.next()) {
+        switch (face_pbf.tag()) {
+        case 1: // family_name
+        case 2: // style_name
+            std::cout << face_pbf.get_string() << std::endl;
+            break;
+        case 3: // glyphs
+            parseGlyph(face_pbf.get_message());
+            break;
+        case 4: // metrics
+            parseFaceMetrics(face_pbf.get_message());
+            break;
+        default:
+            face_pbf.skip();
+            break;
+        }
+    }
+}
+
 void parseFontMetadata(protozero::pbf_reader metadata_pbf) {
     while (metadata_pbf.next()) {
         switch (metadata_pbf.tag()) {
@@ -503,43 +564,6 @@ void RangeAsync(uv_work_t* req) {
     }
 
     baton->message = mutable_font.SerializeAsString();
-
-    protozero::pbf_reader font_pbf(baton->message);
-
-    while (font_pbf.next()) {
-        protozero::pbf_reader face_pbf;
-        protozero::pbf_reader metadata_pbf;
-
-        switch (font_pbf.tag()) {
-        case 1: // faces
-            face_pbf = font_pbf.get_message();
-
-            while (face_pbf.next()) {
-                switch (face_pbf.tag()) {
-                case 1: // family_name
-                case 2: // style_name
-                    std::cout << face_pbf.get_string() << std::endl;
-                    break;
-                case 3: // glyphs
-                    parseGlyph(face_pbf.get_message());
-                    break;
-                case 4: // metrics
-                    parseFaceMetrics(face_pbf.get_message());
-                    break;
-                default:
-                    face_pbf.skip();
-                    break;
-                }
-            }
-            break;
-        case 2: // metadata
-            parseFontMetadata(font_pbf.get_message());
-            break;
-        default:
-            font_pbf.skip();
-            break;
-        }
-    }
 }
 
 void AfterRange(uv_work_t* req) {
@@ -563,26 +587,27 @@ void AfterRange(uv_work_t* req) {
 void ShapeAsync(uv_work_t* req) {
     ShapeBaton* baton = static_cast<ShapeBaton*>(req->data);
 
-    std::string filename("/Users/mikemorris/Desktop/Open_Sans/OpenSans-Regular.ttf");
+    protozero::pbf_reader font_pbf(baton->pbf_data);
 
-    char* font_data;
-    size_t font_size;
-
-    std::ifstream file(filename.c_str(), std::ios::in|std::ios::binary|std::ios::ate);
-    if (file.is_open())
-    {
-        font_size = file.tellg();
-        font_data = new char[font_size];
-        file.seekg(0, std::ios::beg);
-        file.read(font_data, font_size);
-        file.close();
-    } else {
-        throw std::runtime_error("Failed to open font file");
+    while (font_pbf.next()) {
+        switch (font_pbf.tag()) {
+        case 1: // faces
+            parseFaces(font_pbf.get_message());
+            break;
+        case 2: // metadata
+            parseFontMetadata(font_pbf.get_message());
+            break;
+        default:
+            font_pbf.skip();
+            break;
+        }
     }
 
-    hb_font_t* hb_font(hb_ft_font_create(font_data, [](void* data) {
+    /*
+    hb_font_t* hb_font(hb_ft_font_create(baton->font_data, [](void* data) {
         delete[] static_cast<char*>(data);
     }));
+    */
 
     FT_Library library = nullptr;
     ft_library_guard library_guard(&library);
@@ -595,7 +620,7 @@ void ShapeAsync(uv_work_t* req) {
 
     int num_faces = 0;
     for (size_t i = 0; ft_face == 0 || i < num_faces; ++i) {
-        FT_Error face_error = FT_New_Memory_Face(library, reinterpret_cast<FT_Byte const*>(font_data), static_cast<FT_Long>(font_size), i, &ft_face);
+        FT_Error face_error = FT_New_Memory_Face(library, reinterpret_cast<FT_Byte const*>(baton->font_data), static_cast<FT_Long>(baton->font_size), i, &ft_face);
         if (face_error) {
             throw std::runtime_error("Failed to create FreeType face");
         }
@@ -610,20 +635,12 @@ void ShapeAsync(uv_work_t* req) {
             double size = char_size * scale_factor;
             FT_Set_Char_Size(ft_face, 0, (FT_F26Dot6)(size * (1<<6)), 0, 0);
 
-            hb_blob_t* hb_blob = hb_blob_create(font_data, font_size, HB_MEMORY_MODE_WRITABLE, font_data, [](void* data) {
-                delete[] static_cast<char*>(data);
-            });
+            hb_blob_t* hb_blob = hb_blob_create(baton->font_data, baton->font_size, HB_MEMORY_MODE_WRITABLE, baton->font_data, NULL);
 
             hb_face_t* hb_face = hb_face_create(hb_blob, i);
             hb_blob_destroy(hb_blob);
 
             hb_font_t* hb_font(hb_font_create(hb_face));
-
-            /*
-            hb_font_t* hb_font(hb_ft_font_create(font_data, [](void* data) {
-                delete[] static_cast<char*>(data);
-            }));
-            */
 
             const unsigned int upem = hb_face_get_upem(hb_face);
             hb_face_destroy(hb_face);
@@ -697,7 +714,20 @@ void ShapeAsync(uv_work_t* req) {
 };
 
 void AfterShape(uv_work_t* req) {
+    Nan::HandleScope scope;
+
     ShapeBaton* baton = static_cast<ShapeBaton*>(req->data);
+
+    /*
+    if (!baton->error.empty()) {
+        v8::Local<v8::Value> argv[1] = { Nan::Error(baton->error_name.c_str()) };
+        Nan::MakeCallback(Nan::GetCurrentContext()->Global(), Nan::New(baton->callback), 1, argv);
+    } else {
+    */
+        v8::Local<v8::Value> argv[1] = { Nan::Null() };
+        Nan::MakeCallback(Nan::GetCurrentContext()->Global(), Nan::New(baton->callback), 1, argv);
+    // }
+
     delete baton;
 };
 

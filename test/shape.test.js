@@ -45,9 +45,16 @@ test('range', function(t) {
     });
 });
 
-/*
 test('shape', function(t) {
-    fontnik.shape();
-    t.end();
+    var pbf = fs.readFileSync([
+        __dirname,
+        'expected',
+        'range',
+        '0-255.pbf'
+    ].join('/'));
+
+    fontnik.shape(opensans, pbf, function(err) {
+        t.error(err);
+        t.end();
+    });
 });
-*/
