@@ -442,15 +442,21 @@ void RangeAsync(uv_work_t* req) {
             mutable_face->set_style_name(ft_face->style_name);
         }
 
-        /*
-        // TODO: verify if these values match following values?
-        mutable_face->set_ascender(ft_face->ascender);
-        mutable_face->set_descender(ft_face->descender);
-        mutable_face->set_line_height(ft_face->height);
-        */
+        // Set character sizes.
+        double size = char_size * scale_factor;
+        FT_Set_Char_Size(ft_face,0,(FT_F26Dot6)(size * (1<<6)),0,0);
 
         // Add metrics to face.
         mapbox::fontnik::FaceMetrics *mutable_face_metrics = mutable_face->mutable_metrics();
+
+        // TODO: verify if these values match following values?
+        /*
+        mutable_face_metrics->set_ascender(ft_face->ascender);
+        mutable_face_metrics->set_descender(ft_face->descender);
+        mutable_face_metrics->set_line_height(ft_face->height);
+        */
+
+        // MUST call FT_Set_Char_Size before these have value
         // Ascender and descender from baseline returned by FreeType
         mutable_face_metrics->set_ascender(ft_face->size->metrics.ascender / 64);
         mutable_face_metrics->set_descender(ft_face->size->metrics.descender / 64);
@@ -458,10 +464,6 @@ void RangeAsync(uv_work_t* req) {
         // Line height returned by FreeType, includes normal font
         // line spacing, but not additional user defined spacing
         mutable_face_metrics->set_line_height(ft_face->size->metrics.height);
-
-        // Set character sizes.
-        double size = char_size * scale_factor;
-        FT_Set_Char_Size(ft_face,0,(FT_F26Dot6)(size * (1<<6)),0,0);
 
         for (std::vector<uint32_t>::size_type x = 0; x != baton->chars.size(); x++) {
             FT_ULong codepoint = baton->chars[x];

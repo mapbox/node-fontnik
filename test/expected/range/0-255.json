@@ -2107,9 +2107,9 @@
       "family_name": "Open Sans",
       "style_name": "Regular",
       "metrics": {
-        "ascender": 0,
-        "descender": 0,
-        "line_height": 0
+        "ascender": 26,
+        "descender": -7,
+        "line_height": 2112
       }
     }
   ],
