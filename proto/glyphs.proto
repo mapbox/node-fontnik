@@ -33,6 +33,7 @@ message Face {
     repeated Glyph glyphs = 3;
 
     optional FaceMetrics metrics = 4;
+    optional FaceTables tables = 5;
 }
 
 message FaceMetrics {
@@ -42,6 +43,10 @@ message FaceMetrics {
     optional sint32 descender = 4;
     optional sint32 line_height = 5;
     optional sint32 line_gap = 6;
+}
+
+message FaceTables {
+    optional bytes gsub = 1;
 }
 
 message Font {

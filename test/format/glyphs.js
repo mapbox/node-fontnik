@@ -59,6 +59,7 @@ function readFaceField(tag, face, pbf) {
     else if (tag === 2) face.style_name = pbf.readString();
     else if (tag === 3) face.glyphs.push(readGlyph(pbf, pbf.readVarint() + pbf.pos));
     else if (tag === 4) face.metrics = readFaceMetrics(pbf, pbf.readVarint() + pbf.pos);
+    else if (tag === 5) face.tables = readFaceTables(pbf, pbf.readVarint() + pbf.pos);
 }
 
 function writeFace(face, pbf) {
@@ -67,6 +68,7 @@ function writeFace(face, pbf) {
     var i;
     if (face.glyphs !== undefined) for (i = 0; i < face.glyphs.length; i++) pbf.writeMessage(3, writeGlyph, face.glyphs[i]);
     if (face.metrics !== undefined) pbf.writeMessage(4, writeFaceMetrics, face.metrics);
+    if (face.tables !== undefined) pbf.writeMessage(5, writeFaceTables, face.tables);
 }
 
 // FaceMetrics ========================================
@@ -93,6 +95,22 @@ function writeFaceMetrics(facemetrics, pbf) {
     if (facemetrics.descender !== undefined) pbf.writeSVarintField(4, facemetrics.descender);
     if (facemetrics.line_height !== undefined) pbf.writeSVarintField(5, facemetrics.line_height);
     if (facemetrics.line_gap !== undefined) pbf.writeSVarintField(6, facemetrics.line_gap);
+}
+
+// FaceTables ========================================
+
+exports.FaceTables = {read: readFaceTables, write: writeFaceTables};
+
+function readFaceTables(pbf, end) {
+    return pbf.readFields(readFaceTablesField, {}, end);
+}
+
+function readFaceTablesField(tag, facetables, pbf) {
+    if (tag === 1) facetables.gsub = pbf.readBytes();
+}
+
+function writeFaceTables(facetables, pbf) {
+    if (facetables.gsub !== undefined) pbf.writeBytesField(1, facetables.gsub);
 }
 
 // Font ========================================

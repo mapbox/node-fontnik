@@ -27,6 +27,13 @@
 
 #include <protozero/pbf_reader.hpp>
 
+// freetype2
+extern "C" {
+#include FT_SFNT_NAMES_H
+#include FT_TRUETYPE_TABLES_H
+#include FT_TRUETYPE_TAGS_H
+}
+
 namespace bg = boost::geometry;
 namespace bgm = bg::model;
 namespace bgi = bg::index;
@@ -61,14 +68,14 @@ struct LoadBaton {
     Nan::Persistent<v8::Object> buffer;
     const char* font_data;
     size_t font_size;
-    std::string error_name;
+    std::string error;
     std::vector<FaceMetadata> faces;
     uv_work_t request;
     LoadBaton(v8::Local<v8::Object> buf,
               v8::Local<v8::Value> cb) :
         font_data(node::Buffer::Data(buf)),
         font_size(node::Buffer::Length(buf)),
-        error_name(),
+        error(),
         faces(),
         request() {
             request.data = this;
@@ -86,7 +93,7 @@ struct RangeBaton {
     Nan::Persistent<v8::Object> buffer;
     const char* font_data;
     size_t font_size;
-    std::string error_name;
+    std::string error;
     std::uint32_t start;
     std::uint32_t end;
     std::vector<std::uint32_t> chars;
@@ -98,7 +105,7 @@ struct RangeBaton {
                std::uint32_t _end) :
         font_data(node::Buffer::Data(buf)),
         font_size(node::Buffer::Length(buf)),
-        error_name(),
+        error(),
         start(_start),
         end(_end),
         chars(),
@@ -261,16 +268,16 @@ void LoadAsync(uv_work_t* req) {
     FT_Error error = FT_Init_FreeType(&library);
     if (error) {
         /* LCOV_EXCL_START */
-        baton->error_name = std::string("Could not open FreeType library");
+        baton->error = std::string("Could not open FreeType library");
         return;
         /* LCOV_EXCL_END */
     }
     FT_Face ft_face = 0;
     int num_faces = 0;
     for (int i = 0; ft_face == 0 || i < num_faces; ++i) {
-        FT_Error face_error = FT_New_Memory_Face(library, reinterpret_cast<FT_Byte const*>(baton->font_data), static_cast<FT_Long>(baton->font_size), i, &ft_face);
-        if (face_error) {
-            baton->error_name = std::string("Could not open font file");
+        error = FT_New_Memory_Face(library, reinterpret_cast<FT_Byte const*>(baton->font_data), static_cast<FT_Long>(baton->font_size), i, &ft_face);
+        if (error) {
+            baton->error = std::string("Could not open font file");
             return;
         }
         std::set<int> points;
@@ -303,8 +310,8 @@ void AfterLoad(uv_work_t* req) {
 
     LoadBaton* baton = static_cast<LoadBaton*>(req->data);
 
-    if (!baton->error_name.empty()) {
-        v8::Local<v8::Value> argv[1] = { Nan::Error(baton->error_name.c_str()) };
+    if (!baton->error.empty()) {
+        v8::Local<v8::Value> argv[1] = { Nan::Error(baton->error.c_str()) };
         Nan::MakeCallback(Nan::GetCurrentContext()->Global(), Nan::New(baton->callback), 1, argv);
     } else {
         v8::Local<v8::Array> js_faces = Nan::New<v8::Array>(baton->faces.size());
@@ -413,6 +420,19 @@ void parseFaceMetrics(protozero::pbf_reader face_metrics_pbf) {
     }
 }
 
+void parseFaceTables(protozero::pbf_reader face_tables_pbf) {
+    while (face_tables_pbf.next()) {
+        switch (face_tables_pbf.tag()) {
+        case 1: // gsub
+            std::cout << "gsub: " << face_tables_pbf.get_data().second << std::endl;
+            break;
+        default:
+            face_tables_pbf.skip();
+            break;
+        }
+    }
+}
+
 void parseFaces(protozero::pbf_reader face_pbf) {
     while (face_pbf.next()) {
         switch (face_pbf.tag()) {
@@ -425,6 +445,9 @@ void parseFaces(protozero::pbf_reader face_pbf) {
             break;
         case 4: // metrics
             parseFaceMetrics(face_pbf.get_message());
+            break;
+        case 5: // tables
+            parseFaceTables(face_pbf.get_message());
             break;
         default:
             face_pbf.skip();
@@ -478,7 +501,7 @@ void RangeAsync(uv_work_t* req) {
     FT_Error error = FT_Init_FreeType(&library);
     if (error) {
         /* LCOV_EXCL_START */
-        baton->error_name = std::string("Could not open FreeType library");
+        baton->error = std::string("Could not open FreeType library");
         return;
         /* LCOV_EXCL_END */
     }
@@ -499,9 +522,9 @@ void RangeAsync(uv_work_t* req) {
 
     int num_faces = 0;
     for (int i = 0; ft_face == 0 || i < num_faces; ++i) {
-        FT_Error face_error = FT_New_Memory_Face(library, reinterpret_cast<FT_Byte const*>(baton->font_data), static_cast<FT_Long>(baton->font_size), i, &ft_face);
-        if (face_error) {
-            baton->error_name = std::string("Could not open font");
+        error = FT_New_Memory_Face(library, reinterpret_cast<FT_Byte const*>(baton->font_data), static_cast<FT_Long>(baton->font_size), i, &ft_face);
+        if (error) {
+            baton->error = std::string("Could not open font");
             return;
         }
 
@@ -544,6 +567,37 @@ void RangeAsync(uv_work_t* req) {
         mutable_face_metrics->set_line_height(ft_face->size->metrics.height);
         // Formula from Harfbuzz
         mutable_face_metrics->set_line_gap(ft_face->size->metrics.height - (ft_face->size->metrics.ascender - ft_face->size->metrics.descender));
+
+        if (!FT_IS_SFNT(ft_face)) {
+            baton->error = std::string("Must be an SFNT font");
+            return;
+        }
+
+        FT_ULong tag = TTAG_GSUB;
+        FT_ULong sfnt_buffer_length = 0;
+        error = FT_Load_Sfnt_Table(ft_face, tag, 0, NULL, &sfnt_buffer_length);
+        if (error) {
+            baton->error = std::string("Could not load SFNT table length");
+            return;
+        }
+
+        FT_Byte* sfnt_buffer = (FT_Byte *) malloc(sfnt_buffer_length);
+        if (sfnt_buffer == NULL) {
+            baton->error = std::string("Could not resize SFNT table buffer");
+            return;
+        }
+
+        error = FT_Load_Sfnt_Table(ft_face, tag, 0, sfnt_buffer, &sfnt_buffer_length);
+        if (error) {
+            baton->error = std::string("Could not load SFNT table into buffer");
+            return;
+        }
+
+        // Add tables to face.
+        mapbox::fontnik::FaceTables *mutable_face_tables = mutable_face->mutable_tables();
+        mutable_face_tables->set_gsub((const char*) sfnt_buffer, sfnt_buffer_length);
+
+        std::cout << "Added GSUB table to face: " << sfnt_buffer_length << std::endl;
 
         for (std::vector<uint32_t>::size_type x = 0; x != baton->chars.size(); x++) {
             FT_ULong codepoint = baton->chars[x];
@@ -590,8 +644,8 @@ void AfterRange(uv_work_t* req) {
 
     RangeBaton* baton = static_cast<RangeBaton*>(req->data);
 
-    if (!baton->error_name.empty()) {
-        v8::Local<v8::Value> argv[1] = { Nan::Error(baton->error_name.c_str()) };
+    if (!baton->error.empty()) {
+        v8::Local<v8::Value> argv[1] = { Nan::Error(baton->error.c_str()) };
         Nan::MakeCallback(Nan::GetCurrentContext()->Global(), Nan::New(baton->callback), 1, argv);
     } else {
         v8::Local<v8::Array> js_faces = Nan::New<v8::Array>();
@@ -745,7 +799,7 @@ void AfterShape(uv_work_t* req) {
 
     /*
     if (!baton->error.empty()) {
-        v8::Local<v8::Value> argv[1] = { Nan::Error(baton->error_name.c_str()) };
+        v8::Local<v8::Value> argv[1] = { Nan::Error(baton->error.c_str()) };
         Nan::MakeCallback(Nan::GetCurrentContext()->Global(), Nan::New(baton->callback), 1, argv);
     } else {
     */
