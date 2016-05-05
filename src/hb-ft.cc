@@ -474,6 +474,8 @@ void free_static_ft_funcs (void)
 static void
 _hb_ft_font_set_funcs (hb_font_t *font, char* ft_face, bool unref)
 {
+  std::cout << "_hb_ft_font_set_funcs" << std::endl;
+
 retry:
   hb_font_funcs_t *funcs = (hb_font_funcs_t *) hb_atomic_ptr_get (&static_ft_funcs);
 
@@ -554,6 +556,7 @@ reference_table  (hb_face_t *face HB_UNUSED, hb_tag_t tag, void *user_data)
  **/
 hb_face_t *
 hb_ft_face_create (char*           ft_face,
+                   size_t ft_face_size,
 		   hb_destroy_func_t destroy)
 {
   std::cout << "hb_ft_face_create" << std::endl;
@@ -586,36 +589,6 @@ hb_ft_face_create (char*           ft_face,
       std::string bitmap;
   };
 
-  const std::string& font_string(ft_face);
-  protozero::pbf_reader font_pbf(font_string);
-
-  while (font_pbf.next(1)) {
-      std::cout << "font_pbf.tag() " << font_pbf.tag() << std::endl;
-      std::cout << "font_pbf.get_message()" << std::endl;
-      protozero::pbf_reader face_pbf;
-
-      try {
-          face_pbf = font_pbf.get_message();
-      } catch(protozero::end_of_buffer_exception e) {
-          std::cout << e.what() << std::endl;
-      }
-
-      std::cout << "face_pbf.next()" << std::endl;
-      while (face_pbf.next()) {
-          std::cout << "face_pbf.tag()" << std::endl;
-          switch (face_pbf.tag()) {
-          case 1: // family_name
-          case 2: // style_name
-              std::cout << face_pbf.get_string() << std::endl;
-              break;
-          case 3: // glyphs
-          default:
-              face_pbf.skip();
-              break;
-          }
-      }
-  }
-
   /*
   if (ft_face->stream->read == NULL) {
     hb_blob_t *blob;
@@ -629,10 +602,36 @@ hb_ft_face_create (char*           ft_face,
   } else {
     face = hb_face_create_for_tables (reference_table, ft_face, destroy);
   }
-
-  hb_face_set_index (face, ft_face->face_index);
-  hb_face_set_upem (face, ft_face->units_per_EM);
   */
+
+  face = hb_face_create_for_tables (reference_table, ft_face, destroy);
+
+  const std::string font_string(ft_face, ft_face_size);
+  protozero::pbf_reader font_pbf(font_string);
+
+  while (font_pbf.next(1)) {
+      auto face_pbf = font_pbf.get_message();
+
+      while (face_pbf.next(4)) {
+          auto face_metrics_pbf = face_pbf.get_message();
+
+          while (face_metrics_pbf.next()) {
+              switch (face_metrics_pbf.tag()) {
+              case 1: // face_index
+                  hb_face_set_index (face, face_metrics_pbf.get_uint32());
+                  std::cout << "face_index: " << hb_face_get_index(face) << std::endl;
+                  break;
+              case 2: // units per EM
+                  hb_face_set_upem (face, face_metrics_pbf.get_uint32());
+                  std::cout << "upem: " << hb_face_get_upem(face) << std::endl;
+                  break;
+              default:
+                  face_metrics_pbf.skip();
+                  break;
+              }
+          }
+      }
+  }
 
   return face;
 }
@@ -653,13 +652,13 @@ hb_ft_face_create_referenced (FT_Face ft_face)
   FT_Reference_Face (ft_face);
   return hb_ft_face_create (ft_face, (hb_destroy_func_t) FT_Done_Face);
 }
-*/
 
 static void
 hb_ft_face_finalize (FT_Face ft_face)
 {
   hb_face_destroy ((hb_face_t *) ft_face->generic.data);
 }
+*/
 
 /**
  * hb_ft_face_create_cached:
@@ -700,6 +699,7 @@ hb_ft_face_create_cached (FT_Face ft_face)
  **/
 hb_font_t *
 hb_ft_font_create (char*           ft_face,
+                   size_t ft_face_size,
 		   hb_destroy_func_t destroy)
 {
   std::cout << "hb_ft_font_create" << std::endl;
@@ -707,7 +707,7 @@ hb_ft_font_create (char*           ft_face,
   hb_font_t *font;
   hb_face_t *face;
 
-  face = hb_ft_face_create (ft_face, destroy);
+  face = hb_ft_face_create (ft_face, ft_face_size, destroy);
   font = hb_font_create (face);
   hb_face_destroy (face);
 
@@ -749,6 +749,7 @@ hb_ft_font_create_referenced (FT_Face ft_face)
 
 /* Thread-safe, lock-free, FT_Library */
 
+/*
 static FT_Library ft_library;
 
 #ifdef HB_USE_ATEXIT
@@ -767,7 +768,7 @@ retry:
 
   if (unlikely (!library))
   {
-    /* Not found; allocate one. */
+    // Not found; allocate one.
     if (FT_Init_FreeType (&library))
       return NULL;
 
@@ -777,7 +778,7 @@ retry:
     }
 
 #ifdef HB_USE_ATEXIT
-    atexit (free_ft_library); /* First person registers atexit() callback. */
+    atexit (free_ft_library); // First person registers atexit() callback.
 #endif
   }
 
@@ -793,6 +794,8 @@ _release_blob (FT_Face ft_face)
 void
 hb_ft_font_set_funcs (hb_font_t *font)
 {
+  std::cout << "hb_ft_font_set_funcs" << std::endl;
+
   hb_blob_t *blob = hb_face_reference_blob (font->face);
   unsigned int blob_length;
   const char *blob_data = hb_blob_get_data (blob, &blob_length);
@@ -835,3 +838,4 @@ hb_ft_font_set_funcs (hb_font_t *font)
   // _hb_ft_font_set_funcs (font, ft_face, true);
   hb_ft_font_set_load_flags (font, FT_LOAD_DEFAULT | FT_LOAD_NO_HINTING);
 }
+*/

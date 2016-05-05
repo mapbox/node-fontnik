@@ -120,14 +120,16 @@ struct ShapeBaton {
     Nan::Persistent<v8::Function> callback;
     char* font_data;
     size_t font_size;
-    std::string pbf_data;
+    char* pbf_data;
+    size_t pbf_size;
     uv_work_t request;
     ShapeBaton(v8::Local<v8::Object> font_,
                v8::Local<v8::Object> pbf_,
                v8::Local<v8::Function> callback_) :
         font_data(node::Buffer::Data(font_)),
         font_size(node::Buffer::Length(font_)),
-        pbf_data(node::Buffer::Data(pbf_), node::Buffer::Length(pbf_)),
+        pbf_data(node::Buffer::Data(pbf_)),
+        pbf_size(node::Buffer::Length(pbf_)),
         request() {
             request.data = this;
             font.Reset(font_);
@@ -329,20 +331,20 @@ void AfterLoad(uv_work_t* req) {
 void parseGlyphMetrics(Glyph *glyph, protozero::pbf_reader glyph_metrics_pbf) {
     while (glyph_metrics_pbf.next()) {
         switch (glyph_metrics_pbf.tag()) {
-        case 1: // x_bearing
+        case 1: // width
+            glyph->metrics.width = glyph_metrics_pbf.get_sint32();
+            break;
+        case 2: // height
+            glyph->metrics.height = glyph_metrics_pbf.get_sint32();
+            break;
+        case 3: // advance
+            glyph->metrics.advance = glyph_metrics_pbf.get_sint32();
+            break;
+        case 4: // x_bearing
             glyph->metrics.x_bearing = glyph_metrics_pbf.get_sint32();
             break;
-        case 2: // y_bearing
+        case 5: // y_bearing
             glyph->metrics.y_bearing = glyph_metrics_pbf.get_sint32();
-            break;
-        case 3: // width
-            glyph->metrics.width = glyph_metrics_pbf.get_uint32();
-            break;
-        case 4: // height
-            glyph->metrics.height = glyph_metrics_pbf.get_uint32();
-            break;
-        case 5: // advance
-            glyph->metrics.advance = glyph_metrics_pbf.get_uint32();
             break;
         default:
             glyph_metrics_pbf.skip();
@@ -386,17 +388,23 @@ void parseGlyph(protozero::pbf_reader glyph_pbf) {
 void parseFaceMetrics(protozero::pbf_reader face_metrics_pbf) {
     while (face_metrics_pbf.next()) {
         switch (face_metrics_pbf.tag()) {
-        case 1: // ascender
-            std::cout << "ascender: " << face_metrics_pbf.get_double() << std::endl;
+        case 1: // face_index
+            std::cout << "face_index: " << face_metrics_pbf.get_uint32() << std::endl;
             break;
-        case 2: // descender
-            std::cout << "descender: " << face_metrics_pbf.get_double() << std::endl;
+        case 2: // units per EM
+            std::cout << "upem: " << face_metrics_pbf.get_uint32() << std::endl;
             break;
-        case 3: // line_height
-            std::cout << "line_height: " << face_metrics_pbf.get_double() << std::endl;
+        case 3: // ascender
+            std::cout << "ascender: " << face_metrics_pbf.get_sint32() << std::endl;
             break;
-        case 4: // line_gap
-            std::cout << "line_gap: " << face_metrics_pbf.get_double() << std::endl;
+        case 4: // descender
+            std::cout << "descender: " << face_metrics_pbf.get_sint32() << std::endl;
+            break;
+        case 5: // line_height
+            std::cout << "line_height: " << face_metrics_pbf.get_sint32() << std::endl;
+            break;
+        case 6: // line_gap
+            std::cout << "line_gap: " << face_metrics_pbf.get_sint32() << std::endl;
             break;
         default:
             face_metrics_pbf.skip();
@@ -523,6 +531,9 @@ void RangeAsync(uv_work_t* req) {
         std::cout << "ft_face->size->metrics.line_height: " << ft_face->size->metrics.height << std::endl;
         std::cout << "ft_face->line_height: " << ft_face->height << std::endl;
 
+        mutable_face_metrics->set_face_index(ft_face->face_index);
+        mutable_face_metrics->set_upem(ft_face->units_per_EM);
+
         // MUST call FT_Set_Char_Size before these have value
         // Ascender and descender from baseline returned by FreeType
         mutable_face_metrics->set_ascender(ft_face->size->metrics.ascender / 64);
@@ -554,11 +565,11 @@ void RangeAsync(uv_work_t* req) {
             mutable_glyph->set_codepoint(codepoint);
 
             mapbox::fontnik::GlyphMetrics *mutable_glyph_metrics = mutable_glyph->mutable_metrics();
-            mutable_glyph_metrics->set_x_bearing(glyph.metrics.x_bearing);
-            mutable_glyph_metrics->set_y_bearing(glyph.metrics.y_bearing);
             mutable_glyph_metrics->set_width(glyph.metrics.width);
             mutable_glyph_metrics->set_height(glyph.metrics.height);
             mutable_glyph_metrics->set_advance(glyph.metrics.advance);
+            mutable_glyph_metrics->set_x_bearing(glyph.metrics.x_bearing);
+            mutable_glyph_metrics->set_y_bearing(glyph.metrics.y_bearing);
 
             if (glyph.metrics.width > 0) {
                 mutable_glyph->set_bitmap(glyph.bitmap);
@@ -595,7 +606,8 @@ void AfterRange(uv_work_t* req) {
 void ShapeAsync(uv_work_t* req) {
     ShapeBaton* baton = static_cast<ShapeBaton*>(req->data);
 
-    protozero::pbf_reader font_pbf(baton->pbf_data);
+    const std::string pbf_string(baton->pbf_data, baton->pbf_size);
+    protozero::pbf_reader font_pbf(pbf_string);
 
     while (font_pbf.next()) {
         switch (font_pbf.tag()) {
@@ -610,12 +622,6 @@ void ShapeAsync(uv_work_t* req) {
             break;
         }
     }
-
-    /*
-    hb_font_t* hb_font(hb_ft_font_create(baton->font_data, [](void* data) {
-        delete[] static_cast<char*>(data);
-    }));
-    */
 
     FT_Library library = nullptr;
     ft_library_guard library_guard(&library);
@@ -651,6 +657,7 @@ void ShapeAsync(uv_work_t* req) {
 
             hb_font_t* hb_font(hb_font_create(hb_face));
 
+            // units per EM
             const unsigned int upem = hb_face_get_upem(hb_face);
             hb_font_set_scale(hb_font, upem, upem);
             hb_face_destroy(hb_face);
@@ -659,7 +666,9 @@ void ShapeAsync(uv_work_t* req) {
             */
 
             // baton->font_data will be freed by Node.js
-            hb_font_t* hb_font(hb_ft_font_create(baton->font_data, nullptr));
+            hb_font_t* hb_font(hb_ft_font_create(baton->pbf_data,
+                                                 baton->pbf_size,
+                                                 NULL));
 
             // TODO: itemize string here
             const std::u32string text(U"Hello world!");

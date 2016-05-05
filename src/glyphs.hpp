@@ -20,13 +20,11 @@ extern "C" {
 namespace node_fontnik {
 
 struct GlyphMetrics {
+   int32_t width;
+   int32_t height;
+   int32_t advance;
    int32_t x_bearing;
    int32_t y_bearing;
-
-   uint32_t width;
-   uint32_t height;
-
-   double advance;
 };
 
 struct Glyph {

@@ -19,12 +19,11 @@ message Glyph {
 }
 
 message GlyphMetrics {
-    // Encoded as int32_t in Harfbuzz?
-    required sint32 x_bearing = 1;
-    required sint32 y_bearing = 2;
-    required uint32 width = 3;
-    required uint32 height = 4;
-    required uint32 advance = 5;
+    required sint32 width = 1;
+    required sint32 height = 2;
+    required sint32 advance = 3;
+    required sint32 x_bearing = 4;
+    required sint32 y_bearing = 5;
 }
 
 message Face {
@@ -37,11 +36,12 @@ message Face {
 }
 
 message FaceMetrics {
-    // Encoded as int32_t in Harfbuzz?
-    optional double ascender = 1;
-    optional double descender = 2;
-    optional double line_height = 3;
-    optional double line_gap = 4;
+    optional uint32 face_index = 1;
+    optional uint32 upem = 2;
+    optional sint32 ascender = 3;
+    optional sint32 descender = 4;
+    optional sint32 line_height = 5;
+    optional sint32 line_gap = 6;
 }
 
 message Font {

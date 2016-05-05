@@ -31,19 +31,19 @@ function readGlyphMetrics(pbf, end) {
 }
 
 function readGlyphMetricsField(tag, glyphmetrics, pbf) {
-    if (tag === 1) glyphmetrics.x_bearing = pbf.readSVarint();
-    else if (tag === 2) glyphmetrics.y_bearing = pbf.readSVarint();
-    else if (tag === 3) glyphmetrics.width = pbf.readVarint();
-    else if (tag === 4) glyphmetrics.height = pbf.readVarint();
-    else if (tag === 5) glyphmetrics.advance = pbf.readVarint();
+    if (tag === 1) glyphmetrics.width = pbf.readSVarint();
+    else if (tag === 2) glyphmetrics.height = pbf.readSVarint();
+    else if (tag === 3) glyphmetrics.advance = pbf.readSVarint();
+    else if (tag === 4) glyphmetrics.x_bearing = pbf.readSVarint();
+    else if (tag === 5) glyphmetrics.y_bearing = pbf.readSVarint();
 }
 
 function writeGlyphMetrics(glyphmetrics, pbf) {
-    if (glyphmetrics.x_bearing !== undefined) pbf.writeSVarintField(1, glyphmetrics.x_bearing);
-    if (glyphmetrics.y_bearing !== undefined) pbf.writeSVarintField(2, glyphmetrics.y_bearing);
-    if (glyphmetrics.width !== undefined) pbf.writeVarintField(3, glyphmetrics.width);
-    if (glyphmetrics.height !== undefined) pbf.writeVarintField(4, glyphmetrics.height);
-    if (glyphmetrics.advance !== undefined) pbf.writeVarintField(5, glyphmetrics.advance);
+    if (glyphmetrics.width !== undefined) pbf.writeSVarintField(1, glyphmetrics.width);
+    if (glyphmetrics.height !== undefined) pbf.writeSVarintField(2, glyphmetrics.height);
+    if (glyphmetrics.advance !== undefined) pbf.writeSVarintField(3, glyphmetrics.advance);
+    if (glyphmetrics.x_bearing !== undefined) pbf.writeSVarintField(4, glyphmetrics.x_bearing);
+    if (glyphmetrics.y_bearing !== undefined) pbf.writeSVarintField(5, glyphmetrics.y_bearing);
 }
 
 // Face ========================================
@@ -78,17 +78,21 @@ function readFaceMetrics(pbf, end) {
 }
 
 function readFaceMetricsField(tag, facemetrics, pbf) {
-    if (tag === 1) facemetrics.ascender = pbf.readDouble();
-    else if (tag === 2) facemetrics.descender = pbf.readDouble();
-    else if (tag === 3) facemetrics.line_height = pbf.readDouble();
-    else if (tag === 4) facemetrics.line_gap = pbf.readDouble();
+    if (tag === 1) facemetrics.face_index = pbf.readVarint();
+    else if (tag === 2) facemetrics.upem = pbf.readVarint();
+    else if (tag === 3) facemetrics.ascender = pbf.readSVarint();
+    else if (tag === 4) facemetrics.descender = pbf.readSVarint();
+    else if (tag === 5) facemetrics.line_height = pbf.readSVarint();
+    else if (tag === 6) facemetrics.line_gap = pbf.readSVarint();
 }
 
 function writeFaceMetrics(facemetrics, pbf) {
-    if (facemetrics.ascender !== undefined) pbf.writeDoubleField(1, facemetrics.ascender);
-    if (facemetrics.descender !== undefined) pbf.writeDoubleField(2, facemetrics.descender);
-    if (facemetrics.line_height !== undefined) pbf.writeDoubleField(3, facemetrics.line_height);
-    if (facemetrics.line_gap !== undefined) pbf.writeDoubleField(4, facemetrics.line_gap);
+    if (facemetrics.face_index !== undefined) pbf.writeVarintField(1, facemetrics.face_index);
+    if (facemetrics.upem !== undefined) pbf.writeVarintField(2, facemetrics.upem);
+    if (facemetrics.ascender !== undefined) pbf.writeSVarintField(3, facemetrics.ascender);
+    if (facemetrics.descender !== undefined) pbf.writeSVarintField(4, facemetrics.descender);
+    if (facemetrics.line_height !== undefined) pbf.writeSVarintField(5, facemetrics.line_height);
+    if (facemetrics.line_gap !== undefined) pbf.writeSVarintField(6, facemetrics.line_gap);
 }
 
 // Font ========================================

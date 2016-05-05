@@ -61,6 +61,7 @@ HB_BEGIN_DECLS
  */
 HB_EXTERN hb_face_t *
 hb_ft_face_create (char*           ft_face,
+                   size_t ft_face_size,
 		   hb_destroy_func_t destroy);
 
 /* This version is like hb_ft_face_create(), except that it caches
@@ -71,8 +72,10 @@ hb_ft_face_create (char*           ft_face,
  * Client is still responsible for making sure that ft-face is destroyed
  * after hb-face is.
  */
+/*
 HB_EXTERN hb_face_t *
 hb_ft_face_create_cached (FT_Face ft_face);
+*/
 
 /* This version is like hb_ft_face_create(), except that it calls
  * FT_Reference_Face() on ft-face, as such keeping ft-face alive
@@ -81,8 +84,10 @@ hb_ft_face_create_cached (FT_Face ft_face);
  * This is the most convenient version to use.  Use it unless you have
  * very good reasons not to.
  */
+/*
 HB_EXTERN hb_face_t *
 hb_ft_face_create_referenced (FT_Face ft_face);
+*/
 
 
 /*
@@ -100,10 +105,12 @@ hb_ft_face_create_referenced (FT_Face ft_face);
  * apply here.  Use hb_ft_font_create_referenced() if you can. */
 HB_EXTERN hb_font_t *
 hb_ft_font_create (char*           ft_face,
+                   size_t ft_face_size,
 		   hb_destroy_func_t destroy);
 
 /* See notes on hb_ft_face_create_referenced() re lifecycle-management
  * issues. */
+/*
 HB_EXTERN hb_font_t *
 hb_ft_font_create_referenced (FT_Face ft_face);
 
@@ -115,10 +122,13 @@ hb_ft_font_set_load_flags (hb_font_t *font, int load_flags);
 
 HB_EXTERN int
 hb_ft_font_get_load_flags (hb_font_t *font);
+*/
 
 /* Makes an hb_font_t use FreeType internally to implement font functions. */
+/*
 HB_EXTERN void
 hb_ft_font_set_funcs (hb_font_t *font);
+*/
 
 
 HB_END_DECLS
