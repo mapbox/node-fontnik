@@ -376,9 +376,11 @@ void parseGlyph(protozero::pbf_reader glyph_pbf) {
 
     // glyphSet.insert(glyph.id, glyph);
 
+    /*
     std::cout << "glyph_index: " << glyph.glyph_index << 
                  " codepoint: " << glyph.codepoint << 
                  std::endl;
+                 */
 }
 
 void parseFaceMetrics(protozero::pbf_reader face_metrics_pbf) {
@@ -392,6 +394,9 @@ void parseFaceMetrics(protozero::pbf_reader face_metrics_pbf) {
             break;
         case 3: // line_height
             std::cout << "line_height: " << face_metrics_pbf.get_double() << std::endl;
+            break;
+        case 4: // line_gap
+            std::cout << "line_gap: " << face_metrics_pbf.get_double() << std::endl;
             break;
         default:
             face_metrics_pbf.skip();
@@ -510,12 +515,13 @@ void RangeAsync(uv_work_t* req) {
         // Add metrics to face.
         mapbox::fontnik::FaceMetrics *mutable_face_metrics = mutable_face->mutable_metrics();
 
-        // TODO: verify if these values match following values?
-        /*
-        mutable_face_metrics->set_ascender(ft_face->ascender);
-        mutable_face_metrics->set_descender(ft_face->descender);
-        mutable_face_metrics->set_line_height(ft_face->height);
-        */
+        // TODO: DEBUGGING verify if these values match following values?
+        std::cout << "ft_face->size->metrics.ascender: " << ft_face->size->metrics.ascender << std::endl;
+        std::cout << "ft_face->ascender: " << ft_face->ascender << std::endl;
+        std::cout << "ft_face->size->metrics.descender: " << ft_face->size->metrics.descender << std::endl;
+        std::cout << "ft_face->descender: " << ft_face->descender << std::endl;
+        std::cout << "ft_face->size->metrics.line_height: " << ft_face->size->metrics.height << std::endl;
+        std::cout << "ft_face->line_height: " << ft_face->height << std::endl;
 
         // MUST call FT_Set_Char_Size before these have value
         // Ascender and descender from baseline returned by FreeType
@@ -525,6 +531,8 @@ void RangeAsync(uv_work_t* req) {
         // Line height returned by FreeType, includes normal font
         // line spacing, but not additional user defined spacing
         mutable_face_metrics->set_line_height(ft_face->size->metrics.height);
+        // Formula from Harfbuzz
+        mutable_face_metrics->set_line_gap(ft_face->size->metrics.height - (ft_face->size->metrics.ascender - ft_face->size->metrics.descender));
 
         for (std::vector<uint32_t>::size_type x = 0; x != baton->chars.size(); x++) {
             FT_ULong codepoint = baton->chars[x];
@@ -635,6 +643,7 @@ void ShapeAsync(uv_work_t* req) {
             double size = char_size * scale_factor;
             FT_Set_Char_Size(ft_face, 0, (FT_F26Dot6)(size * (1<<6)), 0, 0);
 
+            /*
             hb_blob_t* hb_blob = hb_blob_create(baton->font_data, baton->font_size, HB_MEMORY_MODE_WRITABLE, baton->font_data, NULL);
 
             hb_face_t* hb_face = hb_face_create(hb_blob, i);
@@ -643,18 +652,24 @@ void ShapeAsync(uv_work_t* req) {
             hb_font_t* hb_font(hb_font_create(hb_face));
 
             const unsigned int upem = hb_face_get_upem(hb_face);
+            hb_font_set_scale(hb_font, upem, upem);
             hb_face_destroy(hb_face);
 
-            // hb_font_set_scale(hb_font, upem, upem);
-            hb_font_set_scale(hb_font, 1, 1);
             hb_ft_font_set_funcs(hb_font);
+            */
 
-            hb_buffer_t* hb_buffer(hb_buffer_create());
+            // baton->font_data will be freed by Node.js
+            hb_font_t* hb_font(hb_ft_font_create(baton->font_data, nullptr));
 
             // TODO: itemize string here
             const std::u32string text(U"Hello world!");
 
+            hb_buffer_t* hb_buffer(hb_buffer_create());
+
+            // TODO: are these equivalent?
+            // hb_buffer_clear_contents(hb_buffer);
             hb_buffer_reset(hb_buffer);
+
             hb_buffer_add_utf32(hb_buffer, reinterpret_cast<const uint32_t*>(text.c_str()), text.length(), 0, text.length());
 
             hb_buffer_set_direction(hb_buffer, HB_DIRECTION_LTR);
@@ -663,7 +678,8 @@ void ShapeAsync(uv_work_t* req) {
             hb_buffer_set_script(hb_buffer, HB_SCRIPT_LATIN);
             // hb_buffer_set_script(buffer, hb_script_from_string (script, -1));
 
-            hb_buffer_set_language(hb_buffer, hb_language_from_string("en", -1));
+            // TODO: is this necessary?
+            // hb_buffer_set_language(hb_buffer, hb_language_from_string("en", -1));
             // hb_buffer_set_language(buffer, hb_language_from_string (language, -1));
 
             hb_shape(hb_font, hb_buffer, 0 /*features*/, 0 /*num_features*/);

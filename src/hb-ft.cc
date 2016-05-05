@@ -72,15 +72,15 @@
 
 struct hb_ft_font_t
 {
-  FT_Face ft_face;
+  char* ft_face;
   int load_flags;
   bool unref; /* Whether to destroy ft_face when done. */
 };
 
 static hb_ft_font_t *
-_hb_ft_font_create (FT_Face ft_face, bool unref)
+_hb_ft_font_create (char* ft_face, bool unref)
 {
-  std::cout << "INTERCEPTING _hb_ft_font_create" << std::endl;
+  std::cout << "_hb_ft_font_create" << std::endl;
 
   hb_ft_font_t *ft_font = (hb_ft_font_t *) calloc (1, sizeof (hb_ft_font_t));
 
@@ -98,8 +98,10 @@ _hb_ft_font_create (FT_Face ft_face, bool unref)
 static void
 _hb_ft_font_destroy (hb_ft_font_t *ft_font)
 {
-  if (ft_font->unref)
-    FT_Done_Face (ft_font->ft_face);
+  if (ft_font->unref) {
+    free (ft_font->ft_face);
+    // FT_Done_Face (ft_font->ft_face);
+  }
 
   free (ft_font);
 }
@@ -147,7 +149,7 @@ hb_ft_font_get_load_flags (hb_font_t *font)
   return ft_font->load_flags;
 }
 
-FT_Face
+char*
 hb_ft_font_get_face (hb_font_t *font)
 {
   if (font->destroy != (hb_destroy_func_t) _hb_ft_font_destroy)
@@ -168,9 +170,13 @@ hb_ft_get_nominal_glyph (hb_font_t *font HB_UNUSED,
 			 void *user_data HB_UNUSED)
 {
   const hb_ft_font_t *ft_font = (const hb_ft_font_t *) font_data;
-  unsigned int g = FT_Get_Char_Index (ft_font->ft_face, unicode);
 
-  std::cout << "INTERCEPTING hb_ft_get_nominal_glyph: " << g << std::endl;
+  // TODO: fix this lookup
+  // unsigned int g = FT_Get_Char_Index (ft_font->ft_face, unicode);
+  unsigned int g = unicode;
+
+  std::cout << "hb_ft_get_nominal_glyph: " << g << std::endl;
+  throw;
 
   if (unlikely (!g))
     return false;
@@ -188,7 +194,9 @@ hb_ft_get_variation_glyph (hb_font_t *font HB_UNUSED,
 			   void *user_data HB_UNUSED)
 {
   const hb_ft_font_t *ft_font = (const hb_ft_font_t *) font_data;
-  unsigned int g = FT_Face_GetCharVariantIndex (ft_font->ft_face, unicode, variation_selector);
+  // TODO: fix this lookup
+  // unsigned int g = FT_Face_GetCharVariantIndex (ft_font->ft_face, unicode, variation_selector);
+  unsigned int g = unicode;
 
   if (unlikely (!g))
     return false;
@@ -204,9 +212,11 @@ hb_ft_get_glyph_h_advance (hb_font_t *font HB_UNUSED,
 			   void *user_data HB_UNUSED)
 {
   const hb_ft_font_t *ft_font = (const hb_ft_font_t *) font_data;
-  FT_Fixed v;
+  FT_Fixed v = 0;
 
-  if (unlikely (FT_Get_Advance (ft_font->ft_face, glyph, ft_font->load_flags, &v)))
+  // TODO: check advance
+  // if (unlikely (FT_Get_Advance (ft_font->ft_face, glyph, ft_font->load_flags, &v)))
+  if (false)
     return 0;
 
   if (font->x_scale < 0)
@@ -222,9 +232,11 @@ hb_ft_get_glyph_v_advance (hb_font_t *font HB_UNUSED,
 			   void *user_data HB_UNUSED)
 {
   const hb_ft_font_t *ft_font = (const hb_ft_font_t *) font_data;
-  FT_Fixed v;
+  FT_Fixed v = 0;
 
-  if (unlikely (FT_Get_Advance (ft_font->ft_face, glyph, ft_font->load_flags | FT_LOAD_VERTICAL_LAYOUT, &v)))
+  // TODO: check advance
+  // if (unlikely (FT_Get_Advance (ft_font->ft_face, glyph, ft_font->load_flags | FT_LOAD_VERTICAL_LAYOUT, &v)))
+  if (false)
     return 0;
 
   if (font->y_scale < 0)
@@ -244,15 +256,20 @@ hb_ft_get_glyph_v_origin (hb_font_t *font HB_UNUSED,
 			  void *user_data HB_UNUSED)
 {
   const hb_ft_font_t *ft_font = (const hb_ft_font_t *) font_data;
-  FT_Face ft_face = ft_font->ft_face;
+  char* ft_face = ft_font->ft_face;
 
-  if (unlikely (FT_Load_Glyph (ft_face, glyph, ft_font->load_flags)))
+  // TODO: load glyph
+  // if (unlikely (FT_Load_Glyph (ft_face, glyph, ft_font->load_flags)))
+  if (false)
     return false;
 
   /* Note: FreeType's vertical metrics grows downward while other FreeType coordinates
    * have a Y growing upward.  Hence the extra negation. */
+  // TODO: get bearing
+  /*
   *x = ft_face->glyph->metrics.horiBearingX -   ft_face->glyph->metrics.vertBearingX;
   *y = ft_face->glyph->metrics.horiBearingY - (-ft_face->glyph->metrics.vertBearingY);
+  */
 
   if (font->x_scale < 0)
     *x = -*x;
@@ -273,7 +290,9 @@ hb_ft_get_glyph_h_kerning (hb_font_t *font,
   FT_Vector kerningv;
 
   FT_Kerning_Mode mode = font->x_ppem ? FT_KERNING_DEFAULT : FT_KERNING_UNFITTED;
-  if (FT_Get_Kerning (ft_font->ft_face, left_glyph, right_glyph, mode, &kerningv))
+  // TODO: get kerning
+  // if (FT_Get_Kerning (ft_font->ft_face, left_glyph, right_glyph, mode, &kerningv))
+  if (false)
     return 0;
 
   return kerningv.x;
@@ -287,15 +306,22 @@ hb_ft_get_glyph_extents (hb_font_t *font HB_UNUSED,
 			 void *user_data HB_UNUSED)
 {
   const hb_ft_font_t *ft_font = (const hb_ft_font_t *) font_data;
-  FT_Face ft_face = ft_font->ft_face;
+  char* ft_face = ft_font->ft_face;
 
-  if (unlikely (FT_Load_Glyph (ft_face, glyph, ft_font->load_flags)))
+  std::cout << "hb_ft_get_glyph_extents: " << glyph << std::endl;
+
+  // TODO: load glyph
+  // if (unlikely (FT_Load_Glyph (ft_face, glyph, ft_font->load_flags)))
+  if (false)
     return false;
 
+  // TODO: get bearing and dimensions
+  /*
   extents->x_bearing = ft_face->glyph->metrics.horiBearingX;
   extents->y_bearing = ft_face->glyph->metrics.horiBearingY;
   extents->width = ft_face->glyph->metrics.width;
   extents->height = -ft_face->glyph->metrics.height;
+  */
   if (font->x_scale < 0)
   {
     extents->x_bearing = -extents->x_bearing;
@@ -319,19 +345,31 @@ hb_ft_get_glyph_contour_point (hb_font_t *font HB_UNUSED,
 			       void *user_data HB_UNUSED)
 {
   const hb_ft_font_t *ft_font = (const hb_ft_font_t *) font_data;
-  FT_Face ft_face = ft_font->ft_face;
+  char* ft_face = ft_font->ft_face;
 
-  if (unlikely (FT_Load_Glyph (ft_face, glyph, ft_font->load_flags)))
+  std::cout << "hb_ft_get_glyph_contour_point: " << glyph <<
+               "point_index: " << point_index << std::endl;
+
+  // TODO: load glyph
+  // if (unlikely (FT_Load_Glyph (ft_face, glyph, ft_font->load_flags)))
+  if (false)
       return false;
 
-  if (unlikely (ft_face->glyph->format != FT_GLYPH_FORMAT_OUTLINE))
+  // TODO: verify glyph_format_outline
+  // if (unlikely (ft_face->glyph->format != FT_GLYPH_FORMAT_OUTLINE))
+  if (false)
       return false;
 
-  if (unlikely (point_index >= (unsigned int) ft_face->glyph->outline.n_points))
+  // TODO: verify points arent in wrong order
+  // if (unlikely (point_index >= (unsigned int) ft_face->glyph->outline.n_points))
+  if (false)
       return false;
 
+  // TODO: get outline points
+  /*
   *x = ft_face->glyph->outline.points[point_index].x;
   *y = ft_face->glyph->outline.points[point_index].y;
+  */
 
   return true;
 }
@@ -345,7 +383,11 @@ hb_ft_get_glyph_name (hb_font_t *font HB_UNUSED,
 {
   const hb_ft_font_t *ft_font = (const hb_ft_font_t *) font_data;
 
-  hb_bool_t ret = !FT_Get_Glyph_Name (ft_font->ft_face, glyph, name, size);
+
+  std::cout << "hb_ft_get_glyph_name: " << glyph << std::endl;
+
+  // hb_bool_t ret = !FT_Get_Glyph_Name (ft_font->ft_face, glyph, name, size);
+  hb_bool_t ret = false;
   if (ret && (size && !*name))
     ret = false;
 
@@ -360,12 +402,16 @@ hb_ft_get_glyph_from_name (hb_font_t *font HB_UNUSED,
 			   void *user_data HB_UNUSED)
 {
   const hb_ft_font_t *ft_font = (const hb_ft_font_t *) font_data;
-  FT_Face ft_face = ft_font->ft_face;
+  char* ft_face = ft_font->ft_face;
 
+  std::cout << "hb_ft_get_glyph_from_name: " << name << std::endl;
+
+  // TODO: can we eliminate this function?
+  /*
   if (len < 0)
     *glyph = FT_Get_Name_Index (ft_face, (FT_String *) name);
   else {
-    /* Make a nul-terminated version. */
+    // Make a nul-terminated version.
     char buf[128];
     len = MIN (len, (int) sizeof (buf) - 1);
     strncpy (buf, name, len);
@@ -375,7 +421,7 @@ hb_ft_get_glyph_from_name (hb_font_t *font HB_UNUSED,
 
   if (*glyph == 0)
   {
-    /* Check whether the given name was actually the name of glyph 0. */
+    // Check whether the given name was actually the name of glyph 0.
     char buf[128];
     if (!FT_Get_Glyph_Name(ft_face, 0, buf, sizeof (buf)) &&
         len < 0 ? !strcmp (buf, name) : !strncmp (buf, name, len))
@@ -383,6 +429,9 @@ hb_ft_get_glyph_from_name (hb_font_t *font HB_UNUSED,
   }
 
   return *glyph != 0;
+  */
+
+  return false;
 }
 
 static hb_bool_t
@@ -392,10 +441,17 @@ hb_ft_get_font_h_extents (hb_font_t *font HB_UNUSED,
 			  void *user_data HB_UNUSED)
 {
   const hb_ft_font_t *ft_font = (const hb_ft_font_t *) font_data;
-  FT_Face ft_face = ft_font->ft_face;
+  char* ft_face = ft_font->ft_face;
+
+  std::cout << "hb_ft_get_font_h_extents" << std::endl;
+
+  // TODO: get these metrics
+  /*
   metrics->ascender = ft_face->size->metrics.ascender;
   metrics->descender = ft_face->size->metrics.descender;
   metrics->line_gap = ft_face->size->metrics.height - (ft_face->size->metrics.ascender - ft_face->size->metrics.descender);
+  */
+
   if (font->y_scale < 0)
   {
     metrics->ascender = -metrics->ascender;
@@ -416,7 +472,7 @@ void free_static_ft_funcs (void)
 #endif
 
 static void
-_hb_ft_font_set_funcs (hb_font_t *font, FT_Face ft_face, bool unref)
+_hb_ft_font_set_funcs (hb_font_t *font, char* ft_face, bool unref)
 {
 retry:
   hb_font_funcs_t *funcs = (hb_font_funcs_t *) hb_atomic_ptr_get (&static_ft_funcs);
@@ -500,7 +556,7 @@ hb_face_t *
 hb_ft_face_create (char*           ft_face,
 		   hb_destroy_func_t destroy)
 {
-  std::cout << "INTERCEPTING hb_ft_face_create" << std::endl;
+  std::cout << "hb_ft_face_create" << std::endl;
 
   hb_face_t *face = nullptr;
 
@@ -558,68 +614,6 @@ hb_ft_face_create (char*           ft_face,
               break;
           }
       }
-
-      /*
-      while (face_pbf.next(3)) {
-          auto glyph_pbf = face_pbf.get_message();
-          std::cout << "glyph_pbf" << std::endl;
-
-          protozero::pbf_reader glyph_metrics_pbf
-          std::cout << "glyph_metrics_pbf" << std::endl;
-
-          Glyph glyph;
-
-          while (glyph_pbf.next()) {
-              std::cout << "glyph_pbf" << std::endl;
-
-              switch (glyph_pbf.tag()) {
-              case 1: // glyph_index
-                  glyph.glyph_index = glyph_pbf.get_uint32();
-                  break;
-              case 2: // codepoint
-                  glyph.codepoint = glyph_pbf.get_uint32();
-                  break;
-              case 3: // metrics
-                  glyph_metrics_pbf = glyph_pbf.get_message();
-                  while (glyph_metrics_pbf.next()) {
-                      switch (glyph_metrics_pbf.tag()) {
-                      case 1: // x_bearing
-                          glyph.metrics.x_bearing = glyph_metrics_pbf.get_sint32();
-                          break;
-                      case 2: // y_bearing
-                          glyph.metrics.y_bearing = glyph_metrics_pbf.get_sint32();
-                          break;
-                      case 3: // width
-                          glyph.metrics.width = glyph_metrics_pbf.get_uint32();
-                          break;
-                      case 4: // height
-                          glyph.metrics.height = glyph_metrics_pbf.get_uint32();
-                          break;
-                      case 5: // advance
-                          glyph.metrics.advance = glyph_metrics_pbf.get_uint32();
-                          break;
-                      default:
-                          glyph_metrics_pbf.skip();
-                          break;
-                      }
-                  }
-                  break;
-              case 4: // bitmap
-                  glyph.bitmap = glyph_pbf.get_string();
-                  break;
-              default:
-                  glyph_pbf.skip();
-                  break;
-              }
-          }
-
-          // glyphSet.insert(glyph.id, glyph);
-
-          std::cout << "glyph_index: " << glyph.glyph_index << 
-                       "codepoint: " << glyph.codepoint << 
-                       std::endl;
-      }
-      */
   }
 
   /*
@@ -708,7 +702,7 @@ hb_font_t *
 hb_ft_font_create (char*           ft_face,
 		   hb_destroy_func_t destroy)
 {
-  std::cout << "INTERCEPTING hb_ft_font_create" << std::endl;
+  std::cout << "hb_ft_font_create" << std::endl;
 
   hb_font_t *font;
   hb_face_t *face;
@@ -717,12 +711,13 @@ hb_ft_font_create (char*           ft_face,
   font = hb_font_create (face);
   hb_face_destroy (face);
 
-  /*
   _hb_ft_font_set_funcs (font, ft_face, false);
+  hb_font_set_scale(font, 1, 1);
+  /*
   hb_font_set_scale (font,
 		     (int) (((uint64_t) ft_face->size->metrics.x_scale * (uint64_t) ft_face->units_per_EM + (1<<15)) >> 16),
 		     (int) (((uint64_t) ft_face->size->metrics.y_scale * (uint64_t) ft_face->units_per_EM + (1<<15)) >> 16));
-   */
+  */
 
 #if 0 /* hb-ft works in no-hinting model */
   hb_font_set_ppem (font,
@@ -836,6 +831,7 @@ hb_ft_font_set_funcs (hb_font_t *font)
   ft_face->generic.data = blob;
   ft_face->generic.finalizer = (FT_Generic_Finalizer) _release_blob;
 
-  _hb_ft_font_set_funcs (font, ft_face, true);
+  // TODO: pass char* here
+  // _hb_ft_font_set_funcs (font, ft_face, true);
   hb_ft_font_set_load_flags (font, FT_LOAD_DEFAULT | FT_LOAD_NO_HINTING);
 }

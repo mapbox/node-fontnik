@@ -41,6 +41,7 @@ message FaceMetrics {
     optional double ascender = 1;
     optional double descender = 2;
     optional double line_height = 3;
+    optional double line_gap = 4;
 }
 
 message Font {

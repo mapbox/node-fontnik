@@ -107,7 +107,7 @@ hb_ft_font_create (char*           ft_face,
 HB_EXTERN hb_font_t *
 hb_ft_font_create_referenced (FT_Face ft_face);
 
-HB_EXTERN FT_Face
+HB_EXTERN char*
 hb_ft_font_get_face (hb_font_t *font);
 
 HB_EXTERN void

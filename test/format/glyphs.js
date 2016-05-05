@@ -81,12 +81,14 @@ function readFaceMetricsField(tag, facemetrics, pbf) {
     if (tag === 1) facemetrics.ascender = pbf.readDouble();
     else if (tag === 2) facemetrics.descender = pbf.readDouble();
     else if (tag === 3) facemetrics.line_height = pbf.readDouble();
+    else if (tag === 4) facemetrics.line_gap = pbf.readDouble();
 }
 
 function writeFaceMetrics(facemetrics, pbf) {
     if (facemetrics.ascender !== undefined) pbf.writeDoubleField(1, facemetrics.ascender);
     if (facemetrics.descender !== undefined) pbf.writeDoubleField(2, facemetrics.descender);
     if (facemetrics.line_height !== undefined) pbf.writeDoubleField(3, facemetrics.line_height);
+    if (facemetrics.line_gap !== undefined) pbf.writeDoubleField(4, facemetrics.line_gap);
 }
 
 // Font ========================================

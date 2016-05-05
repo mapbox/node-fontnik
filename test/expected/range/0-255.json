@@ -2109,7 +2109,8 @@
       "metrics": {
         "ascender": 26,
         "descender": -7,
-        "line_height": 2112
+        "line_height": 2112,
+        "line_gap": 0
       }
     }
   ],
