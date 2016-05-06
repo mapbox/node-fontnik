@@ -21,6 +21,7 @@
 #include <cmath> // std::sqrt
 #include <fstream>
 #include <codecvt>
+#include <functional>
 
 #include "hb.h"
 #include "hb-ft.h"
@@ -423,8 +424,14 @@ void parseFaceMetrics(protozero::pbf_reader face_metrics_pbf) {
 void parseFaceTables(protozero::pbf_reader face_tables_pbf) {
     while (face_tables_pbf.next()) {
         switch (face_tables_pbf.tag()) {
-        case 1: // gsub
-            std::cout << "gsub: " << face_tables_pbf.get_data().second << std::endl;
+        case 1: // GDEF
+            std::cout << "GDEF: " << face_tables_pbf.get_data().second << std::endl;
+            break;
+        case 2: // GSUB
+            std::cout << "GSUB: " << face_tables_pbf.get_data().second << std::endl;
+            break;
+        case 3: // GPOS
+            std::cout << "GPOS: " << face_tables_pbf.get_data().second << std::endl;
             break;
         default:
             face_tables_pbf.skip();
@@ -573,31 +580,63 @@ void RangeAsync(uv_work_t* req) {
             return;
         }
 
-        FT_ULong tag = TTAG_GSUB;
-        FT_ULong sfnt_buffer_length = 0;
-        error = FT_Load_Sfnt_Table(ft_face, tag, 0, NULL, &sfnt_buffer_length);
-        if (error) {
-            baton->error = std::string("Could not load SFNT table length");
-            return;
-        }
-
-        FT_Byte* sfnt_buffer = (FT_Byte *) malloc(sfnt_buffer_length);
-        if (sfnt_buffer == NULL) {
-            baton->error = std::string("Could not resize SFNT table buffer");
-            return;
-        }
-
-        error = FT_Load_Sfnt_Table(ft_face, tag, 0, sfnt_buffer, &sfnt_buffer_length);
-        if (error) {
-            baton->error = std::string("Could not load SFNT table into buffer");
-            return;
-        }
-
         // Add tables to face.
         mapbox::fontnik::FaceTables *mutable_face_tables = mutable_face->mutable_tables();
-        mutable_face_tables->set_gsub((const char*) sfnt_buffer, sfnt_buffer_length);
 
-        std::cout << "Added GSUB table to face: " << sfnt_buffer_length << std::endl;
+        FT_Byte* sfnt_buffer;
+        FT_ULong sfnt_buffer_length;
+
+        // TODO: Use a template to do this verbose std::bind stuff?
+        std::array<std::tuple<FT_ULong, std::function<void(const void*, size_t)>, std::string>, 3> tags{{
+            {TTAG_GDEF,
+              std::bind(static_cast<void(mapbox::fontnik::FaceTables::*)(const void*, size_t)>(&mapbox::fontnik::FaceTables::set_gdef),
+                  mutable_face_tables,
+                  std::placeholders::_1,
+                  std::placeholders::_2),
+              "GDEF"},
+            {TTAG_GSUB,
+              std::bind(static_cast<void(mapbox::fontnik::FaceTables::*)(const void*, size_t)>(&mapbox::fontnik::FaceTables::set_gsub),
+                  mutable_face_tables,
+                  std::placeholders::_1,
+                  std::placeholders::_2),
+              "GSUB"},
+            {TTAG_GPOS,
+              std::bind(static_cast<void(mapbox::fontnik::FaceTables::*)(const void*, size_t)>(&mapbox::fontnik::FaceTables::set_gpos),
+                  mutable_face_tables,
+                  std::placeholders::_1,
+                  std::placeholders::_2),
+              "GPOS"}
+        }};
+
+        for (const auto& tag : tags) {
+            sfnt_buffer_length = 0;
+            error = FT_Load_Sfnt_Table(ft_face, std::get<0>(tag), 0, NULL, &sfnt_buffer_length);
+            if (error) {
+                baton->error = std::string("Could not load SFNT table length");
+                return;
+            }
+
+            sfnt_buffer = (FT_Byte *) malloc(sfnt_buffer_length);
+            if (sfnt_buffer == NULL) {
+                baton->error = std::string("Could not resize SFNT table buffer");
+                return;
+            }
+
+            error = FT_Load_Sfnt_Table(ft_face, std::get<0>(tag), 0, sfnt_buffer, &sfnt_buffer_length);
+            if (error) {
+                baton->error = std::string("Could not load SFNT table into buffer");
+                return;
+            }
+
+            // Add table to protobuf
+            std::get<1>(tag)((const char*) sfnt_buffer, sfnt_buffer_length);
+
+            std::cout << "Added " << std::get<2>(tag) <<
+                " table to face: " << sfnt_buffer_length << std::endl;
+
+            free(sfnt_buffer);
+        }
+
 
         for (std::vector<uint32_t>::size_type x = 0; x != baton->chars.size(); x++) {
             FT_ULong codepoint = baton->chars[x];

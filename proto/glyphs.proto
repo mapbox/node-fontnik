@@ -46,7 +46,9 @@ message FaceMetrics {
 }
 
 message FaceTables {
-    optional bytes gsub = 1;
+    optional bytes GDEF = 1;
+    optional bytes GSUB = 2;
+    optional bytes GPOS = 3;
 }
 
 message Font {
