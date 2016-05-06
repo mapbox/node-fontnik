@@ -39,6 +39,7 @@
 
 #include FT_ADVANCES_H
 #include FT_TRUETYPE_TABLES_H
+#include FT_TRUETYPE_TAGS_H
 
 
 
@@ -520,6 +521,148 @@ retry:
 static hb_blob_t *
 reference_table  (hb_face_t *face HB_UNUSED, hb_tag_t tag, void *user_data)
 {
+  std::string tag_name;
+
+  switch (tag) {
+    case TTAG_avar: tag_name = "avar"; break;
+    case TTAG_BASE: tag_name = "BASE"; break;
+    case TTAG_bdat: tag_name = "bdat"; break;
+    case TTAG_BDF:
+      tag_name = "BDF "; break;
+    case TTAG_bhed:
+      tag_name = "bhed"; break;
+    case TTAG_bloc:
+      tag_name = "bloc"; break;
+    case TTAG_bsln:
+      tag_name = "bsln"; break;
+    case TTAG_CBDT:
+      tag_name = "CBDT"; break;
+    case TTAG_CBLC:
+      tag_name = "CBLC"; break;
+    case TTAG_CFF:
+      tag_name = "CFF "; break;
+    case TTAG_CID:
+      tag_name = "CID "; break;
+    case TTAG_cmap:
+      tag_name = "cmap"; break;
+    case TTAG_cvar:
+      tag_name = "cvar"; break;
+    case TTAG_cvt:
+      tag_name = "cvt "; break;
+    case TTAG_DSIG:
+      tag_name = "DSIG"; break;
+    case TTAG_EBDT:
+      tag_name = "EBDT"; break;
+    case TTAG_EBLC:
+      tag_name = "EBLC"; break;
+    case TTAG_EBSC:
+      tag_name = "EBSC"; break;
+    case TTAG_feat:
+      tag_name = "feat"; break;
+    case TTAG_FOND:
+      tag_name = "FOND"; break;
+    case TTAG_fpgm:
+      tag_name = "fpgm"; break;
+    case TTAG_fvar:
+      tag_name = "fvar"; break;
+    case TTAG_gasp:
+      tag_name = "gasp"; break;
+    case TTAG_GDEF:
+      tag_name = "GDEF"; break;
+    case TTAG_glyf:
+      tag_name = "glyf"; break;
+    case TTAG_GPOS:
+      tag_name = "GPOS"; break;
+    case TTAG_GSUB:
+      tag_name = "GSUB"; break;
+    case TTAG_gvar:
+      tag_name = "gvar"; break;
+    case TTAG_hdmx:
+      tag_name = "hdmx"; break;
+    case TTAG_head:
+      tag_name = "head"; break;
+    case TTAG_hhea:
+      tag_name = "hhea"; break;
+    case TTAG_hmtx:
+      tag_name = "hmtx"; break;
+    case TTAG_JSTF:
+      tag_name = "JSTF"; break;
+    case TTAG_just:
+      tag_name = "just"; break;
+    case TTAG_kern:
+      tag_name = "kern"; break;
+    case TTAG_lcar:
+      tag_name = "lcar"; break;
+    case TTAG_loca:
+      tag_name = "loca"; break;
+    case TTAG_LTSH:
+      tag_name = "LTSH"; break;
+    case TTAG_LWFN:
+      tag_name = "LWFN"; break;
+    case TTAG_MATH:
+      tag_name = "MATH"; break;
+    case TTAG_maxp:
+      tag_name = "maxp"; break;
+    case TTAG_META:
+      tag_name = "META"; break;
+    case TTAG_MMFX:
+      tag_name = "MMFX"; break;
+    case TTAG_MMSD:
+      tag_name = "MMSD"; break;
+    case TTAG_mort:
+      tag_name = "mort"; break;
+    case TTAG_morx:
+      tag_name = "morx"; break;
+    case TTAG_name:
+      tag_name = "name"; break;
+    case TTAG_opbd:
+      tag_name = "opbd"; break;
+    case TTAG_OS2:
+      tag_name = "OS/2"; break;
+    case TTAG_OTTO:
+      tag_name = "OTTO"; break;
+    case TTAG_PCLT:
+      tag_name = "PCLT"; break;
+    case TTAG_POST:
+      tag_name = "POST"; break;
+    case TTAG_post:
+      tag_name = "post"; break;
+    case TTAG_prep:
+      tag_name = "prep"; break;
+    case TTAG_prop:
+      tag_name = "prop"; break;
+    case TTAG_sbix:
+      tag_name = "sbix"; break;
+    case TTAG_sfnt:
+      tag_name = "sfnt"; break;
+    case TTAG_SING:
+      tag_name = "SING"; break;
+    case TTAG_trak:
+      tag_name = "trak"; break;
+    case TTAG_true:
+      tag_name = "true"; break;
+    case TTAG_ttc:
+      tag_name = "ttc "; break;
+    case TTAG_ttcf:
+      tag_name = "ttcf"; break;
+    case TTAG_TYP1:
+      tag_name = "TYP1"; break;
+    case TTAG_typ1:
+      tag_name = "typ1"; break;
+    case TTAG_VDMX:
+      tag_name = "VDMX"; break;
+    case TTAG_vhea:
+      tag_name = "vhea"; break;
+    case TTAG_vmtx:
+      tag_name = "vmtx"; break;
+    case TTAG_wOFF:
+      tag_name = "WOFF"; break;
+    default:
+      tag_name = "unknown"; break;
+  }
+
+  std::cout << "reference_table: " << tag_name << std::endl;
+
   FT_Face ft_face = (FT_Face) user_data;
   FT_Byte *buffer;
   FT_ULong  length = 0;
