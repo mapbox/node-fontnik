@@ -524,9 +524,12 @@ reference_table  (hb_face_t *face HB_UNUSED, hb_tag_t tag, void *user_data)
   std::string tag_name;
 
   switch (tag) {
-    case TTAG_avar: tag_name = "avar"; break;
-    case TTAG_BASE: tag_name = "BASE"; break;
-    case TTAG_bdat: tag_name = "bdat"; break;
+    case TTAG_avar:
+      tag_name = "avar"; break;
+    case TTAG_BASE:
+      tag_name = "BASE"; break;
+    case TTAG_bdat:
+      tag_name = "bdat"; break;
     case TTAG_BDF:
       tag_name = "BDF "; break;
     case TTAG_bhed:

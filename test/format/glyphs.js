@@ -109,12 +109,14 @@ function readFaceTablesField(tag, facetables, pbf) {
     if (tag === 1) facetables.GDEF = pbf.readBytes();
     else if (tag === 2) facetables.GSUB = pbf.readBytes();
     else if (tag === 3) facetables.GPOS = pbf.readBytes();
+    else if (tag === 4) facetables.cmap = pbf.readBytes();
 }
 
 function writeFaceTables(facetables, pbf) {
     if (facetables.GDEF !== undefined) pbf.writeBytesField(1, facetables.GDEF);
     if (facetables.GSUB !== undefined) pbf.writeBytesField(2, facetables.GSUB);
     if (facetables.GPOS !== undefined) pbf.writeBytesField(3, facetables.GPOS);
+    if (facetables.cmap !== undefined) pbf.writeBytesField(4, facetables.cmap);
 }
 
 // Font ========================================

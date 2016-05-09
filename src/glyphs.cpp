@@ -433,6 +433,9 @@ void parseFaceTables(protozero::pbf_reader face_tables_pbf) {
         case 3: // GPOS
             std::cout << "GPOS: " << face_tables_pbf.get_data().second << std::endl;
             break;
+        case 4: // cmap
+            std::cout << "cmap: " << face_tables_pbf.get_data().second << std::endl;
+            break;
         default:
             face_tables_pbf.skip();
             break;
@@ -492,6 +495,23 @@ void parseFontMetadata(protozero::pbf_reader metadata_pbf) {
             break;
         }
     }
+}
+
+std::string getSfntTable(FT_Face ft_face, FT_ULong tag) {
+    FT_ULong length = 0;
+    FT_Error error = FT_Load_Sfnt_Table(ft_face, tag, 0, NULL, &length);
+    if (error) throw std::runtime_error("Could not load SFNT table length");
+
+    FT_Byte* buffer = (FT_Byte *) malloc(length);
+    if (buffer == NULL) throw std::runtime_error("Could not resize SFNT table buffer");
+
+    error = FT_Load_Sfnt_Table(ft_face, tag, 0, buffer, &length);
+    if (error) throw std::runtime_error("Could not load SFNT table into buffer");
+
+    // TODO: need to free buffer here?
+    // Would an error thrown above cause a memory leak?
+
+    return std::string(reinterpret_cast<const char*>(buffer), length);
 }
 
 void RangeAsync(uv_work_t* req) {
@@ -583,60 +603,15 @@ void RangeAsync(uv_work_t* req) {
         // Add tables to face.
         mapbox::fontnik::FaceTables *mutable_face_tables = mutable_face->mutable_tables();
 
-        FT_Byte* sfnt_buffer;
-        FT_ULong sfnt_buffer_length;
-
-        // TODO: Use a template to do this verbose std::bind stuff?
-        std::array<std::tuple<FT_ULong, std::function<void(const void*, size_t)>, std::string>, 3> tags{{
-            {TTAG_GDEF,
-              std::bind(static_cast<void(mapbox::fontnik::FaceTables::*)(const void*, size_t)>(&mapbox::fontnik::FaceTables::set_gdef),
-                  mutable_face_tables,
-                  std::placeholders::_1,
-                  std::placeholders::_2),
-              "GDEF"},
-            {TTAG_GSUB,
-              std::bind(static_cast<void(mapbox::fontnik::FaceTables::*)(const void*, size_t)>(&mapbox::fontnik::FaceTables::set_gsub),
-                  mutable_face_tables,
-                  std::placeholders::_1,
-                  std::placeholders::_2),
-              "GSUB"},
-            {TTAG_GPOS,
-              std::bind(static_cast<void(mapbox::fontnik::FaceTables::*)(const void*, size_t)>(&mapbox::fontnik::FaceTables::set_gpos),
-                  mutable_face_tables,
-                  std::placeholders::_1,
-                  std::placeholders::_2),
-              "GPOS"}
-        }};
-
-        for (const auto& tag : tags) {
-            sfnt_buffer_length = 0;
-            error = FT_Load_Sfnt_Table(ft_face, std::get<0>(tag), 0, NULL, &sfnt_buffer_length);
-            if (error) {
-                baton->error = std::string("Could not load SFNT table length");
-                return;
-            }
-
-            sfnt_buffer = (FT_Byte *) malloc(sfnt_buffer_length);
-            if (sfnt_buffer == NULL) {
-                baton->error = std::string("Could not resize SFNT table buffer");
-                return;
-            }
-
-            error = FT_Load_Sfnt_Table(ft_face, std::get<0>(tag), 0, sfnt_buffer, &sfnt_buffer_length);
-            if (error) {
-                baton->error = std::string("Could not load SFNT table into buffer");
-                return;
-            }
-
-            // Add table to protobuf
-            std::get<1>(tag)((const char*) sfnt_buffer, sfnt_buffer_length);
-
-            std::cout << "Added " << std::get<2>(tag) <<
-                " table to face: " << sfnt_buffer_length << std::endl;
-
-            free(sfnt_buffer);
+        // Add SFNT tables to protobuf
+        try {
+            mutable_face_tables->set_gdef(getSfntTable(ft_face, TTAG_GDEF));
+            mutable_face_tables->set_gsub(getSfntTable(ft_face, TTAG_GSUB));
+            mutable_face_tables->set_gpos(getSfntTable(ft_face, TTAG_GPOS));
+            mutable_face_tables->set_cmap(getSfntTable(ft_face, TTAG_cmap));
+        } catch(std::exception e) {
+            baton->error = e.what();
         }
-
 
         for (std::vector<uint32_t>::size_type x = 0; x != baton->chars.size(); x++) {
             FT_ULong codepoint = baton->chars[x];

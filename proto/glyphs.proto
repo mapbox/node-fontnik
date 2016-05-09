@@ -49,6 +49,7 @@ message FaceTables {
     optional bytes GDEF = 1;
     optional bytes GSUB = 2;
     optional bytes GPOS = 3;
+    optional bytes cmap = 4;
 }
 
 message Font {
