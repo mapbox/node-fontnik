@@ -21,6 +21,3 @@ set +u
 source ./__nvm/nvm.sh
 nvm install ${NODE_VERSION}
 nvm use ${NODE_VERSION}
-node --version
-npm --version
-which node
