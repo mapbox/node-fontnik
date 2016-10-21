@@ -180,18 +180,6 @@ struct ft_library_guard {
     FT_Library * library_;
 };
 
-struct ft_glyph_guard {
-    ft_glyph_guard(FT_Glyph * glyph) :
-        glyph_(glyph) {}
-
-    ~ft_glyph_guard()
-    {
-        if (glyph_) FT_Done_Glyph(*glyph_);
-    }
-
-    FT_Glyph * glyph_;
-};
-
 void LoadAsync(uv_work_t* req) {
     LoadBaton* baton = static_cast<LoadBaton*>(req->data);
 
