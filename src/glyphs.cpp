@@ -548,10 +548,6 @@ void RenderSDF(glyph_info &glyph,
         return;
     }
 
-    FT_Glyph ft_glyph = nullptr;
-    ft_glyph_guard glyph_guard(&ft_glyph);
-    if (FT_Get_Glyph(ft_face->glyph, &ft_glyph)) return;
-
     int advance = ft_face->glyph->metrics.horiAdvance / 64;
     int ascender = ft_face->size->metrics.ascender / 64;
     int descender = ft_face->size->metrics.descender / 64;
@@ -572,16 +568,22 @@ void RenderSDF(glyph_info &glyph,
 
     User user;
 
-    // Decompose outline into bezier curves and line segments
-    FT_Outline outline = ((FT_OutlineGlyph)ft_glyph)->outline;
-    if (FT_Outline_Decompose(&outline, &func_interface, &user)) return;
+    if (ft_face->glyph->format == FT_GLYPH_FORMAT_OUTLINE) {
+        // Decompose outline into bezier curves and line segments
+        FT_Outline outline = ft_face->glyph->outline;
+        if (FT_Outline_Decompose(&outline, &func_interface, &user)) return;
 
-    if (!user.ring.empty()) {
-        CloseRing(user.ring);
-        user.rings.push_back(user.ring);
+        if (!user.ring.empty()) {
+            CloseRing(user.ring);
+            user.rings.push_back(user.ring);
+        }
+
+        if (user.rings.empty()) {
+            return;
+        }
+    } else {
+        return;
     }
-
-    if (user.rings.empty()) return;
 
     // Calculate the real glyph bbox.
     double bbox_xmin = std::numeric_limits<double>::infinity(),
