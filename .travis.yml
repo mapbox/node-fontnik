@@ -61,7 +61,7 @@ before_install:
         easy_install --user cpp-coveralls;
      fi;
   fi;
-- ./scripts/install_node.sh
+- ./scripts/install_node.sh ${NODE_VERSION}
 
 install:
 - ./scripts/install.sh

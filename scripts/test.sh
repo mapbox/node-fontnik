@@ -3,9 +3,6 @@
 set -e
 set -o pipefail
 
-source ~/.nvm/nvm.sh
-nvm use ${NODE_VERSION}
-
 npm test
 
 if [[ ${COVERAGE} == true ]]; then
