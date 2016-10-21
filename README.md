@@ -15,7 +15,7 @@ The approach this library takes is to parse and rasterize the font with Freetype
 By default, installs binaries. On these platforms no external dependencies are needed.
 
 - 64 bit OS X or 64 bit Linux
-- Node.js v0.10.x, v0.12.x, v4.x or v5.x
+- Node.js v0.10.x, v0.12.x, v4.x or v6.x
 
 Just run:
 
