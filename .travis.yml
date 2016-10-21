@@ -52,15 +52,14 @@ env:
 
 before_install:
 - export COVERAGE=${COVERAGE:-false}
+- export PYTHONUSERBASE=$(pwd)/.local
+- mkdir -p ${PYTHONUSERBASE}
 - if [[ ${COVERAGE} == true ]]; then
-    brew update;
-    brew install pyenv;
-    eval "$(pyenv init -)";
-    pyenv install 2.7.6;
-    pyenv global 2.7.6;
-    pyenv rehash;
-    pip install cpp-coveralls;
-    pyenv rehash;
+     if [[ $(uname -s) == 'Linux' ]]; then
+        pip install --user cpp-coveralls;
+     else
+        easy_install --user cpp-coveralls;
+     fi;
   fi;
 - ./scripts/install_node.sh
 

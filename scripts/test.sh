@@ -9,5 +9,5 @@ nvm use ${NODE_VERSION}
 npm test
 
 if [[ ${COVERAGE} == true ]]; then
-    cpp-coveralls --exclude node_modules --exclude tests --build-root build --gcov-options '\-lp' --exclude doc --exclude build/Debug/obj/gen
+    ${PYTHONUSERBASE}/bin/cpp-coveralls --exclude node_modules --exclude mason_packages --exclude tests --build-root build --gcov-options '\-lp' --exclude doc --exclude build/Debug/obj/gen
 fi
