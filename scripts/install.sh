@@ -5,6 +5,10 @@ set -o pipefail
 
 source ./scripts/install_mason.sh
 
+node --version
+npm --version
+which node
+
 if [[ ${COVERAGE} == true ]]; then
   npm install --build-from-source --debug --clang;
 else

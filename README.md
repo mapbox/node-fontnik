@@ -15,7 +15,7 @@ The approach this library takes is to parse and rasterize the font with Freetype
 By default, installs binaries. On these platforms no external dependencies are needed.
 
 - 64 bit OS X or 64 bit Linux
-- Node.js v0.10.x, v0.12.x, v4.x or v5.x
+- Node.js v0.10.x, v0.12.x, v4.x or v6.x
 
 Just run:
 
@@ -27,14 +27,10 @@ However, other platforms will fall back to a source compile: see [building from 
 
 ## Building from source
 
-Make sure you have `boost`, `freetype`, and `protobuf` installed. With [Homebrew](http://brew.sh/), you can
-type `brew install boost --c++11 freetype protobuf --c++11`. The Makefile uses `pkg-config` to find these
-libraries and links dynamically to them, so make sure that `pkg-config` can find
-them.
-
 ```
 npm install --build-from-source
 ```
+Building from source should automatically install `boost`, `freetype` and `protobuf` locally using [mason](https://github.com/mapbox/mason). These dependencies can be installed manually by running `./scripts/install_mason.sh`.
 
 ## Background reading
 - [Drawing Text with Signed Distance Fields in Mapbox GL](https://www.mapbox.com/blog/text-signed-distance-fields/)
