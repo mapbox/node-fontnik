@@ -1,7 +1,4 @@
-# Prevent Travis from exporting CXX after matrix env
-language: c
-
-sudo: false
+language: generic
 
 matrix:
   include:
@@ -13,15 +10,19 @@ matrix:
   - os: linux
     compiler: clang
     env: CXX=clang++-3.5 NODE_VERSION=5
+    sudo: false
   - os: linux
     compiler: clang
     env: CXX=clang++-3.5 NODE_VERSION=4
+    sudo: false
   - os: linux
     compiler: clang
     env: CXX=clang++-3.5 NODE_VERSION=0.12
+    sudo: false
   - os: linux
     compiler: clang
     env: CXX=clang++-3.5 NODE_VERSION=0.10
+    sudo: false
 # OS X
   - os: osx
     osx_image: xcode7
@@ -52,17 +53,16 @@ env:
 
 before_install:
 - export COVERAGE=${COVERAGE:-false}
+- export PYTHONUSERBASE=$(pwd)/.local
+- mkdir -p ${PYTHONUSERBASE}
 - if [[ ${COVERAGE} == true ]]; then
-    brew update;
-    brew install pyenv;
-    eval "$(pyenv init -)";
-    pyenv install 2.7.6;
-    pyenv global 2.7.6;
-    pyenv rehash;
-    pip install cpp-coveralls;
-    pyenv rehash;
+     if [[ $(uname -s) == 'Linux' ]]; then
+        pip install --user cpp-coveralls;
+     else
+        easy_install --user cpp-coveralls;
+     fi;
   fi;
-- ./scripts/install_node.sh
+- source ./scripts/install_node.sh ${NODE_VERSION}
 
 install:
 - ./scripts/install.sh
