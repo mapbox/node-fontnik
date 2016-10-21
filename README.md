@@ -27,14 +27,10 @@ However, other platforms will fall back to a source compile: see [building from 
 
 ## Building from source
 
-Make sure you have `boost`, `freetype`, and `protobuf` installed. With [Homebrew](http://brew.sh/), you can
-type `brew install boost --c++11 freetype protobuf --c++11`. The Makefile uses `pkg-config` to find these
-libraries and links dynamically to them, so make sure that `pkg-config` can find
-them.
-
 ```
 npm install --build-from-source
 ```
+Building from source should automatically install `boost`, `freetype` and `protobuf` locally using [mason](https://github.com/mapbox/mason). These dependencies can be installed manually by running `./scripts/install_mason.sh`.
 
 ## Background reading
 - [Drawing Text with Signed Distance Fields in Mapbox GL](https://www.mapbox.com/blog/text-signed-distance-fields/)
