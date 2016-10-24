@@ -69,10 +69,15 @@ test('load', function(t) {
         });
     });
 
-    t.test('invalid font loading', function(t) {
+    t.test('invalid arguments', function(t) {
         t.throws(function() {
-            fontnik.load(undefined, function(err, faces) {});
+            fontnik.load();
         }, /First argument must be a font buffer/);
+
+        t.throws(function() {
+            fontnik.load({});
+        }, /First argument must be a font buffer/);
+
         t.end();
     });
 
@@ -103,12 +108,32 @@ test('range', function(t) {
     t.test('ranges', function(t) {
         fontnik.range({font: opensans, start: 0, end: 256}, function(err, res) {
             t.error(err);
-            t.ok(res);
-            t.deepEqual(res, data);
-            var vt = new Glyphs(new Protobuf(new Uint8Array(res)));
-            var json = JSON.parse(JSON.stringify(vt, nobuffer));
-            jsonEqual(t, 'range', json);
-            t.end();
+            t.ok(data);
+
+            var zpath = __dirname + '/fixtures/range.0.256.pbf';
+
+            function compare() {
+                zlib.inflate(fs.readFileSync(zpath), function(err, inflated) {
+                    t.error(err);
+                    t.deepEqual(data, inflated);
+
+                    var vt = new Glyphs(new Protobuf(new Uint8Array(data)));
+                    var json = JSON.parse(JSON.stringify(vt, nobuffer));
+                    jsonEqual(t, 'range', json);
+
+                    t.end();
+                });
+            }
+
+            if (UPDATE) {
+                zlib.deflate(data, function(err, zdata) {
+                    t.error(err);
+                    fs.writeFileSync(zpath, zdata);
+                    compare();
+                });
+            } else {
+                compare();
+            }
         });
     });
 
@@ -131,17 +156,27 @@ test('range', function(t) {
         });
     });
 
-    t.test('range typeerror options', function(t) {
+    t.test('invalid arguments', function(t) {
         t.throws(function() {
-            fontnik.range(opensans, function(err, data) {});
+            fontnik.range();
+        }, /First argument must be an object of options/);
+
+        t.throws(function() {
+            fontnik.range({font:'not an object'}, function(err, data) {});
         }, /Font buffer is not an object/);
+
+        t.throws(function() {
+            fontnik.range({font:{}}, function(err, data) {});
+        }, /First argument must be a font buffer/);
+
         t.end();
     });
 
     t.test('range filepath does not exist', function(t) {
         var doesnotexistsans = new Buffer('baloney');
         fontnik.range({font: doesnotexistsans, start: 0, end: 256}, function(err, faces) {
-            t.ok(err.message.indexOf('Font buffer is not an object'));
+            t.ok(err);
+            t.equal(err.message, 'could not open font');
             t.end();
         });
     });
@@ -197,6 +232,18 @@ test('range', function(t) {
     t.test('range with osaka', function(t) {
         fontnik.range({font: osaka, start:0, end: 256}, function(err, data) {
             t.error(err);
+            var vt = new Glyphs(new Protobuf(new Uint8Array(data)));
+            var glyphs = vt.stacks['Osaka Regular'].glyphs;
+            var keys = Object.keys(glyphs);
+
+            var glyph;
+            for (var i = 0; i < keys.length; i++) {
+                glyph = glyphs[keys[i]];
+                t.deepEqual(Object.keys(glyph), ['id', 'width', 'height', 'left', 'top', 'advance']);
+                t.equal(glyph.width, 0);
+                t.equal(glyph.height, 0);
+            }
+
             t.end();
         });
     });
