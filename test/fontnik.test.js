@@ -197,6 +197,18 @@ test('range', function(t) {
     t.test('range with osaka', function(t) {
         fontnik.range({font: osaka, start:0, end: 256}, function(err, data) {
             t.error(err);
+            var vt = new Glyphs(new Protobuf(new Uint8Array(data)));
+            var glyphs = vt.stacks['Osaka Regular'].glyphs;
+            var keys = Object.keys(glyphs);
+
+            var glyph;
+            for (var i = 0; i < keys.length; i++) {
+                glyph = glyphs[keys[i]];
+                t.deepEqual(Object.keys(glyph), ['id', 'width', 'height', 'left', 'top', 'advance']);
+                t.equal(glyph.width, 0);
+                t.equal(glyph.height, 0);
+            }
+
             t.end();
         });
     });
