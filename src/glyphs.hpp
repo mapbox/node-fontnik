@@ -29,7 +29,7 @@ NAN_METHOD(Range);
 void RangeAsync(uv_work_t* req);
 void AfterRange(uv_work_t* req);
 struct glyph_info;
-void RenderSDF(glyph_info &glyph,
+bool RenderSDF(glyph_info &glyph,
                int size,
                int buffer,
                float cutoff,

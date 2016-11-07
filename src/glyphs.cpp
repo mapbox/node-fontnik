@@ -313,21 +313,21 @@ void RangeAsync(uv_work_t* req) {
             if (!char_index) continue;
 
             glyph.glyph_index = char_index;
-            RenderSDF(glyph, 24, 3, 0.25, ft_face);
 
-            // Add glyph to fontstack.
-            llmr::glyphs::glyph *mutable_glyph = mutable_fontstack->add_glyphs();
-            mutable_glyph->set_id(char_code);
-            mutable_glyph->set_width(glyph.width);
-            mutable_glyph->set_height(glyph.height);
-            mutable_glyph->set_left(glyph.left);
-            mutable_glyph->set_top(glyph.top - glyph.ascender);
-            mutable_glyph->set_advance(glyph.advance);
+            if(RenderSDF(glyph, 24, 3, 0.25, ft_face)) {
+                // Add glyph to fontstack.
+                llmr::glyphs::glyph *mutable_glyph = mutable_fontstack->add_glyphs();
+                mutable_glyph->set_id(char_code);
+                mutable_glyph->set_width(glyph.width);
+                mutable_glyph->set_height(glyph.height);
+                mutable_glyph->set_left(glyph.left);
+                mutable_glyph->set_top(glyph.top - glyph.ascender);
+                mutable_glyph->set_advance(glyph.advance);
 
-            if (glyph.width > 0) {
-                mutable_glyph->set_bitmap(glyph.bitmap);
+                if (glyph.width > 0) {
+                    mutable_glyph->set_bitmap(glyph.bitmap);
+                }
             }
-
         }
         if (ft_face) {
             FT_Done_Face(ft_face);
@@ -525,7 +525,7 @@ double MinDistanceToLineSegment(const Tree &tree,
     return std::sqrt(sqaured_distance);
 }
 
-void RenderSDF(glyph_info &glyph,
+bool RenderSDF(glyph_info &glyph,
                      int size,
                      int buffer,
                      float cutoff,
@@ -533,7 +533,7 @@ void RenderSDF(glyph_info &glyph,
 {
 
     if (FT_Load_Glyph (ft_face, glyph.glyph_index, FT_LOAD_NO_HINTING)) {
-        return;
+        return false;
     }
 
     int advance = ft_face->glyph->metrics.horiAdvance / 64;
@@ -559,7 +559,7 @@ void RenderSDF(glyph_info &glyph,
     if (ft_face->glyph->format == FT_GLYPH_FORMAT_OUTLINE) {
         // Decompose outline into bezier curves and line segments
         FT_Outline outline = ft_face->glyph->outline;
-        if (FT_Outline_Decompose(&outline, &func_interface, &user)) return;
+        if (FT_Outline_Decompose(&outline, &func_interface, &user)) return false;
 
         if (!user.ring.empty()) {
             CloseRing(user.ring);
@@ -567,10 +567,10 @@ void RenderSDF(glyph_info &glyph,
         }
 
         if (user.rings.empty()) {
-            return;
+            return false;
         }
     } else {
-        return;
+        return false;
     }
 
     // Calculate the real glyph bbox.
@@ -602,7 +602,7 @@ void RenderSDF(glyph_info &glyph,
         }
     }
 
-    if (bbox_xmax - bbox_xmin == 0 || bbox_ymax - bbox_ymin == 0) return;
+    if (bbox_xmax - bbox_xmin == 0 || bbox_ymax - bbox_ymin == 0) return false;
 
     glyph.left = bbox_xmin;
     glyph.top = bbox_ymax;
@@ -666,6 +666,8 @@ void RenderSDF(glyph_info &glyph,
             glyph.bitmap[i] = static_cast<char>(255 - n);
         }
     }
+
+    return true;
 }
 
 } // ns node_fontnik
