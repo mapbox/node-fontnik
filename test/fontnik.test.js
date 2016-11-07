@@ -99,14 +99,29 @@ test('range', function(t) {
             t.ok(data);
 
             var zpath = __dirname + '/fixtures/range.0.256.pbf';
-            if (process.env.UPDATE) fs.writeFileSync(zpath, zlib.deflateSync(data));
-            t.deepEqual(data, zlib.inflateSync(fs.readFileSync(zpath)));
 
-            var vt = new Glyphs(new Protobuf(new Uint8Array(data)));
-            var json = JSON.parse(JSON.stringify(vt, nobuffer));
-            jsonEqual(t, 'range', json);
+            function compare() {
+                zlib.inflate(fs.readFileSync(zpath), function(err, inflated) {
+                    t.error(err);
+                    t.deepEqual(data, inflated);
 
-            t.end();
+                    var vt = new Glyphs(new Protobuf(new Uint8Array(data)));
+                    var json = JSON.parse(JSON.stringify(vt, nobuffer));
+                    jsonEqual(t, 'range', json);
+
+                    t.end();
+                });
+            }
+
+            if (UPDATE) {
+                zlib.deflate(data, function(err, zdata) {
+                    t.error(err);
+                    fs.writeFileSync(zpath, zdata);
+                    compare();
+                });
+            } else {
+                compare();
+            }
         });
     });
 
