@@ -7,7 +7,6 @@ var test = require('tape');
 var fs = require('fs');
 var path = require('path');
 var zlib = require('zlib');
-var zdata = fs.readFileSync(__dirname + '/fixtures/range.0.256.pbf');
 var Protobuf = require('pbf');
 var Glyphs = require('./format/glyphs');
 var UPDATE = process.env.UPDATE;
@@ -94,20 +93,19 @@ test('load', function(t) {
 });
 
 test('range', function(t) {
-    var data;
-    zlib.inflate(zdata, function(err, d) {
-        if (err) throw err;
-        data = d;
-    });
-
     t.test('ranges', function(t) {
-        fontnik.range({font: opensans, start: 0, end: 256}, function(err, res) {
+        fontnik.range({font: opensans, start: 0, end: 256}, function(err, data) {
             t.error(err);
-            t.ok(res);
-            t.deepEqual(res, data);
-            var vt = new Glyphs(new Protobuf(new Uint8Array(res)));
+            t.ok(data);
+
+            var zpath = __dirname + '/fixtures/range.0.256.pbf';
+            if (process.env.UPDATE) fs.writeFileSync(zpath, zlib.deflateSync(data));
+            t.deepEqual(data, zlib.inflateSync(fs.readFileSync(zpath)));
+
+            var vt = new Glyphs(new Protobuf(new Uint8Array(data)));
             var json = JSON.parse(JSON.stringify(vt, nobuffer));
             jsonEqual(t, 'range', json);
+
             t.end();
         });
     });
@@ -121,9 +119,9 @@ test('range', function(t) {
     });
 
     t.test('shortrange', function(t) {
-        fontnik.range({font: opensans, start: 34, end: 38}, function(err, res) {
+        fontnik.range({font: opensans, start: 34, end: 38}, function(err, data) {
             t.error(err);
-            var vt = new Glyphs(new Protobuf(new Uint8Array(res)));
+            var vt = new Glyphs(new Protobuf(new Uint8Array(data)));
             t.equal(vt.stacks.hasOwnProperty('Open Sans Regular'), true);
             var codes = Object.keys(vt.stacks['Open Sans Regular'].glyphs);
             t.deepEqual(codes, ['34','35','36','37','38']);
