@@ -68,10 +68,15 @@ test('load', function(t) {
         });
     });
 
-    t.test('invalid font loading', function(t) {
+    t.test('invalid arguments', function(t) {
         t.throws(function() {
-            fontnik.load(undefined, function(err, faces) {});
+            fontnik.load();
         }, /First argument must be a font buffer/);
+
+        t.throws(function() {
+            fontnik.load({});
+        }, /First argument must be a font buffer/);
+
         t.end();
     });
 
@@ -144,17 +149,27 @@ test('range', function(t) {
         });
     });
 
-    t.test('range typeerror options', function(t) {
+    t.test('invalid arguments', function(t) {
         t.throws(function() {
-            fontnik.range(opensans, function(err, data) {});
+            fontnik.range();
+        }, /First argument must be an object of options/);
+
+        t.throws(function() {
+            fontnik.range({font:'not an object'}, function(err, data) {});
         }, /Font buffer is not an object/);
+
+        t.throws(function() {
+            fontnik.range({font:{}}, function(err, data) {});
+        }, /First argument must be a font buffer/);
+
         t.end();
     });
 
     t.test('range filepath does not exist', function(t) {
         var doesnotexistsans = new Buffer('baloney');
         fontnik.range({font: doesnotexistsans, start: 0, end: 256}, function(err, faces) {
-            t.ok(err.message.indexOf('Font buffer is not an object'));
+            t.ok(err);
+            t.equal(err.message, 'could not open font');
             t.end();
         });
     });
