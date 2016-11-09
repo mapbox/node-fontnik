@@ -25,7 +25,7 @@
   "dependencies": {
     "minimist": "^0.2.0",
     "nan": "^2.1.0",
-    "node-pre-gyp": "^0.6.17",
+    "node-pre-gyp": "^0.6.31",
     "queue-async": "^1.0.7"
   },
   "bundledDependencies": [
@@ -43,7 +43,8 @@
   },
   "scripts": {
     "install": "node-pre-gyp install --fallback-to-build=false || (source ./scripts/install_mason.sh && node-pre-gyp install --build-from-source)",
-    "test": "./node_modules/.bin/tape test/**/*.test.js"
+    "test": "./node_modules/.bin/tape test/**/*.test.js",
+    "prepublish": "npm ls"
   },
   "binary": {
     "module_name": "fontnik",
