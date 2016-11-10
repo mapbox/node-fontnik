@@ -29,7 +29,8 @@
     "queue-async": "^1.0.7"
   },
   "bundledDependencies": [
-    "node-pre-gyp"
+    "node-pre-gyp",
+    "mkdirp"
   ],
   "devDependencies": {
     "benchmark": "^1.0.0",
