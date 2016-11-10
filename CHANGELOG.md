@@ -1,3 +1,7 @@
+# 0.4.8
+
+- Bundles `mkdirp` to avoid an npm@2 bug when using `bundledDependencies` with `devDependencies`.
+
 # 0.4.7
 
 - Upgrades to a modern version of Mason.
