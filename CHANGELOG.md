@@ -1,3 +1,15 @@
+# 0.4.7
+
+- Upgrades to a modern version of Mason.
+
+# 0.4.6
+
+- Adds prepublish `npm ls` script to prevent publishing without `bundledDependencies`.
+
+# 0.4.5
+
+- Fixes Osaka range segfault.
+
 # 0.4.4
 
 - Fix initialization of `queue-async` in `bin/build-glyphs`.
