@@ -380,14 +380,14 @@ int MoveTo(const FT_Vector *to, void *ptr)
         user->rings.push_back(user->ring);
         user->ring.clear();
     }
-    user->ring.push_back(Point { float(to->x) / 64, float(to->y) / 64 });
+    user->ring.emplace_back(float(to->x) / 64.0, float(to->y) / 64.0);
     return 0;
 }
 
 int LineTo(const FT_Vector *to, void *ptr)
 {
     User *user = (User*)ptr;
-    user->ring.push_back(Point { float(to->x) / 64, float(to->y) / 64 });
+    user->ring.emplace_back(float(to->x) / 64.0, float(to->y) / 64.0);
     return 0;
 }
 
@@ -397,7 +397,7 @@ int ConicTo(const FT_Vector *control,
 {
     User *user = (User*)ptr;
 
-    Point prev = user->ring.back();
+    Point const& prev = user->ring.back();
 
     // pop off last point, duplicate of first point in bezier curve
     user->ring.pop_back();
@@ -411,7 +411,7 @@ int ConicTo(const FT_Vector *control,
     unsigned cmd;
 
     while (agg_fontnik::path_cmd_stop != (cmd = curve.vertex(&x, &y))) {
-        user->ring.push_back(Point {x, y});
+        user->ring.emplace_back(x, y);
     }
 
     return 0;
@@ -424,7 +424,7 @@ int CubicTo(const FT_Vector *c1,
 {
     User *user = (User*)ptr;
 
-    Point prev = user->ring.back();
+    Point const& prev = user->ring.back();
 
     // pop off last point, duplicate of first point in bezier curve
     user->ring.pop_back();
@@ -439,7 +439,7 @@ int CubicTo(const FT_Vector *c1,
     unsigned cmd;
 
     while (agg_fontnik::path_cmd_stop != (cmd = curve.vertex(&x, &y))) {
-        user->ring.push_back(Point {x, y});
+        user->ring.emplace_back(x, y);
     }
 
     return 0;
