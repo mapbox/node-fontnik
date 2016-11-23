@@ -2,14 +2,6 @@
   "stacks": {
     "Open Sans Regular": {
       "glyphs": {
-        "32": {
-          "id": 32,
-          "width": 0,
-          "height": 0,
-          "left": 0,
-          "top": -26,
-          "advance": 6
-        },
         "33": {
           "id": 33,
           "width": 3,
@@ -761,14 +753,6 @@
           "left": 1,
           "top": -16,
           "advance": 13
-        },
-        "160": {
-          "id": 160,
-          "width": 0,
-          "height": 0,
-          "left": 0,
-          "top": -26,
-          "advance": 6
         },
         "161": {
           "id": 161,
