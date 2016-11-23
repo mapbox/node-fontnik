@@ -169,60 +169,81 @@ NAN_METHOD(Range) {
 }
 
 struct ft_library_guard {
-    ft_library_guard(FT_Library * lib) :
+    ft_library_guard(FT_Library lib) :
         library_(lib) {}
 
     ~ft_library_guard()
     {
-        if (library_) FT_Done_FreeType(*library_);
+        if (library_) FT_Done_FreeType(library_);
     }
 
-    FT_Library * library_;
+    FT_Library library_;
+};
+
+struct ft_face_guard {
+    ft_face_guard(FT_Face f) :
+        face_(f) {}
+
+    ~ft_face_guard()
+    {
+        if (face_) FT_Done_Face(face_);
+    }
+
+    FT_Face face_;
 };
 
 void LoadAsync(uv_work_t* req) {
     LoadBaton* baton = static_cast<LoadBaton*>(req->data);
-
-    FT_Library library = nullptr;
-    ft_library_guard library_guard(&library);
-    FT_Error error = FT_Init_FreeType(&library);
-    if (error) {
-        /* LCOV_EXCL_START */
-        baton->error_name = std::string("could not open FreeType library");
-        return;
-        /* LCOV_EXCL_END */
-    }
-    FT_Face ft_face = 0;
-    int num_faces = 0;
-    for ( int i = 0; ft_face == 0 || i < num_faces; ++i )
-    {
-        FT_Error face_error = FT_New_Memory_Face(library, reinterpret_cast<FT_Byte const*>(baton->font_data), static_cast<FT_Long>(baton->font_size), i, &ft_face);
-        if (face_error) {
-            baton->error_name = std::string("could not open font file");
+    try {
+        FT_Library library = nullptr;
+        ft_library_guard library_guard(library);
+        FT_Error error = FT_Init_FreeType(&library);
+        if (error) {
+            /* LCOV_EXCL_START */
+            baton->error_name = std::string("could not open FreeType library");
             return;
+            /* LCOV_EXCL_END */
         }
-        std::set<int> points;
-        if (num_faces == 0)
-            num_faces = ft_face->num_faces;
-        FT_ULong charcode;
-        FT_UInt gindex;
-        charcode = FT_Get_First_Char(ft_face, &gindex);
-        while (gindex != 0) {
-            charcode = FT_Get_Next_Char(ft_face, charcode, &gindex);
-            if (charcode != 0) points.emplace(charcode);
-        }
+        FT_Face ft_face = 0;
+        int num_faces = 0;
+        for ( int i = 0; ft_face == 0 || i < num_faces; ++i )
+        {
+            ft_face_guard face_guard(ft_face);
+            FT_Error face_error = FT_New_Memory_Face(library, reinterpret_cast<FT_Byte const*>(baton->font_data), static_cast<FT_Long>(baton->font_size), i, &ft_face);
+            if (face_error) {
+                baton->error_name = std::string("could not open font file");
+                return;
+            }
+            if (num_faces == 0) {
+                num_faces = ft_face->num_faces;
+            }
 
-        std::vector<int> points_vec(points.begin(), points.end());
+            if (ft_face->family_name || ft_face->style_name) {
+                std::set<int> points;
+                FT_ULong charcode;
+                FT_UInt gindex;
+                charcode = FT_Get_First_Char(ft_face, &gindex);
+                while (gindex != 0) {
+                    charcode = FT_Get_Next_Char(ft_face, charcode, &gindex);
+                    if (charcode != 0) points.emplace(charcode);
+                }
 
-        if (ft_face->style_name) {
-            baton->faces.emplace_back(ft_face->family_name, ft_face->style_name, std::move(points_vec));
-        } else {
-            baton->faces.emplace_back(ft_face->family_name, std::move(points_vec));
-        }
+                std::vector<int> points_vec(points.begin(), points.end());
 
-        if (ft_face) {
-            FT_Done_Face(ft_face);
+                if (ft_face->family_name && ft_face->style_name) {
+                    baton->faces.emplace_back(ft_face->family_name, ft_face->style_name, std::move(points_vec));
+                } else if (ft_face->family_name) {
+                    baton->faces.emplace_back(ft_face->family_name, std::move(points_vec));
+                } else {
+
+                }
+            } else {
+                baton->error_name = std::string("font does not have family_name or style_name");
+                return;
+            }
         }
+    } catch (std::exception const& ex) {
+        baton->error_name = ex.what();
     }
 };
 
@@ -257,84 +278,96 @@ void AfterLoad(uv_work_t* req) {
 
 void RangeAsync(uv_work_t* req) {
     RangeBaton* baton = static_cast<RangeBaton*>(req->data);
+    try {
 
-    unsigned array_size = baton->end - baton->start;
-    baton->chars.reserve(array_size);
-    for (unsigned i=baton->start; i <= baton->end; i++) {
-        baton->chars.emplace_back(i);
-    }
+        unsigned array_size = baton->end - baton->start;
+        baton->chars.reserve(array_size);
+        for (unsigned i=baton->start; i <= baton->end; i++) {
+            baton->chars.emplace_back(i);
+        }
 
-    FT_Library library = nullptr;
-    ft_library_guard library_guard(&library);
-    FT_Error error = FT_Init_FreeType(&library);
-    if (error) {
-        /* LCOV_EXCL_START */
-        baton->error_name = std::string("could not open FreeType library");
-        return;
-        /* LCOV_EXCL_END */
-    }
-
-    FT_Face ft_face = 0;
-
-    llmr::glyphs::glyphs glyphs;
-
-    int num_faces = 0;
-    for ( int i = 0; ft_face == 0 || i < num_faces; ++i )
-    {
-        FT_Error face_error = FT_New_Memory_Face(library, reinterpret_cast<FT_Byte const*>(baton->font_data), static_cast<FT_Long>(baton->font_size), i, &ft_face);
-        if (face_error) {
-            baton->error_name = std::string("could not open font");
+        FT_Library library = nullptr;
+        ft_library_guard library_guard(library);
+        FT_Error error = FT_Init_FreeType(&library);
+        if (error) {
+            /* LCOV_EXCL_START */
+            baton->error_name = std::string("could not open FreeType library");
             return;
+            /* LCOV_EXCL_END */
         }
 
-        llmr::glyphs::fontstack *mutable_fontstack = glyphs.add_stacks();
-
-        if (ft_face->style_name) {
-            mutable_fontstack->set_name(std::string(ft_face->family_name) + " " + std::string(ft_face->style_name));
-        } else {
-            mutable_fontstack->set_name(std::string(ft_face->family_name));
-        }
-
-        mutable_fontstack->set_range(std::to_string(baton->start) + "-" + std::to_string(baton->end));
-
-        const double scale_factor = 1.0;
-
-        // Set character sizes.
-        double size = 24 * scale_factor;
-        FT_Set_Char_Size(ft_face,0,(FT_F26Dot6)(size * (1<<6)),0,0);
-
-        for (std::vector<uint32_t>::size_type x = 0; x != baton->chars.size(); x++) {
-            FT_ULong char_code = baton->chars[x];
-            glyph_info glyph;
-
-            // Get FreeType face from face_ptr.
-            FT_UInt char_index = FT_Get_Char_Index(ft_face, char_code);
-
-            if (!char_index) continue;
-
-            glyph.glyph_index = char_index;
-            RenderSDF(glyph, 24, 3, 0.25, ft_face);
-
-            // Add glyph to fontstack.
-            llmr::glyphs::glyph *mutable_glyph = mutable_fontstack->add_glyphs();
-            mutable_glyph->set_id(char_code);
-            mutable_glyph->set_width(glyph.width);
-            mutable_glyph->set_height(glyph.height);
-            mutable_glyph->set_left(glyph.left);
-            mutable_glyph->set_top(glyph.top - glyph.ascender);
-            mutable_glyph->set_advance(glyph.advance);
-
-            if (glyph.width > 0) {
-                mutable_glyph->set_bitmap(glyph.bitmap);
+        llmr::glyphs::glyphs glyphs;
+        FT_Face ft_face = 0;
+        int num_faces = 0;
+        for ( int i = 0; ft_face == 0 || i < num_faces; ++i )
+        {
+            ft_face_guard face_guard(ft_face);
+            FT_Error face_error = FT_New_Memory_Face(library, reinterpret_cast<FT_Byte const*>(baton->font_data), static_cast<FT_Long>(baton->font_size), i, &ft_face);
+            if (face_error) {
+                baton->error_name = std::string("could not open font");
+                return;
             }
 
+            if (num_faces == 0) {
+                num_faces = ft_face->num_faces;
+            }
+
+            if (ft_face->family_name || ft_face->style_name) {
+                llmr::glyphs::fontstack *mutable_fontstack;
+                if (ft_face->family_name && ft_face->style_name) {
+                    mutable_fontstack = glyphs.add_stacks();
+                    mutable_fontstack->set_name(std::string(ft_face->family_name) + " " + std::string(ft_face->style_name));
+                } else if (ft_face->family_name) {
+                    mutable_fontstack = glyphs.add_stacks();
+                    mutable_fontstack->set_name(std::string(ft_face->family_name));
+                } else {
+                    baton->error_name = std::string("font does not have expected names");
+                    return;
+                }
+
+                mutable_fontstack->set_range(std::to_string(baton->start) + "-" + std::to_string(baton->end));
+
+                const double scale_factor = 1.0;
+
+                // Set character sizes.
+                double size = 24 * scale_factor;
+                FT_Set_Char_Size(ft_face,0,(FT_F26Dot6)(size * (1<<6)),0,0);
+
+                for (std::vector<uint32_t>::size_type x = 0; x != baton->chars.size(); x++) {
+                    FT_ULong char_code = baton->chars[x];
+                    glyph_info glyph;
+
+                    // Get FreeType face from face_ptr.
+                    FT_UInt char_index = FT_Get_Char_Index(ft_face, char_code);
+
+                    if (!char_index) continue;
+
+                    glyph.glyph_index = char_index;
+                    RenderSDF(glyph, 24, 3, 0.25, ft_face);
+
+                    // Add glyph to fontstack.
+                    llmr::glyphs::glyph *mutable_glyph = mutable_fontstack->add_glyphs();
+                    mutable_glyph->set_id(char_code);
+                    mutable_glyph->set_width(glyph.width);
+                    mutable_glyph->set_height(glyph.height);
+                    mutable_glyph->set_left(glyph.left);
+                    mutable_glyph->set_top(glyph.top - glyph.ascender);
+                    mutable_glyph->set_advance(glyph.advance);
+
+                    if (glyph.width > 0) {
+                        mutable_glyph->set_bitmap(glyph.bitmap);
+                    }
+                }
+            } else {
+                baton->error_name = std::string("font does not have family_name or style_name");
+                return;
+            }
         }
-        if (ft_face) {
-            FT_Done_Face(ft_face);
-        }
+        baton->message = glyphs.SerializeAsString();
+    } catch (std::exception const& ex) {
+        baton->error_name = ex.what();
     }
 
-    baton->message = glyphs.SerializeAsString();
 }
 
 void AfterRange(uv_work_t* req) {
