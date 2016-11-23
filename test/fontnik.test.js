@@ -24,6 +24,7 @@ function jsonEqual(t, key, json) {
 var expected = JSON.parse(fs.readFileSync(__dirname + '/expected/load.json').toString());
 var firasans = fs.readFileSync(path.resolve(__dirname + '/../fonts/firasans-medium/FiraSans-Medium.ttf'));
 var opensans = fs.readFileSync(path.resolve(__dirname + '/../fonts/open-sans/OpenSans-Regular.ttf'));
+var invalid_no_family = fs.readFileSync(path.resolve(__dirname + '/fixtures/fonts/invalid/1c2c3fc37b2d4c3cb2ef726c6cdaaabd4b7f3eb9.ttf'));
 var guardianbold = fs.readFileSync(path.resolve(__dirname + '/../fonts/GuardianTextSansWeb/GuardianTextSansWeb-Bold.ttf'));
 var osaka = fs.readFileSync(path.resolve(__dirname + '/../fonts/osaka/Osaka.ttf'));
 
@@ -94,6 +95,14 @@ test('load', function(t) {
             fontnik.load(firasans);
         }, /Callback must be a function/);
         t.end();
+    });
+
+    t.test('load font with no family name', function(t) {
+        fontnik.load(invalid_no_family, function(err, faces) {
+            t.ok(err.message.indexOf('font does not have family_name or style_name') > -1);
+            t.equal(faces,undefined);
+            t.end();
+        });
     });
 
 });
@@ -177,6 +186,14 @@ test('range', function(t) {
         fontnik.range({font: doesnotexistsans, start: 0, end: 256}, function(err, faces) {
             t.ok(err);
             t.equal(err.message, 'could not open font');
+            t.end();
+        });
+    });
+
+    t.test('range invalid font with no family name', function(t) {
+        fontnik.range({font: invalid_no_family, start: 0, end: 256}, function(err, faces) {
+            t.ok(err);
+            t.equal(err.message, 'font does not have family_name or style_name');
             t.end();
         });
     });
