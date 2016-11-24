@@ -412,7 +412,7 @@ int MoveTo(const FT_Vector *to, void *ptr)
 
 int LineTo(const FT_Vector *to, void *ptr)
 {
-    User *user = (User*)ptr;
+    User *user = static_cast<User*>(ptr);
     user->ring.emplace_back(float(to->x) / 64.0, float(to->y) / 64.0);
     return 0;
 }
@@ -421,23 +421,35 @@ int ConicTo(const FT_Vector *control,
             const FT_Vector *to,
             void *ptr)
 {
-    User *user = (User*)ptr;
+    if (!control) {
+        throw std::runtime_error("control is null");
+    }
+    if (!to) {
+        throw std::runtime_error("control is null");
+    }
+    User *user = static_cast<User*>(ptr);
 
-    Point const& prev = user->ring.back();
+    if (!user->ring.empty()) {
+        Point const& prev = user->ring.back();
+        auto dx = prev.get<0>();
+        auto dy = prev.get<1>();
 
-    // pop off last point, duplicate of first point in bezier curve
-    user->ring.pop_back();
+        // pop off last point, duplicate of first point in bezier curve
+        // WARNING: pop_back invalidates `prev`
+        // http://en.cppreference.com/w/cpp/container/vector/pop_back
+        user->ring.pop_back();
 
-    agg_fontnik::curve3_div curve(prev.get<0>(), prev.get<1>(),
-                          float(control->x) / 64, float(control->y) / 64,
-                          float(to->x) / 64, float(to->y) / 64);
+        agg_fontnik::curve3_div curve(dx,dy,
+                              float(control->x) / 64, float(control->y) / 64,
+                              float(to->x) / 64, float(to->y) / 64);
 
-    curve.rewind(0);
-    double x, y;
-    unsigned cmd;
+        curve.rewind(0);
+        double x, y;
+        unsigned cmd;
 
-    while (agg_fontnik::path_cmd_stop != (cmd = curve.vertex(&x, &y))) {
-        user->ring.emplace_back(x, y);
+        while (agg_fontnik::path_cmd_stop != (cmd = curve.vertex(&x, &y))) {
+            user->ring.emplace_back(x, y);
+        }
     }
 
     return 0;
@@ -448,24 +460,31 @@ int CubicTo(const FT_Vector *c1,
             const FT_Vector *to,
             void *ptr)
 {
-    User *user = (User*)ptr;
+    User *user = static_cast<User*>(ptr);
 
-    Point const& prev = user->ring.back();
+    if (!user->ring.empty()) {
 
-    // pop off last point, duplicate of first point in bezier curve
-    user->ring.pop_back();
+        Point const& prev = user->ring.back();
+        auto dx = prev.get<0>();
+        auto dy = prev.get<1>();
 
-    agg_fontnik::curve4_div curve(prev.get<0>(), prev.get<1>(),
-                          float(c1->x) / 64, float(c1->y) / 64,
-                          float(c2->x) / 64, float(c2->y) / 64,
-                          float(to->x) / 64, float(to->y) / 64);
+        // pop off last point, duplicate of first point in bezier curve
+        // WARNING: pop_back invalidates `prev`
+        // http://en.cppreference.com/w/cpp/container/vector/pop_back
+        user->ring.pop_back();
 
-    curve.rewind(0);
-    double x, y;
-    unsigned cmd;
+        agg_fontnik::curve4_div curve(dx,dy,
+                              float(c1->x) / 64, float(c1->y) / 64,
+                              float(c2->x) / 64, float(c2->y) / 64,
+                              float(to->x) / 64, float(to->y) / 64);
 
-    while (agg_fontnik::path_cmd_stop != (cmd = curve.vertex(&x, &y))) {
-        user->ring.emplace_back(x, y);
+        curve.rewind(0);
+        double x, y;
+        unsigned cmd;
+
+        while (agg_fontnik::path_cmd_stop != (cmd = curve.vertex(&x, &y))) {
+            user->ring.emplace_back(x, y);
+        }
     }
 
     return 0;
