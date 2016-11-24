@@ -218,7 +218,7 @@ void LoadAsync(uv_work_t* req) {
                 num_faces = ft_face->num_faces;
             }
 
-            if (ft_face->family_name || ft_face->style_name) {
+            if (ft_face->family_name) {
                 std::set<int> points;
                 FT_ULong charcode;
                 FT_UInt gindex;
@@ -230,12 +230,10 @@ void LoadAsync(uv_work_t* req) {
 
                 std::vector<int> points_vec(points.begin(), points.end());
 
-                if (ft_face->family_name && ft_face->style_name) {
+                if (ft_face->style_name) {
                     baton->faces.emplace_back(ft_face->family_name, ft_face->style_name, std::move(points_vec));
-                } else if (ft_face->family_name) {
-                    baton->faces.emplace_back(ft_face->family_name, std::move(points_vec));
                 } else {
-
+                    baton->faces.emplace_back(ft_face->family_name, std::move(points_vec));
                 }
             } else {
                 baton->error_name = std::string("font does not have family_name or style_name");
@@ -312,17 +310,12 @@ void RangeAsync(uv_work_t* req) {
                 num_faces = ft_face->num_faces;
             }
 
-            if (ft_face->family_name || ft_face->style_name) {
-                llmr::glyphs::fontstack *mutable_fontstack;
-                if (ft_face->family_name && ft_face->style_name) {
-                    mutable_fontstack = glyphs.add_stacks();
+            if (ft_face->family_name) {
+                llmr::glyphs::fontstack *mutable_fontstack = glyphs.add_stacks()
+                if (ft_face->style_name) {
                     mutable_fontstack->set_name(std::string(ft_face->family_name) + " " + std::string(ft_face->style_name));
-                } else if (ft_face->family_name) {
-                    mutable_fontstack = glyphs.add_stacks();
-                    mutable_fontstack->set_name(std::string(ft_face->family_name));
                 } else {
-                    baton->error_name = std::string("font does not have expected names");
-                    return;
+                    mutable_fontstack->set_name(std::string(ft_face->family_name));
                 }
 
                 mutable_fontstack->set_range(std::to_string(baton->start) + "-" + std::to_string(baton->end));
@@ -359,7 +352,7 @@ void RangeAsync(uv_work_t* req) {
                     }
                 }
             } else {
-                baton->error_name = std::string("font does not have family_name or style_name");
+                baton->error_name = std::string("font does not have family_name");
                 return;
             }
         }
