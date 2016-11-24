@@ -99,7 +99,7 @@ test('load', function(t) {
 
     t.test('load font with no family name', function(t) {
         fontnik.load(invalid_no_family, function(err, faces) {
-            t.ok(err.message.indexOf('font does not have family_name or style_name') > -1);
+            t.ok(err.message.indexOf('font does not have family_name') > -1);
             t.equal(faces,undefined);
             t.end();
         });
@@ -193,7 +193,7 @@ test('range', function(t) {
     t.test('range invalid font with no family name', function(t) {
         fontnik.range({font: invalid_no_family, start: 0, end: 256}, function(err, faces) {
             t.ok(err);
-            t.equal(err.message, 'font does not have family_name or style_name');
+            t.equal(err.message, 'font does not have family_name');
             t.end();
         });
     });

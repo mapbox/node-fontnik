@@ -311,7 +311,7 @@ void RangeAsync(uv_work_t* req) {
             }
 
             if (ft_face->family_name) {
-                llmr::glyphs::fontstack *mutable_fontstack = glyphs.add_stacks()
+                llmr::glyphs::fontstack *mutable_fontstack = glyphs.add_stacks();
                 if (ft_face->style_name) {
                     mutable_fontstack->set_name(std::string(ft_face->family_name) + " " + std::string(ft_face->style_name));
                 } else {
