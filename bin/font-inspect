@@ -27,7 +27,11 @@ if (argv.face) {
     faces = [argv.face];
 } else {
     var register = path.resolve(argv.register);
-    faces = glob.sync(path.join(register,'/*ttf'))
+    var pattern = '+(*ttf|*otf)';
+    faces = glob.sync(pattern,{nodir:true, cwd:register, matchBase:true});
+    faces = faces.map(function(f) {
+        return path.join(register,f);
+    })
 }
 
 

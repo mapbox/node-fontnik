@@ -24,7 +24,7 @@ function jsonEqual(t, key, json) {
 var expected = JSON.parse(fs.readFileSync(__dirname + '/expected/load.json').toString());
 var firasans = fs.readFileSync(path.resolve(__dirname + '/../fonts/firasans-medium/FiraSans-Medium.ttf'));
 var opensans = fs.readFileSync(path.resolve(__dirname + '/../fonts/open-sans/OpenSans-Regular.ttf'));
-var invalid_no_family = fs.readFileSync(path.resolve(__dirname + '/fixtures/fonts/invalid/1c2c3fc37b2d4c3cb2ef726c6cdaaabd4b7f3eb9.ttf'));
+var invalid_no_family = fs.readFileSync(path.resolve(__dirname + '/fixtures/fonts-invalid/1c2c3fc37b2d4c3cb2ef726c6cdaaabd4b7f3eb9.ttf'));
 var guardianbold = fs.readFileSync(path.resolve(__dirname + '/../fonts/GuardianTextSansWeb/GuardianTextSansWeb-Bold.ttf'));
 var osaka = fs.readFileSync(path.resolve(__dirname + '/../fonts/osaka/Osaka.ttf'));
 
