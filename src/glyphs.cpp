@@ -651,6 +651,7 @@ void RenderSDF(glyph_info &glyph,
     Tree tree;
     float offset = 0.5;
     int radius = 8;
+    int radius_by_256 = (256 / radius);
 
     for (const Points &ring : user.rings) {
         auto p1 = ring.begin();
@@ -685,11 +686,11 @@ void RenderSDF(glyph_info &glyph,
         for (unsigned int x = 0; x < buffered_width; x++) {
             unsigned int ypos = buffered_height - y - 1;
             unsigned int i = ypos * buffered_width + x;
-
-            double d = MinDistanceToLineSegment(tree, Point {x + offset, y + offset}, radius) * (256 / radius);
+            Point pt{x + offset, y + offset };
+            double d = MinDistanceToLineSegment(tree, pt, radius) * radius_by_256;
 
             // Invert if point is inside.
-            const bool inside = PolyContainsPoint(user.rings, Point { x + offset, y + offset });
+            const bool inside = PolyContainsPoint(user.rings, pt);
             if (inside) {
                 d = -d;
             }
