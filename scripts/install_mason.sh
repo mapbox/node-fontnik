@@ -17,7 +17,7 @@ git submodule update --init .mason
 export PATH="`pwd`/.mason:${PATH}"
 export MASON_DIR="`pwd`/.mason"
 
-export BOOST_VERSION=1.58.0
+export BOOST_VERSION=1.62.0
 export FREETYPE_VERSION=2.6
 export PROTOBUF_VERSION=2.6.1
 
