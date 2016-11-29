@@ -421,12 +421,6 @@ int ConicTo(const FT_Vector *control,
             const FT_Vector *to,
             void *ptr)
 {
-    if (!control) {
-        throw std::runtime_error("control is null");
-    }
-    if (!to) {
-        throw std::runtime_error("control is null");
-    }
     User *user = static_cast<User*>(ptr);
 
     if (!user->ring.empty()) {
