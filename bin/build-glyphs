@@ -5,9 +5,9 @@ var path = require('path');
 var fs = require('fs');
 var queue = require('queue-async');
 
-if (process.argv.length !== 4) {
+if (process.argv.length < 4 || process.argv.length > 5) {
     console.log('Usage:');
-    console.log('  build-glyphs <fontstack path> <output dir>');
+    console.log('  build-glyphs <fontstack path> <output dir> [<buffer size>]');
     console.log('');
     console.log('Example:');
     console.log('  build-glyphs ./fonts/open-sans/OpenSans-Regular.ttf ./glyphs');
@@ -16,6 +16,11 @@ if (process.argv.length !== 4) {
 
 var fontstack = fs.readFileSync(process.argv[2]);
 var dir = path.resolve(process.argv[3]);
+var buffsize = parseInt(process.argv[4]) || 256;
+if(buffsize < 1){
+    console.warn('Error: Buffer size must be greater than 1');
+    process.exit(1);
+}
 
 if (!fs.existsSync(dir)) {
     console.warn('Error: Directory %s does not exist', dir);
@@ -24,11 +29,11 @@ if (!fs.existsSync(dir)) {
 
 var q = queue(Math.max(4, require('os').cpus().length));
 var queue = [];
-for (var i = 0; i < 65536; (i = i + 256)) {
+for (var i = 0; i < 65536; (i = i + buffsize)) {
     q.defer(writeGlyphs, {
         font: fontstack,
         start: i,
-        end: Math.min(i + 255, 65535)
+        end: Math.min(i + buffsize-1, 65535)
     });
 }
 
