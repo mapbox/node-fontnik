@@ -7,10 +7,16 @@ var mkdirp = require('mkdirp');
 
 var bin_output = path.resolve(__dirname + '/bin_output');
 
+var buffsizes = ['default', 100, 256, 512, 1024, 3000, 65536];
+
 test('setup', function(t) {
-    mkdirp(bin_output, function(err) {
-        t.error(err, 'setup');
-        t.end();
+    buffsizes.forEach(function(buffsize){
+        t.test(' '+buffsize+' buffer size', function(q) {
+            mkdirp(bin_output+'/'+buffsize, function(err) {
+                    q.error(err, 'setup '+buffsize);
+                    q.end();
+                });
+        });
     });
 });
 
@@ -18,18 +24,66 @@ test('bin/build-glyphs', function(t) {
     var script = path.normalize(__dirname + '/../bin/build-glyphs'),
         font = path.normalize(__dirname + '/../fonts/open-sans/OpenSans-Regular.ttf'),
         dir = path.resolve(__dirname + '/bin_output');
-    exec([script, font, dir].join(' '), function(err, stdout, stderr) {
-        t.error(err);
-        t.error(stderr);
-        fs.readdir(bin_output, function(err, files) {
-            t.equal(files.length, 256, 'outputs 256 files');
-            t.equal(files.indexOf('0-255.pbf'), 0, 'expected .pbf');
-            t.equal(files.filter(function(f) {
-                return f.indexOf('.pbf') > -1;
-            }).length, files.length, 'all .pbfs');
-            t.end();
-        })
+
+    buffsizes.forEach(function(buffsize){
+        t.test(' '+buffsize+' buffer size', function(q) {
+            var params = [script, font, dir+'/'+buffsize];
+            if(buffsize !== 'default')
+                params.push(buffsize);
+
+            exec(params.join(' '), function(err, stdout, stderr) {
+                q.error(err);
+                q.error(stderr);
+                fs.readdir(dir+'/'+buffsize, function(err, files) {
+                    var buffsizeno = parseInt(buffsize)||256;
+                    var filesno = Math.ceil(65536/buffsizeno);
+
+                    q.equal(files.length, filesno, 'outputs '+filesno+' files');
+
+                    //fist file ( for example 0-255.pbf )
+                    q.equal(files.indexOf('0-'+(buffsizeno-1)+'.pbf'), 0, 'expected first .pbf');
+
+                    var start = (filesno-1)*buffsizeno;
+                    var end   = Math.min(filesno*buffsizeno-1, 65535);
+                    //there mustbe last file ( for example 65535 )
+                    q.equal(files.indexOf(start+'-'+end+'.pbf')>=0, true, 'expected last '+start+'-'+end+'.pbf');
+
+                    //all files must have valid format
+                    q.equal(files.filter(function(f) {
+                        var is;
+
+                        //must match NUMBER-NUMBER.pbf
+                        f.replace(/^([0-9]+)\-([0-9]+)\.pbf$/g, function(all, s, e){
+                            is = true;
+                            s = parseInt(s);
+                            e = parseInt(e);
+
+                            //start range must be divided by buffer size
+                            if(s%buffsizeno !== 0) is = false;
+
+                            //end range + 1 must be divided by buffer size
+                            if(e !== 65535 && (e+1)%buffsizeno !== 0) is = false;
+
+                            //start and and range must be between 0-65535
+                            if(
+                                ( s < 0 || s > 65535 )
+                                ||
+                                ( e < 0 || e > 65535 )
+                            ){
+                                is = false;
+                            }
+                        });
+
+
+                        return is;
+                    }).length, files.length, 'valid .pbfs names');
+                    q.end();
+                })
+            });
+        });
     });
+
+
 });
 
 test('bin/font-inspect', function(t) {
@@ -85,14 +139,22 @@ test('bin/font-inspect', function(t) {
 });
 
 test('teardown', function(t) {
-    var q = queue();
+    var q1 = queue();
 
-    fs.readdir(bin_output, function(err, files) {
-        files.forEach(function(f) {
-            q.defer(fs.unlink, path.join(bin_output, '/', f));
+    var dirs = buffsizes.map(function(v){return path.join(bin_output, '/', v+"");});
+    dirs.forEach(function(dir){
+        fs.readdirSync(dir).forEach(function(f) {
+            q1.defer(fs.unlink, path.join(dir, '/', f));
+        });
+    });
+    q1.awaitAll(function(err) {
+        var q2 = queue();
+
+        dirs.forEach(function(dir){
+            q2.defer(fs.rmdir, dir);
         });
 
-        q.awaitAll(function(err) {
+        q2.awaitAll(function(err) {
             t.error(err, 'teardown');
             fs.rmdir(bin_output, function(err) {
                 t.error(err, 'teardown');
