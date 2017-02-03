@@ -4,3 +4,4 @@ glyphs
 spec
 node_modules
 mason_packages
+.DS_Store

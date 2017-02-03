@@ -12,4 +12,6 @@ if [ ! -d ./mason ]; then
     ./mason/mason link freetype 2.7.1
     ./mason/mason install protobuf 3.2.0
     ./mason/mason link protobuf 3.2.0
+    ./mason/mason install sdf-glyph-foundry 0.1.1
+    ./mason/mason link sdf-glyph-foundry 0.1.1
 fi

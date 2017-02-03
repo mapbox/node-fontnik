@@ -54,7 +54,6 @@
       'sources': [
         'src/node_fontnik.cpp',
         'src/glyphs.cpp',
-        'vendor/agg/src/agg_curves.cpp',
         '<(SHARED_INTERMEDIATE_DIR)/glyphs.pb.cc'
       ],
       "link_settings": {
