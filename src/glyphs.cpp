@@ -5,31 +5,9 @@
 #include <node_buffer.h>
 #include <nan.h>
 
-#include "agg_curves.h"
-
-// boost
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wshadow"
-#pragma GCC diagnostic ignored "-Wunused-local-typedef"
-#include <boost/geometry.hpp>
-#include <boost/geometry/geometries/point.hpp>
-#include <boost/geometry/geometries/box.hpp>
-#include <boost/geometry/index/rtree.hpp>
-#pragma GCC diagnostic pop
-
-// std
-#include <cmath> // std::sqrt
-
-namespace bg = boost::geometry;
-namespace bgm = bg::model;
-namespace bgi = bg::index;
-typedef bgm::point<float, 2, bg::cs::cartesian> Point;
-typedef bgm::box<Point> Box;
-typedef std::vector<Point> Points;
-typedef std::vector<Points> Rings;
-typedef std::pair<Point, Point> SegmentPair;
-typedef std::pair<Box, SegmentPair> SegmentValue;
-typedef bgi::rtree<SegmentValue, bgi::rstar<16>> Tree;
+// sdf-glyph-foundry
+#include <mapbox/glyph_foundry.hpp>
+#include <mapbox/glyph_foundry_impl.hpp>
 
 namespace node_fontnik
 {
@@ -169,60 +147,79 @@ NAN_METHOD(Range) {
 }
 
 struct ft_library_guard {
-    ft_library_guard(FT_Library * lib) :
+    ft_library_guard(FT_Library lib) :
         library_(lib) {}
 
     ~ft_library_guard()
     {
-        if (library_) FT_Done_FreeType(*library_);
+        if (library_) FT_Done_FreeType(library_);
     }
 
-    FT_Library * library_;
+    FT_Library library_;
+};
+
+struct ft_face_guard {
+    ft_face_guard(FT_Face f) :
+        face_(f) {}
+
+    ~ft_face_guard()
+    {
+        if (face_) FT_Done_Face(face_);
+    }
+
+    FT_Face face_;
 };
 
 void LoadAsync(uv_work_t* req) {
     LoadBaton* baton = static_cast<LoadBaton*>(req->data);
-
-    FT_Library library = nullptr;
-    ft_library_guard library_guard(&library);
-    FT_Error error = FT_Init_FreeType(&library);
-    if (error) {
-        /* LCOV_EXCL_START */
-        baton->error_name = std::string("could not open FreeType library");
-        return;
-        /* LCOV_EXCL_END */
-    }
-    FT_Face ft_face = 0;
-    int num_faces = 0;
-    for ( int i = 0; ft_face == 0 || i < num_faces; ++i )
-    {
-        FT_Error face_error = FT_New_Memory_Face(library, reinterpret_cast<FT_Byte const*>(baton->font_data), static_cast<FT_Long>(baton->font_size), i, &ft_face);
-        if (face_error) {
-            baton->error_name = std::string("could not open font file");
+    try {
+        FT_Library library = nullptr;
+        ft_library_guard library_guard(library);
+        FT_Error error = FT_Init_FreeType(&library);
+        if (error) {
+            /* LCOV_EXCL_START */
+            baton->error_name = std::string("could not open FreeType library");
             return;
+            /* LCOV_EXCL_END */
         }
-        std::set<int> points;
-        if (num_faces == 0)
-            num_faces = ft_face->num_faces;
-        FT_ULong charcode;
-        FT_UInt gindex;
-        charcode = FT_Get_First_Char(ft_face, &gindex);
-        while (gindex != 0) {
-            charcode = FT_Get_Next_Char(ft_face, charcode, &gindex);
-            if (charcode != 0) points.emplace(charcode);
-        }
+        FT_Face ft_face = 0;
+        int num_faces = 0;
+        for ( int i = 0; ft_face == 0 || i < num_faces; ++i )
+        {
+            ft_face_guard face_guard(ft_face);
+            FT_Error face_error = FT_New_Memory_Face(library, reinterpret_cast<FT_Byte const*>(baton->font_data), static_cast<FT_Long>(baton->font_size), i, &ft_face);
+            if (face_error) {
+                baton->error_name = std::string("could not open font file");
+                return;
+            }
+            if (num_faces == 0) {
+                num_faces = ft_face->num_faces;
+            }
 
-        std::vector<int> points_vec(points.begin(), points.end());
+            if (ft_face->family_name) {
+                std::set<int> points;
+                FT_ULong charcode;
+                FT_UInt gindex;
+                charcode = FT_Get_First_Char(ft_face, &gindex);
+                while (gindex != 0) {
+                    charcode = FT_Get_Next_Char(ft_face, charcode, &gindex);
+                    if (charcode != 0) points.emplace(charcode);
+                }
 
-        if (ft_face->style_name) {
-            baton->faces.emplace_back(ft_face->family_name, ft_face->style_name, std::move(points_vec));
-        } else {
-            baton->faces.emplace_back(ft_face->family_name, std::move(points_vec));
-        }
+                std::vector<int> points_vec(points.begin(), points.end());
 
-        if (ft_face) {
-            FT_Done_Face(ft_face);
+                if (ft_face->style_name) {
+                    baton->faces.emplace_back(ft_face->family_name, ft_face->style_name, std::move(points_vec));
+                } else {
+                    baton->faces.emplace_back(ft_face->family_name, std::move(points_vec));
+                }
+            } else {
+                baton->error_name = std::string("font does not have family_name or style_name");
+                return;
+            }
         }
+    } catch (std::exception const& ex) {
+        baton->error_name = ex.what();
     }
 };
 
@@ -257,84 +254,91 @@ void AfterLoad(uv_work_t* req) {
 
 void RangeAsync(uv_work_t* req) {
     RangeBaton* baton = static_cast<RangeBaton*>(req->data);
+    try {
 
-    unsigned array_size = baton->end - baton->start;
-    baton->chars.reserve(array_size);
-    for (unsigned i=baton->start; i <= baton->end; i++) {
-        baton->chars.emplace_back(i);
-    }
+        unsigned array_size = baton->end - baton->start;
+        baton->chars.reserve(array_size);
+        for (unsigned i=baton->start; i <= baton->end; i++) {
+            baton->chars.emplace_back(i);
+        }
 
-    FT_Library library = nullptr;
-    ft_library_guard library_guard(&library);
-    FT_Error error = FT_Init_FreeType(&library);
-    if (error) {
-        /* LCOV_EXCL_START */
-        baton->error_name = std::string("could not open FreeType library");
-        return;
-        /* LCOV_EXCL_END */
-    }
-
-    FT_Face ft_face = 0;
-
-    llmr::glyphs::glyphs glyphs;
-
-    int num_faces = 0;
-    for ( int i = 0; ft_face == 0 || i < num_faces; ++i )
-    {
-        FT_Error face_error = FT_New_Memory_Face(library, reinterpret_cast<FT_Byte const*>(baton->font_data), static_cast<FT_Long>(baton->font_size), i, &ft_face);
-        if (face_error) {
-            baton->error_name = std::string("could not open font");
+        FT_Library library = nullptr;
+        ft_library_guard library_guard(library);
+        FT_Error error = FT_Init_FreeType(&library);
+        if (error) {
+            /* LCOV_EXCL_START */
+            baton->error_name = std::string("could not open FreeType library");
             return;
+            /* LCOV_EXCL_END */
         }
 
-        llmr::glyphs::fontstack *mutable_fontstack = glyphs.add_stacks();
-
-        if (ft_face->style_name) {
-            mutable_fontstack->set_name(std::string(ft_face->family_name) + " " + std::string(ft_face->style_name));
-        } else {
-            mutable_fontstack->set_name(std::string(ft_face->family_name));
-        }
-
-        mutable_fontstack->set_range(std::to_string(baton->start) + "-" + std::to_string(baton->end));
-
-        const double scale_factor = 1.0;
-
-        // Set character sizes.
-        double size = 24 * scale_factor;
-        FT_Set_Char_Size(ft_face,0,(FT_F26Dot6)(size * (1<<6)),0,0);
-
-        for (std::vector<uint32_t>::size_type x = 0; x != baton->chars.size(); x++) {
-            FT_ULong char_code = baton->chars[x];
-            glyph_info glyph;
-
-            // Get FreeType face from face_ptr.
-            FT_UInt char_index = FT_Get_Char_Index(ft_face, char_code);
-
-            if (!char_index) continue;
-
-            glyph.glyph_index = char_index;
-            RenderSDF(glyph, 24, 3, 0.25, ft_face);
-
-            // Add glyph to fontstack.
-            llmr::glyphs::glyph *mutable_glyph = mutable_fontstack->add_glyphs();
-            mutable_glyph->set_id(char_code);
-            mutable_glyph->set_width(glyph.width);
-            mutable_glyph->set_height(glyph.height);
-            mutable_glyph->set_left(glyph.left);
-            mutable_glyph->set_top(glyph.top - glyph.ascender);
-            mutable_glyph->set_advance(glyph.advance);
-
-            if (glyph.width > 0) {
-                mutable_glyph->set_bitmap(glyph.bitmap);
+        llmr::glyphs::glyphs glyphs;
+        FT_Face ft_face = 0;
+        int num_faces = 0;
+        for ( int i = 0; ft_face == 0 || i < num_faces; ++i )
+        {
+            ft_face_guard face_guard(ft_face);
+            FT_Error face_error = FT_New_Memory_Face(library, reinterpret_cast<FT_Byte const*>(baton->font_data), static_cast<FT_Long>(baton->font_size), i, &ft_face);
+            if (face_error) {
+                baton->error_name = std::string("could not open font");
+                return;
             }
 
+            if (num_faces == 0) {
+                num_faces = ft_face->num_faces;
+            }
+
+            if (ft_face->family_name) {
+                llmr::glyphs::fontstack *mutable_fontstack = glyphs.add_stacks();
+                if (ft_face->style_name) {
+                    mutable_fontstack->set_name(std::string(ft_face->family_name) + " " + std::string(ft_face->style_name));
+                } else {
+                    mutable_fontstack->set_name(std::string(ft_face->family_name));
+                }
+
+                mutable_fontstack->set_range(std::to_string(baton->start) + "-" + std::to_string(baton->end));
+
+                const double scale_factor = 1.0;
+
+                // Set character sizes.
+                double size = 24 * scale_factor;
+                FT_Set_Char_Size(ft_face,0,(FT_F26Dot6)(size * (1<<6)),0,0);
+
+                for (std::vector<uint32_t>::size_type x = 0; x != baton->chars.size(); x++) {
+                    FT_ULong char_code = baton->chars[x];
+                    sdf_glyph_foundry::glyph_info glyph;
+
+                    // Get FreeType face from face_ptr.
+                    FT_UInt char_index = FT_Get_Char_Index(ft_face, char_code);
+
+                    if (!char_index) continue;
+
+                    glyph.glyph_index = char_index;
+                    sdf_glyph_foundry::RenderSDF(glyph, 24, 3, 0.25, ft_face);
+
+                    // Add glyph to fontstack.
+                    llmr::glyphs::glyph *mutable_glyph = mutable_fontstack->add_glyphs();
+                    mutable_glyph->set_id(char_code);
+                    mutable_glyph->set_width(glyph.width);
+                    mutable_glyph->set_height(glyph.height);
+                    mutable_glyph->set_left(glyph.left);
+                    mutable_glyph->set_top(glyph.top - glyph.ascender);
+                    mutable_glyph->set_advance(glyph.advance);
+
+                    if (glyph.width > 0) {
+                        mutable_glyph->set_bitmap(glyph.bitmap);
+                    }
+                }
+            } else {
+                baton->error_name = std::string("font does not have family_name");
+                return;
+            }
         }
-        if (ft_face) {
-            FT_Done_Face(ft_face);
-        }
+        baton->message = glyphs.SerializeAsString();
+    } catch (std::exception const& ex) {
+        baton->error_name = ex.what();
     }
 
-    baton->message = glyphs.SerializeAsString();
 }
 
 void AfterRange(uv_work_t* req) {
@@ -354,318 +358,5 @@ void AfterRange(uv_work_t* req) {
 
     delete baton;
 };
-
-struct User {
-    Rings rings;
-    Points ring;
-};
-
-void CloseRing(Points &ring)
-{
-    const Point &first = ring.front();
-    const Point &last = ring.back();
-
-    if (first.get<0>() != last.get<0>() ||
-        first.get<1>() != last.get<1>())
-    {
-        ring.push_back(first);
-    }
-}
-
-int MoveTo(const FT_Vector *to, void *ptr)
-{
-    User *user = (User*)ptr;
-    if (!user->ring.empty()) {
-        CloseRing(user->ring);
-        user->rings.push_back(user->ring);
-        user->ring.clear();
-    }
-    user->ring.emplace_back(float(to->x) / 64.0, float(to->y) / 64.0);
-    return 0;
-}
-
-int LineTo(const FT_Vector *to, void *ptr)
-{
-    User *user = (User*)ptr;
-    user->ring.emplace_back(float(to->x) / 64.0, float(to->y) / 64.0);
-    return 0;
-}
-
-int ConicTo(const FT_Vector *control,
-            const FT_Vector *to,
-            void *ptr)
-{
-    User *user = (User*)ptr;
-
-    Point const& prev = user->ring.back();
-
-    // pop off last point, duplicate of first point in bezier curve
-    user->ring.pop_back();
-
-    agg_fontnik::curve3_div curve(prev.get<0>(), prev.get<1>(),
-                          float(control->x) / 64, float(control->y) / 64,
-                          float(to->x) / 64, float(to->y) / 64);
-
-    curve.rewind(0);
-    double x, y;
-    unsigned cmd;
-
-    while (agg_fontnik::path_cmd_stop != (cmd = curve.vertex(&x, &y))) {
-        user->ring.emplace_back(x, y);
-    }
-
-    return 0;
-}
-
-int CubicTo(const FT_Vector *c1,
-            const FT_Vector *c2,
-            const FT_Vector *to,
-            void *ptr)
-{
-    User *user = (User*)ptr;
-
-    Point const& prev = user->ring.back();
-
-    // pop off last point, duplicate of first point in bezier curve
-    user->ring.pop_back();
-
-    agg_fontnik::curve4_div curve(prev.get<0>(), prev.get<1>(),
-                          float(c1->x) / 64, float(c1->y) / 64,
-                          float(c2->x) / 64, float(c2->y) / 64,
-                          float(to->x) / 64, float(to->y) / 64);
-
-    curve.rewind(0);
-    double x, y;
-    unsigned cmd;
-
-    while (agg_fontnik::path_cmd_stop != (cmd = curve.vertex(&x, &y))) {
-        user->ring.emplace_back(x, y);
-    }
-
-    return 0;
-}
-
-// point in polygon ray casting algorithm
-bool PolyContainsPoint(const Rings &rings, const Point &p)
-{
-    bool c = false;
-
-    for (const Points &ring : rings) {
-        auto p1 = ring.begin();
-        auto p2 = p1 + 1;
-
-        for (; p2 != ring.end(); p1++, p2++) {
-            if (((p1->get<1>() > p.get<1>()) != (p2->get<1>() > p.get<1>())) && (p.get<0>() < (p2->get<0>() - p1->get<0>()) * (p.get<1>() - p1->get<1>()) / (p2->get<1>() - p1->get<1>()) + p1->get<0>())) {
-                c = !c;
-            }
-        }
-    }
-
-    return c;
-}
-
-double SquaredDistance(const Point &v, const Point &w)
-{
-    const double a = v.get<0>() - w.get<0>();
-    const double b = v.get<1>() - w.get<1>();
-    return a * a + b * b;
-}
-
-Point ProjectPointOnLineSegment(const Point &p,
-                                const Point &v,
-                                const Point &w)
-{
-  const double l2 = SquaredDistance(v, w);
-  if (l2 == 0) return v;
-
-  const double t = ((p.get<0>() - v.get<0>()) * (w.get<0>() - v.get<0>()) + (p.get<1>() - v.get<1>()) * (w.get<1>() - v.get<1>())) / l2;
-  if (t < 0) return v;
-  if (t > 1) return w;
-
-  return Point {
-      v.get<0>() + t * (w.get<0>() - v.get<0>()),
-      v.get<1>() + t * (w.get<1>() - v.get<1>())
-  };
-}
-
-double SquaredDistanceToLineSegment(const Point &p,
-                                    const Point &v,
-                                    const Point &w)
-{
-    const Point s = ProjectPointOnLineSegment(p, v, w);
-    return SquaredDistance(p, s);
-}
-
-double MinDistanceToLineSegment(const Tree &tree,
-                                const Point &p,
-                                int radius)
-{
-    const int squared_radius = radius * radius;
-
-    std::vector<SegmentValue> results;
-    tree.query(bgi::intersects(
-        Box{
-            Point{p.get<0>() - radius, p.get<1>() - radius},
-            Point{p.get<0>() + radius, p.get<1>() + radius}
-        }),
-        std::back_inserter(results));
-
-    double sqaured_distance = std::numeric_limits<double>::infinity();
-
-    for (const auto &value : results) {
-        const SegmentPair &segment = value.second;
-        const double dist = SquaredDistanceToLineSegment(p,
-                                                         segment.first,
-                                                         segment.second);
-        if (dist < sqaured_distance && dist < squared_radius) {
-            sqaured_distance = dist;
-        }
-    }
-
-    return std::sqrt(sqaured_distance);
-}
-
-void RenderSDF(glyph_info &glyph,
-                     int size,
-                     int buffer,
-                     float cutoff,
-                     FT_Face ft_face)
-{
-
-    if (FT_Load_Glyph (ft_face, glyph.glyph_index, FT_LOAD_NO_HINTING)) {
-        return;
-    }
-
-    int advance = ft_face->glyph->metrics.horiAdvance / 64;
-    int ascender = ft_face->size->metrics.ascender / 64;
-    int descender = ft_face->size->metrics.descender / 64;
-
-    glyph.line_height = ft_face->size->metrics.height;
-    glyph.advance = advance;
-    glyph.ascender = ascender;
-    glyph.descender = descender;
-
-    FT_Outline_Funcs func_interface = {
-        .move_to = &MoveTo,
-        .line_to = &LineTo,
-        .conic_to = &ConicTo,
-        .cubic_to = &CubicTo,
-        .shift = 0,
-        .delta = 0
-    };
-
-    User user;
-
-    if (ft_face->glyph->format == FT_GLYPH_FORMAT_OUTLINE) {
-        // Decompose outline into bezier curves and line segments
-        FT_Outline outline = ft_face->glyph->outline;
-        if (FT_Outline_Decompose(&outline, &func_interface, &user)) return;
-
-        if (!user.ring.empty()) {
-            CloseRing(user.ring);
-            user.rings.push_back(user.ring);
-        }
-
-        if (user.rings.empty()) {
-            return;
-        }
-    } else {
-        return;
-    }
-
-    // Calculate the real glyph bbox.
-    double bbox_xmin = std::numeric_limits<double>::infinity(),
-           bbox_ymin = std::numeric_limits<double>::infinity();
-
-    double bbox_xmax = -std::numeric_limits<double>::infinity(),
-           bbox_ymax = -std::numeric_limits<double>::infinity();
-
-    for (const Points &ring : user.rings) {
-        for (const Point &point : ring) {
-            if (point.get<0>() > bbox_xmax) bbox_xmax = point.get<0>();
-            if (point.get<0>() < bbox_xmin) bbox_xmin = point.get<0>();
-            if (point.get<1>() > bbox_ymax) bbox_ymax = point.get<1>();
-            if (point.get<1>() < bbox_ymin) bbox_ymin = point.get<1>();
-        }
-    }
-
-    bbox_xmin = std::round(bbox_xmin);
-    bbox_ymin = std::round(bbox_ymin);
-    bbox_xmax = std::round(bbox_xmax);
-    bbox_ymax = std::round(bbox_ymax);
-
-    // Offset so that glyph outlines are in the bounding box.
-    for (Points &ring : user.rings) {
-        for (Point &point : ring) {
-            point.set<0>(point.get<0>() + -bbox_xmin + buffer);
-            point.set<1>(point.get<1>() + -bbox_ymin + buffer);
-        }
-    }
-
-    if (bbox_xmax - bbox_xmin == 0 || bbox_ymax - bbox_ymin == 0) return;
-
-    glyph.left = bbox_xmin;
-    glyph.top = bbox_ymax;
-    glyph.width = bbox_xmax - bbox_xmin;
-    glyph.height = bbox_ymax - bbox_ymin;
-
-    Tree tree;
-    float offset = 0.5;
-    int radius = 8;
-
-    for (const Points &ring : user.rings) {
-        auto p1 = ring.begin();
-        auto p2 = p1 + 1;
-
-        for (; p2 != ring.end(); p1++, p2++) {
-            const int segment_x1 = std::min(p1->get<0>(), p2->get<0>());
-            const int segment_x2 = std::max(p1->get<0>(), p2->get<0>());
-            const int segment_y1 = std::min(p1->get<1>(), p2->get<1>());
-            const int segment_y2 = std::max(p1->get<1>(), p2->get<1>());
-
-            tree.insert(SegmentValue {
-                Box {
-                    Point {segment_x1, segment_y1},
-                    Point {segment_x2, segment_y2}
-                },
-                SegmentPair {
-                    Point {p1->get<0>(), p1->get<1>()},
-                    Point {p2->get<0>(), p2->get<1>()}
-                }
-            });
-        }
-    }
-
-    // Loop over every pixel and determine the positive/negative distance to the outline.
-    unsigned int buffered_width = glyph.width + 2 * buffer;
-    unsigned int buffered_height = glyph.height + 2 * buffer;
-    unsigned int bitmap_size = buffered_width * buffered_height;
-    glyph.bitmap.resize(bitmap_size);
-
-    for (unsigned int y = 0; y < buffered_height; y++) {
-        for (unsigned int x = 0; x < buffered_width; x++) {
-            unsigned int ypos = buffered_height - y - 1;
-            unsigned int i = ypos * buffered_width + x;
-
-            double d = MinDistanceToLineSegment(tree, Point {x + offset, y + offset}, radius) * (256 / radius);
-
-            // Invert if point is inside.
-            const bool inside = PolyContainsPoint(user.rings, Point { x + offset, y + offset });
-            if (inside) {
-                d = -d;
-            }
-
-            // Shift the 0 so that we can fit a few negative values
-            // into our 8 bits.
-            d += cutoff * 256;
-
-            // Clamp to 0-255 to prevent overflows or underflows.
-            int n = d > 255 ? 255 : d;
-            n = n < 0 ? 0 : n;
-
-            glyph.bitmap[i] = static_cast<char>(255 - n);
-        }
-    }
-}
 
 } // ns node_fontnik

@@ -1,8 +1,36 @@
 {
+  "includes": [ "common.gypi" ],
+  "variables": {
+    # includes we don't want warnings for.
+    # As a variable to make easy to pass to
+    # cflags (linux) and xcode (mac)
+    "system_includes": [
+      "-isystem <(module_root_dir)/<!(node -e \"require('nan')\")",
+      "-isystem <(module_root_dir)/mason_packages/.link/include",
+      "-isystem <(module_root_dir)/mason_packages/.link/include/freetype2",
+      '-isystem <(SHARED_INTERMEDIATE_DIR)'
+    ]
+  },
   'targets': [
     {
-      'target_name': 'action_before_build',
+      'target_name': 'action_before_build1',
       'type': 'none',
+      'hard_dependency': 1,
+      'actions': [
+        {
+          'action_name': 'install_mason',
+          'inputs': ['./install_mason.sh'],
+          'outputs': ['./mason_packages'],
+          'action': ['./install_mason.sh']
+        }
+      ]
+    },
+    {
+      'target_name': 'action_before_build2',
+      'type': 'none',
+      'dependencies': [
+        'action_before_build1'
+      ],
       'hard_dependency': 1,
       'actions': [
         {
@@ -13,78 +41,53 @@
           'outputs': [
             "<(SHARED_INTERMEDIATE_DIR)/glyphs.pb.cc"
           ],
-          'action': ['protoc','-Iproto/','--cpp_out=<(SHARED_INTERMEDIATE_DIR)/','./proto/glyphs.proto']
+          'action': ['./mason_packages/.link/bin/protoc','-Iproto/','--cpp_out=<(SHARED_INTERMEDIATE_DIR)/','./proto/glyphs.proto']
         }
       ]
     },
     {
       'target_name': '<(module_name)',
-      'dependencies': [ 'action_before_build' ],
+      'product_dir': '<(module_path)',
+      'dependencies': [
+        'action_before_build2'
+      ],
       'sources': [
         'src/node_fontnik.cpp',
         'src/glyphs.cpp',
-        'vendor/agg/src/agg_curves.cpp',
         '<(SHARED_INTERMEDIATE_DIR)/glyphs.pb.cc'
       ],
+      "link_settings": {
+          "libraries": [
+           "-lfreetype",
+           "-lprotobuf-lite"
+           ],
+          "library_dirs": [
+            "<(module_root_dir)/mason_packages/.link/lib"
+          ]
+      },
+      'ldflags': [
+          '-Wl,-z,now'
+      ],
+      'cflags_cc': [
+          "<@(system_includes)"
+      ],
       'include_dirs': [
-        './include',
         './vendor/agg/include',
-        '<(SHARED_INTERMEDIATE_DIR)/',
-        '<!@(mason cflags boost ${BOOST_VERSION} | sed s/-I//g)',
-        '<!@(mason cflags freetype ${FREETYPE_VERSION} | sed s/-I//g)',
-        '<!@(mason cflags protobuf ${PROTOBUF_VERSION} | sed s/-I//g)',
-        "<!(node -e \"require('nan')\")"
       ],
-      'libraries': [
-        '<!@(mason static_libs freetype ${FREETYPE_VERSION})',
-        '<!@(mason static_libs protobuf ${PROTOBUF_VERSION})'
-      ],
-      'conditions': [
-        ['OS=="mac"', {
-          'xcode_settings': {
-            'CLANG_CXX_LIBRARY': 'libc++',
-            'CLANG_CXX_LANGUAGE_STANDARD': 'c++1y',
-            'GCC_VERSION': 'com.apple.compilers.llvm.clang.1_0',
-            'GCC_ENABLE_CPP_EXCEPTIONS': 'YES',
-            'GCC_ENABLE_CPP_RTTI': 'YES',
-            'OTHER_CPLUSPLUSFLAGS': [
-              '-Wall',
-              '-Wextra',
-              '-Wshadow',
-              '-Wno-variadic-macros',
-              '-Wno-unused-parameter',
-              '-Wno-unused-variable',
-              '-Wno-sign-compare',
-            ],
-            'GCC_WARN_PEDANTIC': 'YES',
-            'GCC_WARN_UNINITIALIZED_AUTOS': 'YES_AGGRESSIVE',
-            'MACOSX_DEPLOYMENT_TARGET': '10.9',
-          },
-        }, {
-          'cflags_cc': [
-            '-std=c++14',
-            '-Wall',
-            '-Wextra',
-            '-Wno-variadic-macros',
-            '-Wno-unused-parameter',
-            '-Wno-unused-variable',
-            '-Wno-sign-compare',
-            '-frtti',
-            '-fexceptions',
-          ],
-        }],
-      ],
-    },
-    {
-      'target_name': 'action_after_build',
-      'type': 'none',
-      'dependencies': [ '<(module_name)' ],
-      'copies': [
-          {
-            'files': [ '<(PRODUCT_DIR)/<(module_name).node' ],
-            'destination': '<(module_path)'
-          }
-      ]
+      'xcode_settings': {
+        'OTHER_LDFLAGS':[
+          '-Wl,-bind_at_load'
+        ],
+        'OTHER_CPLUSPLUSFLAGS': [
+            "<@(system_includes)",
+        ],
+        'GCC_ENABLE_CPP_RTTI': 'YES',
+        'GCC_ENABLE_CPP_EXCEPTIONS': 'YES',
+        'MACOSX_DEPLOYMENT_TARGET':'10.8',
+        'CLANG_CXX_LIBRARY': 'libc++',
+        'CLANG_CXX_LANGUAGE_STANDARD':'c++11',
+        'GCC_VERSION': 'com.apple.compilers.llvm.clang.1_0'
+      }
     }
   ]
 }

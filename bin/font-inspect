@@ -3,6 +3,7 @@
 var path = require('path');
 var fs = require('fs');
 var queue = require('queue-async');
+var glob = require('glob');
 var argv = require('minimist')(process.argv.slice(2), {
     boolean: ['verbose', 'help']
 });
@@ -26,8 +27,13 @@ if (argv.face) {
     faces = [argv.face];
 } else {
     var register = path.resolve(argv.register);
-    faces = fs.readdirSync(register).map(function(f) { return path.join(register, f); });
+    var pattern = '+(*ttf|*otf)';
+    faces = glob.sync(pattern,{nodir:true, cwd:register, matchBase:true});
+    faces = faces.map(function(f) {
+        return path.join(register,f);
+    })
 }
+
 
 if (argv.verbose) {
     console.error('resolved', faces);
@@ -51,6 +57,6 @@ function getCoverage(face, cb) {
 faces.forEach(function(f) { q.defer(getCoverage, f) });
 
 q.awaitAll(function(err, res) {
-    if (err) console.error(err);
+    if (err) throw err;
     process.stdout.write(JSON.stringify(res, null, 2));
 });

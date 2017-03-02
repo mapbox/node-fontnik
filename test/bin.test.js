@@ -14,29 +14,42 @@ test('setup', function(t) {
     });
 });
 
+var registry_invalid = path.normalize(__dirname + '/fixtures/fonts-invalid');
+var registry = path.normalize(__dirname + '/fixtures/fonts');
+
+
 test('bin/build-glyphs', function(t) {
     var script = path.normalize(__dirname + '/../bin/build-glyphs'),
         font = path.normalize(__dirname + '/../fonts/open-sans/OpenSans-Regular.ttf'),
         dir = path.resolve(__dirname + '/bin_output');
-    exec([script, font, dir].join(' '), function(err, stdout, stderr) {
-        t.error(err);
-        t.error(stderr);
-        fs.readdir(bin_output, function(err, files) {
-            t.equal(files.length, 256, 'outputs 256 files');
-            t.equal(files.indexOf('0-255.pbf'), 0, 'expected .pbf');
-            t.equal(files.filter(function(f) {
-                return f.indexOf('.pbf') > -1;
-            }).length, files.length, 'all .pbfs');
-            t.end();
-        })
+    t.test('outputs expected', function(q) {
+        exec([script, font, dir].join(' '), function(err, stdout, stderr) {
+            q.error(err);
+            q.error(stderr);
+            fs.readdir(bin_output, function(err, files) {
+                q.equal(files.length, 256, 'outputs 256 files');
+                q.equal(files.indexOf('0-255.pbf'), 0, 'expected .pbf');
+                q.equal(files.filter(function(f) {
+                    return f.indexOf('.pbf') > -1;
+                }).length, files.length, 'all .pbfs');
+                q.end();
+            })
+        });
     });
+    t.test('errors on invalid font', function(q) {
+        exec([script, path.join(registry_invalid,'1c2c3fc37b2d4c3cb2ef726c6cdaaabd4b7f3eb9.ttf'), dir].join(' '), function(err, stdout, stderr) {
+            q.ok(err);
+            q.ok(err.message.indexOf('font does not have family_name') > -1);
+            q.end();
+        });
+    });
+    t.end();
 });
 
 test('bin/font-inspect', function(t) {
     var script = path.normalize(__dirname + '/../bin/font-inspect'),
         opensans = path.normalize(__dirname + '/fixtures/fonts/OpenSans-Regular.ttf'),
-        firasans = path.normalize(__dirname + '/fixtures/fonts/FiraSans-Medium.ttf'),
-        registry = path.normalize(__dirname + '/fixtures/fonts');
+        firasans = path.normalize(__dirname + '/fixtures/fonts/FiraSans-Medium.ttf');
 
     t.test(' --face', function(q) {
         exec([script, '--face=' + opensans].join(' '), function(err, stdout, stderr) {
@@ -77,6 +90,14 @@ test('bin/font-inspect', function(t) {
             t.equal(verboseOutput.filter(function(f) { return f.indexOf('.ttf') > -1; }).length, 2);
             q.ok(stdout.length, 'writes codepoints output to stdout');
             q.ok(JSON.parse(stdout));
+            q.end();
+        });
+    });
+
+    t.test(' --register --verbose', function(q) {
+        exec([script, '--verbose', '--register=' + registry_invalid].join(' '), function(err, stdout, stderr) {
+            q.ok(err);
+            q.ok(stderr.indexOf('font does not have family_name or style_name') > -1);
             q.end();
         });
     });
