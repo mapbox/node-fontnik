@@ -44,7 +44,7 @@
     "font-inspect": "./bin/font-inspect"
   },
   "scripts": {
-    "install": "node-pre-gyp install --fallback-to-build=false || (source ./scripts/install_mason.sh && node-pre-gyp install --build-from-source)",
+    "install": "node-pre-gyp install --fallback-to-build=false",
     "test": "./node_modules/.bin/tape test/**/*.test.js",
     "prepublish": "npm ls"
   },
