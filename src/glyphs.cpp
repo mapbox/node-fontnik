@@ -350,8 +350,6 @@ void AfterRange(uv_work_t* req) {
         v8::Local<v8::Value> argv[1] = { Nan::Error(baton->error_name.c_str()) };
         Nan::MakeCallback(Nan::GetCurrentContext()->Global(), Nan::New(baton->callback), 1, argv);
     } else {
-        v8::Local<v8::Array> js_faces = Nan::New<v8::Array>();
-        unsigned idx = 0;
         v8::Local<v8::Value> argv[2] = { Nan::Null(), Nan::CopyBuffer(baton->message.data(), baton->message.size()).ToLocalChecked() };
         Nan::MakeCallback(Nan::GetCurrentContext()->Global(), Nan::New(baton->callback), 2, argv);
     }
