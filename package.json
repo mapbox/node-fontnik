@@ -44,7 +44,7 @@
     "font-inspect": "./bin/font-inspect"
   },
   "scripts": {
-    "install": "node-pre-gyp install --fallback-to-build=false",
+    "install": "node-pre-gyp install --fallback-to-build=true",
     "test": "./node_modules/.bin/tape test/**/*.test.js",
     "prepublish": "npm ls"
   },
