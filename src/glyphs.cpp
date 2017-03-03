@@ -147,34 +147,36 @@ NAN_METHOD(Range) {
 }
 
 struct ft_library_guard {
-    ft_library_guard(FT_Library lib) :
+    ft_library_guard(FT_Library * lib) :
         library_(lib) {}
 
     ~ft_library_guard()
     {
-        if (library_) FT_Done_FreeType(library_);
+        if (library_) FT_Done_FreeType(*library_);
     }
 
-    FT_Library library_;
+    FT_Library * library_;
 };
 
 struct ft_face_guard {
-    ft_face_guard(FT_Face f) :
+    ft_face_guard(FT_Face * f) :
         face_(f) {}
 
     ~ft_face_guard()
     {
-        if (face_) FT_Done_Face(face_);
+        if (face_) {
+            FT_Done_Face(*face_);
+        }
     }
 
-    FT_Face face_;
+    FT_Face * face_;
 };
 
 void LoadAsync(uv_work_t* req) {
     LoadBaton* baton = static_cast<LoadBaton*>(req->data);
     try {
         FT_Library library = nullptr;
-        ft_library_guard library_guard(library);
+        ft_library_guard library_guard(&library);
         FT_Error error = FT_Init_FreeType(&library);
         if (error) {
             /* LCOV_EXCL_START */
@@ -186,7 +188,7 @@ void LoadAsync(uv_work_t* req) {
         int num_faces = 0;
         for ( int i = 0; ft_face == 0 || i < num_faces; ++i )
         {
-            ft_face_guard face_guard(ft_face);
+            ft_face_guard face_guard(&ft_face);
             FT_Error face_error = FT_New_Memory_Face(library, reinterpret_cast<FT_Byte const*>(baton->font_data), static_cast<FT_Long>(baton->font_size), i, &ft_face);
             if (face_error) {
                 baton->error_name = std::string("could not open font file");
@@ -263,7 +265,7 @@ void RangeAsync(uv_work_t* req) {
         }
 
         FT_Library library = nullptr;
-        ft_library_guard library_guard(library);
+        ft_library_guard library_guard(&library);
         FT_Error error = FT_Init_FreeType(&library);
         if (error) {
             /* LCOV_EXCL_START */
@@ -277,7 +279,7 @@ void RangeAsync(uv_work_t* req) {
         int num_faces = 0;
         for ( int i = 0; ft_face == 0 || i < num_faces; ++i )
         {
-            ft_face_guard face_guard(ft_face);
+            ft_face_guard face_guard(&ft_face);
             FT_Error face_error = FT_New_Memory_Face(library, reinterpret_cast<FT_Byte const*>(baton->font_data), static_cast<FT_Long>(baton->font_size), i, &ft_face);
             if (face_error) {
                 baton->error_name = std::string("could not open font");
