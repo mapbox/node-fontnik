@@ -1,3 +1,11 @@
+# 0.5.0
+
+- Now using external https://github.com/mapbox/sdf-glyph-foundry
+- Now only building binaries for node v4/v6
+- Now publishing debug builds for linux
+- Now publishing asan builds for linux
+- Moved coverage reporting to codecov.io
+
 # 0.4.8
 
 - Bundles `mkdirp` to avoid an npm@2 bug when using `bundledDependencies` with `devDependencies`.

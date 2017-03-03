@@ -2,7 +2,7 @@
 
 [![NPM](https://nodei.co/npm/fontnik.png?compact=true)](https://nodei.co/npm/fontnik/)
 [![Build Status](https://travis-ci.org/mapbox/node-fontnik.svg?branch=master)](https://travis-ci.org/mapbox/node-fontnik)
-[![Coverage Status](https://coveralls.io/repos/mapbox/node-fontnik/badge.svg?branch=master)](https://coveralls.io/r/mapbox/node-fontnik?branch=master)
+[![codecov](https://codecov.io/gh/mapbox/node-fontnik/branch/master/graph/badge.svg)](https://codecov.io/gh/mapbox/node-fontnik)
 
 A library that delivers a range of glyphs rendered as SDFs (signed distance fields) in a protocol buffer. We use these encoded glyphs as the basic blocks of font rendering in [Mapbox GL](https://github.com/mapbox/mapbox-gl-js). SDF encoding is superior to traditional fonts for our usecase terms of scaling, rotation, and quickly deriving halos - WebGL doesn't have built-in font rendering, so the decision is between vectorization, which tends to be slow, and SDF generation.
 
