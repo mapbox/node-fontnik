@@ -5,6 +5,7 @@
 - Now publishing debug builds for linux
 - Now publishing asan builds for linux
 - Moved coverage reporting to codecov.io
+- Fixed crash on font with null family name
 
 # 0.4.8
 
