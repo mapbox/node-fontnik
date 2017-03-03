@@ -1,1 +1,1 @@
-module.exports = require('./lib/fontnik.node');
+module.exports = require('./lib/binding/fontnik.node');

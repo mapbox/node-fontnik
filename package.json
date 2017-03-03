@@ -51,9 +51,9 @@
   },
   "binary": {
     "module_name": "fontnik",
-    "module_path": "./lib/",
+    "module_path": "./lib/binding/",
     "host": "https://mapbox-node-binary.s3.amazonaws.com",
-    "remote_path": "./{name}/v{version}",
+    "remote_path": "./{name}/v{version}/{configuration}/{toolset}/",
     "package_name": "{node_abi}-{platform}-{arch}.tar.gz"
   }
 }
