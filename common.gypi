@@ -2,7 +2,7 @@
   'target_defaults': {
     'default_configuration': 'Release',
     'cflags_cc' : [
-      '-std=c++14',
+      '-std=c++11',
       # mason packages are built/linked with the CXX11_ABI=0 (currently)
       # so we need to link this way too. This allows source
       # compiling carmen-cache on any ubuntu version, even latest
