@@ -1,11 +1,14 @@
 # 0.5.0
 
+- Fixed crash on font with null family name
 - Now using external https://github.com/mapbox/sdf-glyph-foundry
 - Now only building binaries for node v4/v6
 - Now publishing debug builds for linux
 - Now publishing asan builds for linux
+- Upgraded from boost 1.62.0 -> 1.63.0
+- Upgraded from freetype 2.6 -> 2.7.1
+- Upgraded from protobuf 2.6.1 -> 3.2.0
 - Moved coverage reporting to codecov.io
-- Fixed crash on font with null family name
 
 # 0.4.8
 
