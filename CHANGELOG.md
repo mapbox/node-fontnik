@@ -1,6 +1,7 @@
 # 0.5.0
 
 - Fixed crash on font with null family name
+- Optimized the code to reduce memory allocations
 - Now using external https://github.com/mapbox/sdf-glyph-foundry
 - Now only building binaries for node v4/v6
 - Now publishing debug builds for linux
