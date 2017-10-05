@@ -30,8 +30,7 @@
     "queue-async": "^1.0.7"
   },
   "bundledDependencies": [
-    "node-pre-gyp",
-    "mkdirp"
+    "node-pre-gyp"
   ],
   "devDependencies": {
     "aws-sdk": "^2.22.0",
@@ -47,7 +46,7 @@
   "scripts": {
     "install": "node-pre-gyp install --fallback-to-build=true",
     "test": "./node_modules/.bin/tape test/**/*.test.js",
-    "prepublish": "npm ls"
+    "prepublishOnly": "npm ls"
   },
   "binary": {
     "module_name": "fontnik",
