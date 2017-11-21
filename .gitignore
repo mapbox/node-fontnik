@@ -5,3 +5,7 @@ spec
 node_modules
 mason_packages
 .DS_Store
+lib/binding
+.toolchain
+.mason
+local.env
