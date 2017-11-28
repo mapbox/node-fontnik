@@ -101,7 +101,7 @@ NAN_METHOD(Load) {
     }
 
     LoadBaton* baton = new LoadBaton(obj,info[1]);
-    uv_queue_work(uv_default_loop(), &baton->request, LoadAsync, (uv_after_work_cb)AfterLoad);
+    uv_queue_work(uv_default_loop(), &baton->request, LoadAsync, reinterpret_cast<uv_after_work_cb>(AfterLoad));
 }
 
 NAN_METHOD(Range) {
@@ -141,9 +141,9 @@ NAN_METHOD(Range) {
 
     RangeBaton* baton = new RangeBaton(obj,
                                        info[1],
-                                       start->IntegerValue(),
-                                       end->IntegerValue());
-    uv_queue_work(uv_default_loop(), &baton->request, RangeAsync, (uv_after_work_cb)AfterRange);
+                                       start->Uint32Value(),
+                                       end->Uint32Value());
+    uv_queue_work(uv_default_loop(), &baton->request, RangeAsync, reinterpret_cast<uv_after_work_cb>(AfterLoad));
 }
 
 struct ft_library_guard {
@@ -185,7 +185,7 @@ void LoadAsync(uv_work_t* req) {
             /* LCOV_EXCL_END */
         }
         FT_Face ft_face = 0;
-        int num_faces = 0;
+        FT_Long num_faces = 0;
         for ( int i = 0; ft_face == 0 || i < num_faces; ++i )
         {
             ft_face_guard face_guard(&ft_face);
@@ -276,7 +276,7 @@ void RangeAsync(uv_work_t* req) {
 
         llmr::glyphs::glyphs glyphs;
         FT_Face ft_face = 0;
-        int num_faces = 0;
+        FT_Long num_faces = 0;
         for ( int i = 0; ft_face == 0 || i < num_faces; ++i )
         {
             ft_face_guard face_guard(&ft_face);
@@ -304,7 +304,7 @@ void RangeAsync(uv_work_t* req) {
 
                 // Set character sizes.
                 double size = 24 * scale_factor;
-                FT_Set_Char_Size(ft_face,0,(FT_F26Dot6)(size * (1<<6)),0,0);
+                FT_Set_Char_Size(ft_face,0,static_cast<FT_F26Dot6>(size * (1<<6)),0,0);
 
                 for (std::vector<uint32_t>::size_type x = 0; x != baton->chars.size(); x++) {
                     FT_ULong char_code = baton->chars[x];
@@ -320,7 +320,7 @@ void RangeAsync(uv_work_t* req) {
 
                     // Add glyph to fontstack.
                     llmr::glyphs::glyph *mutable_glyph = mutable_fontstack->add_glyphs();
-                    mutable_glyph->set_id(char_code);
+                    mutable_glyph->set_id(static_cast<unsigned int>(char_code)); // static cast since set_id() takes uint32
                     mutable_glyph->set_width(glyph.width);
                     mutable_glyph->set_height(glyph.height);
                     mutable_glyph->set_left(glyph.left);
