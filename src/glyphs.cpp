@@ -143,7 +143,7 @@ NAN_METHOD(Range) {
                                        info[1],
                                        start->Uint32Value(),
                                        end->Uint32Value());
-    uv_queue_work(uv_default_loop(), &baton->request, RangeAsync, reinterpret_cast<uv_after_work_cb>(AfterLoad));
+    uv_queue_work(uv_default_loop(), &baton->request, RangeAsync, reinterpret_cast<uv_after_work_cb>(AfterRange));
 }
 
 struct ft_library_guard {
@@ -320,7 +320,7 @@ void RangeAsync(uv_work_t* req) {
 
                     // Add glyph to fontstack.
                     llmr::glyphs::glyph *mutable_glyph = mutable_fontstack->add_glyphs();
-                    mutable_glyph->set_id(static_cast<unsigned int>(char_code)); // static cast since set_id() takes uint32
+                    mutable_glyph->set_id(char_code); // static cast since set_id() takes uint32
                     mutable_glyph->set_width(glyph.width);
                     mutable_glyph->set_height(glyph.height);
                     mutable_glyph->set_left(glyph.left);
