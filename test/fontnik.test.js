@@ -83,7 +83,7 @@ test('load', function(t) {
     });
 
     t.test('non existent font loading', function(t) {
-        var doesnotexistsans = new Buffer('baloney');
+        var doesnotexistsans = Buffer.from('baloney');
         fontnik.load(doesnotexistsans, function(err, faces) {
             t.ok(err.message.indexOf('Font buffer is not an object'));
             t.end();
@@ -182,7 +182,7 @@ test('range', function(t) {
     });
 
     t.test('range filepath does not exist', function(t) {
-        var doesnotexistsans = new Buffer('baloney');
+        var doesnotexistsans = Buffer.from('baloney');
         fontnik.range({font: doesnotexistsans, start: 0, end: 256}, function(err, faces) {
             t.ok(err);
             t.equal(err.message, 'could not open font');

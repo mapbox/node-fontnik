@@ -3,10 +3,13 @@
     'default_configuration': 'Release',
     'cflags_cc' : [
       '-std=c++11',
-      # mason packages are built/linked with the CXX11_ABI=0 (currently)
-      # so we need to link this way too. This allows source
-      # compiling carmen-cache on any ubuntu version, even latest
+      # The assumption is that projects based on node-cpp-skel will also
+      # depend on mason packages. Currently (this will change in future mason versions)
+      # mason packages default to being built/linked with the CXX11_ABI=0.
+      # So we need to link this way too. This allows source
+      # compiling your module on any ubuntu version, even the latest
       # where the CXX11_ABI default has flipped to 1
+      # More details at https://github.com/mapbox/mason/issues/319
       '-D_GLIBCXX_USE_CXX11_ABI=0'
     ],
     'cflags_cc!': ['-std=gnu++0x','-fno-rtti', '-fno-exceptions'],

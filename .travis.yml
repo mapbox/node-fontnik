@@ -2,13 +2,6 @@ language: node_js
 
 sudo: false
 
-# build options and AWS keys for publishing binaries
-# note: you'll need to generate your own keys for publishing a separate project
-env:
-  global:
-    - secure: XV0lekmfgT+D9t0ZTIU+UJF6g+p3cBQMO6T6C9lkoKTC0YbtLtxSFtBahD/4PjL86DMJgTaf1nBmxqOxbrfkcpJUxnLe3r8u4Z2L/+7+QSACLNktlIfWNSO+33WxKNb4mVw6jMFZIo4ZurF016MXYzLzjpxRELW2oO2STUs2m44=
-    - secure: CQNHbxw8yHlAdUVbKokHzHmj7C+duXP3mifWOkZm9GKw4myWsRFhhoSYZmOSkgj9EWfYYkedrqEr9+GaMg9rkVJuO/7jzn6S+M7CFXKJju6MoZEDO6WcFva4M8pw6IFb9q22GcQ+OsE8/i0DwchTokyFkNb3fpwWuwROUPQ/nWg=
-
 # enable c++11/14 builds
 addons:
   apt:
@@ -26,13 +19,23 @@ install:
   - which clang++
   - make ${BUILDTYPE}
 
-# run tests
-script:
+# *Here we run tests*
+# We prefer running tests in the 'before_script' section rather than 'script' to ensure fast failure.
+# Be aware that if you use the 'script' section it will continue running all commands in the section even if one line fails.
+# This is documented at https://docs.travis-ci.com/user/customizing-the-build#Breaking-the-Build
+# We don't want this behavior because otherwise we might risk publishing builds when the tests did not pass.
+# For this reason, we disable the 'script' section below, since we prefer using 'before_script'.
+before_script:
   - npm test
   # after successful tests, publish binaries if specified in commit message
   - ./scripts/publish.sh --toolset=${TOOLSET:-} --debug=$([ "${BUILDTYPE}" == 'debug' ] && echo "true" || echo "false")
 
-# the matrix allows you to specify different operating systems and environments to 
+# We set 'script' here to an empty array to prevent this section from automatically running 'npm test'
+# The reason we do this is mentioned above in the comment about the 'before_script' stage.
+# For reference, the default travis behavior which we override comes from https://github.com/travis-ci/travis-build/blob/e5a45cbf49e0d9e27398e76e5f25dd7706feb6aa/lib/travis/build/script/node_js.rb#L62-L69.
+script: []
+
+# the matrix allows you to specify different operating systems and environments to
 # run your tests and build binaries
 matrix:
   include:
@@ -52,6 +55,22 @@ matrix:
     - os: linux
       env: BUILDTYPE=debug
       node_js: 6
+    # linux publishable node v8
+    - os: linux
+      env: BUILDTYPE=release
+      node_js: 8
+    # linux publishable node v8/debug
+    - os: linux
+      env: BUILDTYPE=debug
+      node_js: 8
+    # linux publishable node v8
+    - os: linux
+      env: BUILDTYPE=release
+      node_js: 10
+    # linux publishable node v8/debug
+    - os: linux
+      env: BUILDTYPE=debug
+      node_js: 10
     # osx publishable node v4
     - os: osx
       osx_image: xcode8.2
@@ -62,10 +81,21 @@ matrix:
       osx_image: xcode8.2
       env: BUILDTYPE=release
       node_js: 6
+    # osx publishable node v6
+    - os: osx
+      osx_image: xcode8.2
+      env: BUILDTYPE=release
+      node_js: 8
+    # osx publishable node v6
+    - os: osx
+      osx_image: xcode8.2
+      env: BUILDTYPE=release
+      node_js: 10
     # Sanitizer build node v4/Debug
     - os: linux
       env: BUILDTYPE=debug TOOLSET=asan
       node_js: 4
+      sudo: required
       # Overrides `install` to set up custom asan flags
       install:
         - ./scripts/setup.sh --config local.env
@@ -77,19 +107,36 @@ matrix:
         - export LDFLAGS="${MASON_SANITIZE_LDFLAGS}"
         - make ${BUILDTYPE}
       # Overrides `script` to disable asan LD_PRELOAD before publishing
-      script:
+      before_script:
         - export LD_PRELOAD=${MASON_LLVM_RT_PRELOAD}
         - export ASAN_OPTIONS=fast_unwind_on_malloc=0:${ASAN_OPTIONS}
         - npm test
         - unset LD_PRELOAD
         # after successful tests, publish binaries if specified in commit message
         - ./scripts/publish.sh --toolset=${TOOLSET:-} --debug=$([ "${BUILDTYPE}" == 'debug' ] && echo "true" || echo "false")
+    # g++ build (default builds all use clang++)
+    - os: linux
+      env: BUILDTYPE=debug CXX="g++-6" CC="gcc-6"
+      node_js: 4
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+          packages:
+            - libstdc++-6-dev
+            - g++-6
+      # Overrides `install` to avoid initializing clang toolchain
+      install:
+        - make ${BUILDTYPE}
+      # Overrides `script` to disable publishing
+      before_script:
+        - npm test
     # Coverage build
     - os: linux
       env: BUILDTYPE=debug CXXFLAGS="--coverage" LDFLAGS="--coverage"
       node_js: 4
       # Overrides `script` to publish coverage data to codecov
-      script:
+      before_script:
         - npm test
         - mason install llvm-cov ${MASON_LLVM_RELEASE}
         - mason link llvm-cov ${MASON_LLVM_RELEASE}
@@ -97,3 +144,29 @@ matrix:
         - curl -S -f https://codecov.io/bash -o codecov
         - chmod +x codecov
         - ./codecov -x "llvm-cov gcov" -Z
+    # Clang format build
+    - os: linux
+      # can be generic since we don't need nodejs to run formatting
+      language: generic
+      env: CLANG_FORMAT
+      # Overrides `install` to avoid initializing clang toolchain
+      install:
+        # Run the clang-format script. Any code formatting changes
+        # will trigger the build to fail (idea here is to get us to pay attention
+        # and get in the habit of running these locally before committing)
+        - make format
+      # Overrides `script`, no need to run tests
+      before_script:
+    # Clang tidy build
+    - os: linux
+      env: CLANG_TIDY
+      node_js: 4
+      # Overrides `install` to avoid initializing clang toolchain
+      install:
+        # First run the clang-tidy target
+        # Any code formatting fixes automatically applied by clang-tidy
+        # will trigger the build to fail (idea here is to get us to pay attention
+        # and get in the habit of running these locally before committing)
+        - make tidy
+      # Overrides `script`, no need to run tests
+      before_script:

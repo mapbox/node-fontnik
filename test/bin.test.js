@@ -25,7 +25,7 @@ test('bin/build-glyphs', function(t) {
     t.test('outputs expected', function(q) {
         exec([script, font, dir].join(' '), function(err, stdout, stderr) {
             q.error(err);
-            q.error(stderr);
+            if (!process.env.TOOLSET) q.error(stderr);
             fs.readdir(bin_output, function(err, files) {
                 q.equal(files.length, 256, 'outputs 256 files');
                 q.equal(files.indexOf('0-255.pbf'), 0, 'expected .pbf');
@@ -54,7 +54,7 @@ test('bin/font-inspect', function(t) {
     t.test(' --face', function(q) {
         exec([script, '--face=' + opensans].join(' '), function(err, stdout, stderr) {
             q.error(err);
-            q.error(stderr);
+            if (!process.env.TOOLSET) q.error(stderr);
             q.ok(stdout.length, 'outputs to console');
             var output = JSON.parse(stdout);
             q.equal(output.length, 1, 'single face');
@@ -68,7 +68,7 @@ test('bin/font-inspect', function(t) {
     t.test(' --register', function(q) {
         exec([script, '--register=' + registry].join(' '), function(err, stdout, stderr) {
             q.error(err);
-            q.error(stderr);
+            if (!process.env.TOOLSET) q.error(stderr);
             q.ok(stdout.length, 'outputs to console');
             var output = JSON.parse(stdout);
             q.equal(output.length, 2, 'both faces in register');
@@ -84,10 +84,12 @@ test('bin/font-inspect', function(t) {
         exec([script, '--verbose', '--register=' + registry].join(' '), function(err, stdout, stderr) {
             q.error(err);
             q.ok(stderr.length, 'writes verbose output to stderr');
-            q.equal(stderr.indexOf('resolved'), 0);
-            var verboseOutput = JSON.parse(stderr.slice(9).trim().replace(/'/g, '"'));
-            t.equal(verboseOutput.length, 2);
-            t.equal(verboseOutput.filter(function(f) { return f.indexOf('.ttf') > -1; }).length, 2);
+            if (!process.env.TOOLSET) {
+                q.equal(stderr.indexOf('resolved'), 0);
+                var verboseOutput = JSON.parse(stderr.slice(9).trim().replace(/'/g, '"'));
+                t.equal(verboseOutput.length, 2);
+                t.equal(verboseOutput.filter(function(f) { return f.indexOf('.ttf') > -1; }).length, 2);
+            }
             q.ok(stdout.length, 'writes codepoints output to stdout');
             q.ok(JSON.parse(stdout));
             q.end();
