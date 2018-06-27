@@ -4,6 +4,7 @@
 // node
 #include <node_buffer.h>
 #include <nan.h>
+#include <limits>
 
 // sdf-glyph-foundry
 #include <mapbox/glyph_foundry.hpp>
@@ -320,12 +321,36 @@ void RangeAsync(uv_work_t* req) {
 
                     // Add glyph to fontstack.
                     llmr::glyphs::glyph *mutable_glyph = mutable_fontstack->add_glyphs();
-                    mutable_glyph->set_id(char_code); // static cast since set_id() takes uint32
+
+                    // direct type conversions, no need for checking or casting
                     mutable_glyph->set_width(glyph.width);
                     mutable_glyph->set_height(glyph.height);
                     mutable_glyph->set_left(glyph.left);
-                    mutable_glyph->set_top(glyph.top - glyph.ascender);
-                    mutable_glyph->set_advance(glyph.advance);
+
+                    // conversions requiring checks, for safety and correctness
+
+                    // shortening conversion
+                    if (char_code > std::numeric_limits<FT_ULong>::max()) {
+                        throw std::runtime_error("Invalid value for char_code: too large");
+                    } else {
+                        mutable_glyph->set_id(static_cast<std::uint32_t>(char_code));
+                    }
+
+                    // double to int
+                    double top = static_cast<double>(glyph.top) - glyph.ascender;
+                    if (top < std::numeric_limits<std::int32_t>::min() || top > std::numeric_limits<std::int32_t>::max()) {
+                        throw std::runtime_error("Invalid value for glyph.top-glyph.ascender");
+                    } else {
+                        mutable_glyph->set_top(static_cast<std::int32_t>(top));
+                    }
+
+                    // double to uint
+                    if (glyph.advance < std::numeric_limits<std::uint32_t>::min() || glyph.advance > std::numeric_limits<std::uint32_t>::max()) {
+                        throw std::runtime_error("Invalid value for glyph.top-glyph.ascender");
+                    } else {
+                        mutable_glyph->set_advance(static_cast<std::uint32_t>(glyph.advance));
+                    }
+
 
                     if (glyph.width > 0) {
                         mutable_glyph->set_bitmap(glyph.bitmap);
@@ -352,7 +377,7 @@ void AfterRange(uv_work_t* req) {
         v8::Local<v8::Value> argv[1] = { Nan::Error(baton->error_name.c_str()) };
         Nan::MakeCallback(Nan::GetCurrentContext()->Global(), Nan::New(baton->callback), 1, argv);
     } else {
-        v8::Local<v8::Value> argv[2] = { Nan::Null(), Nan::CopyBuffer(baton->message.data(), baton->message.size()).ToLocalChecked() };
+        v8::Local<v8::Value> argv[2] = { Nan::Null(), Nan::CopyBuffer(baton->message.data(), static_cast<std::uint32_t>(baton->message.size())).ToLocalChecked() };
         Nan::MakeCallback(Nan::GetCurrentContext()->Global(), Nan::New(baton->callback), 2, argv);
     }
 
