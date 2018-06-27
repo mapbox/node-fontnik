@@ -25,7 +25,7 @@ test('bin/build-glyphs', function(t) {
     t.test('outputs expected', function(q) {
         exec([script, font, dir].join(' '), function(err, stdout, stderr) {
             q.error(err);
-            q.error(stderr);
+            if (process.env.TOOLSET) q.error(stderr);
             fs.readdir(bin_output, function(err, files) {
                 q.equal(files.length, 256, 'outputs 256 files');
                 q.equal(files.indexOf('0-255.pbf'), 0, 'expected .pbf');
@@ -54,7 +54,7 @@ test('bin/font-inspect', function(t) {
     t.test(' --face', function(q) {
         exec([script, '--face=' + opensans].join(' '), function(err, stdout, stderr) {
             q.error(err);
-            q.error(stderr);
+            if (!process.env.TOOLSET) q.error(stderr);
             q.ok(stdout.length, 'outputs to console');
             var output = JSON.parse(stdout);
             q.equal(output.length, 1, 'single face');
@@ -68,7 +68,7 @@ test('bin/font-inspect', function(t) {
     t.test(' --register', function(q) {
         exec([script, '--register=' + registry].join(' '), function(err, stdout, stderr) {
             q.error(err);
-            q.error(stderr);
+            if (!process.env.TOOLSET) q.error(stderr);
             q.ok(stdout.length, 'outputs to console');
             var output = JSON.parse(stdout);
             q.equal(output.length, 2, 'both faces in register');
