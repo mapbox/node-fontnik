@@ -6,7 +6,7 @@ import os
 import re
 
 # Script to generate compile_commands.json based on Makefile output
-# Works by accepting Makefile output from stdin, parsing it, and 
+# Works by accepting Makefile output from stdin, parsing it, and
 # turning into json records. These are then printed to stdout.
 # More details on the compile_commands format at:
 # https://clang.llvm.org/docs/JSONCompilationDatabase.html
@@ -28,11 +28,13 @@ def generate():
     for line in sys.stdin.readlines():
         if TOKEN_DENOTING_COMPILED_FILE in line:
             match = matcher.match(line)
-            compile_commands.append({
-                "directory": build_dir,
-                "command": line.strip(),
-                "file": os.path.normpath(os.path.join(build_dir,match.group(2)))
-            })
+            if match:
+                matched = match.group(2);
+                compile_commands.append({
+                    "directory": build_dir,
+                    "command": line.strip(),
+                    "file": os.path.normpath(os.path.join(build_dir,matched))
+                })
     print json.dumps(compile_commands,indent=4)
 
 if __name__ == '__main__':
