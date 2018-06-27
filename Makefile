@@ -1,7 +1,7 @@
 MODULE_NAME := $(shell node -e "console.log(require('./package.json').binary.module_name)")
 
 # Whether to turn compiler warnings into errors
-export WERROR ?= true
+export WERROR ?= false
 
 default: release
 
