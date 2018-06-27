@@ -25,13 +25,10 @@
   "dependencies": {
     "glob": "^7.1.1",
     "minimist": "^0.2.0",
-    "nan": "^2.1.0",
-    "node-pre-gyp": "^0.6.31",
+    "nan": "~2.10.0",
+    "node-pre-gyp": "~0.10.0",
     "queue-async": "^1.0.7"
   },
-  "bundledDependencies": [
-    "node-pre-gyp"
-  ],
   "devDependencies": {
     "aws-sdk": "^2.22.0",
     "benchmark": "^1.0.0",
