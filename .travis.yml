@@ -95,6 +95,7 @@ matrix:
     - os: linux
       env: BUILDTYPE=debug TOOLSET=asan
       node_js: 4
+      sudo: required
       # Overrides `install` to set up custom asan flags
       install:
         - ./scripts/setup.sh --config local.env
