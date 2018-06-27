@@ -13,9 +13,15 @@
 namespace node_fontnik {
 
 struct FaceMetadata {
-    std::string family_name;
-    std::string style_name;
-    std::vector<int> points;
+    // non copyable
+    FaceMetadata(FaceMetadata const&) = delete;
+    FaceMetadata& operator=(FaceMetadata const&) = delete;
+    // movaable only for highest efficiency
+    FaceMetadata& operator=(FaceMetadata&& c) = default;
+    FaceMetadata(FaceMetadata&& c) = default;
+    std::string family_name{};
+    std::string style_name{};
+    std::vector<int> points{};
     FaceMetadata(std::string const& _family_name,
                  std::string const& _style_name,
                  std::vector<int>&& _points) : family_name(_family_name),
@@ -27,6 +33,13 @@ struct FaceMetadata {
 };
 
 struct LoadBaton {
+    // We explicitly delete the copy constructor and assignment operator below
+    // This allows us to have the `const char* font_data` without needing to define copy semantics
+    // and avoids a g++ warning of ‘struct node_fontnik::LoadBaton’ has pointer data members [-Weffc++]
+    // but does not override ‘node_fontnik::LoadBaton(const node_fontnik::LoadBaton&)’'
+    LoadBaton(LoadBaton const&) = delete;
+    LoadBaton& operator=(LoadBaton const&) = delete;
+
     Nan::Persistent<v8::Function> callback;
     Nan::Persistent<v8::Object> buffer;
     const char* font_data;
@@ -51,6 +64,12 @@ struct LoadBaton {
 };
 
 struct RangeBaton {
+    // We explicitly delete the copy constructor and assignment operator below
+    // This allows us to have the `const char* font_data` without needing to define copy semantics
+    // and avoids a g++ warning of ‘struct node_fontnik::LoadBaton’ has pointer data members [-Weffc++]
+    // but does not override ‘node_fontnik::LoadBaton(const node_fontnik::LoadBaton&)’'
+    RangeBaton(RangeBaton const&) = delete;
+    RangeBaton& operator=(RangeBaton const&) = delete;
     Nan::Persistent<v8::Function> callback;
     Nan::Persistent<v8::Object> buffer;
     const char* font_data;
@@ -143,6 +162,10 @@ NAN_METHOD(Range) {
 }
 
 struct ft_library_guard {
+    // non copyable
+    ft_library_guard(ft_library_guard const&) = delete;
+    ft_library_guard& operator=(ft_library_guard const&) = delete;
+
     ft_library_guard(FT_Library* lib) : library_(lib) {}
 
     ~ft_library_guard() {
@@ -153,6 +176,9 @@ struct ft_library_guard {
 };
 
 struct ft_face_guard {
+    // non copyable
+    ft_face_guard(ft_face_guard const&) = delete;
+    ft_face_guard& operator=(ft_face_guard const&) = delete;
     ft_face_guard(FT_Face* f) : face_(f) {}
 
     ~ft_face_guard() {
