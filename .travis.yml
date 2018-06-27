@@ -35,7 +35,7 @@ before_script:
 # For reference, the default travis behavior which we override comes from https://github.com/travis-ci/travis-build/blob/e5a45cbf49e0d9e27398e76e5f25dd7706feb6aa/lib/travis/build/script/node_js.rb#L62-L69.
 script: []
 
-# the matrix allows you to specify different operating systems and environments to 
+# the matrix allows you to specify different operating systems and environments to
 # run your tests and build binaries
 matrix:
   include:
@@ -55,6 +55,22 @@ matrix:
     - os: linux
       env: BUILDTYPE=debug
       node_js: 6
+    # linux publishable node v8
+    - os: linux
+      env: BUILDTYPE=release
+      node_js: 8
+    # linux publishable node v8/debug
+    - os: linux
+      env: BUILDTYPE=debug
+      node_js: 8
+    # linux publishable node v8
+    - os: linux
+      env: BUILDTYPE=release
+      node_js: 10
+    # linux publishable node v8/debug
+    - os: linux
+      env: BUILDTYPE=debug
+      node_js: 10
     # osx publishable node v4
     - os: osx
       osx_image: xcode8.2
@@ -65,6 +81,16 @@ matrix:
       osx_image: xcode8.2
       env: BUILDTYPE=release
       node_js: 6
+    # osx publishable node v6
+    - os: osx
+      osx_image: xcode8.2
+      env: BUILDTYPE=release
+      node_js: 8
+    # osx publishable node v6
+    - os: osx
+      osx_image: xcode8.2
+      env: BUILDTYPE=release
+      node_js: 10
     # Sanitizer build node v4/Debug
     - os: linux
       env: BUILDTYPE=debug TOOLSET=asan
