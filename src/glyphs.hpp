@@ -4,8 +4,7 @@
 #include "glyphs.pb.h"
 #include <nan.h>
 
-namespace node_fontnik
-{
+namespace node_fontnik {
 
 NAN_METHOD(Load);
 void LoadAsync(uv_work_t* req);
@@ -14,6 +13,6 @@ NAN_METHOD(Range);
 void RangeAsync(uv_work_t* req);
 void AfterRange(uv_work_t* req);
 
-} // ns node_fontnik
+} // namespace node_fontnik
 
 #endif // NODE_FONTNIK_GLYPHS_HPP

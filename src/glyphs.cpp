@@ -2,16 +2,15 @@
 #include "glyphs.hpp"
 
 // node
-#include <node_buffer.h>
-#include <nan.h>
 #include <limits>
+#include <nan.h>
+#include <node_buffer.h>
 
 // sdf-glyph-foundry
 #include <mapbox/glyph_foundry.hpp>
 #include <mapbox/glyph_foundry_impl.hpp>
 
-namespace node_fontnik
-{
+namespace node_fontnik {
 
 struct FaceMetadata {
     std::string family_name;
@@ -19,35 +18,32 @@ struct FaceMetadata {
     std::vector<int> points;
     FaceMetadata(std::string const& _family_name,
                  std::string const& _style_name,
-                 std::vector<int> && _points) :
-        family_name(_family_name),
-        style_name(_style_name),
-        points(std::move(_points)) {}
+                 std::vector<int>&& _points) : family_name(_family_name),
+                                               style_name(_style_name),
+                                               points(std::move(_points)) {}
     FaceMetadata(std::string const& _family_name,
-                 std::vector<int> && _points) :
-        family_name(_family_name),
-        points(std::move(_points)) {}
+                 std::vector<int>&& _points) : family_name(_family_name),
+                                               points(std::move(_points)) {}
 };
 
 struct LoadBaton {
     Nan::Persistent<v8::Function> callback;
     Nan::Persistent<v8::Object> buffer;
-    const char * font_data;
+    const char* font_data;
     std::size_t font_size;
     std::string error_name;
     std::vector<FaceMetadata> faces;
     uv_work_t request;
     LoadBaton(v8::Local<v8::Object> buf,
-              v8::Local<v8::Value> cb) :
-        font_data(node::Buffer::Data(buf)),
-        font_size(node::Buffer::Length(buf)),
-        error_name(),
-        faces(),
-        request() {
-            request.data = this;
-            callback.Reset(cb.As<v8::Function>());
-            buffer.Reset(buf.As<v8::Object>());
-        }
+              v8::Local<v8::Value> cb) : font_data(node::Buffer::Data(buf)),
+                                         font_size(node::Buffer::Length(buf)),
+                                         error_name(),
+                                         faces(),
+                                         request() {
+        request.data = this;
+        callback.Reset(cb.As<v8::Function>());
+        buffer.Reset(buf.As<v8::Object>());
+    }
     ~LoadBaton() {
         callback.Reset();
         buffer.Reset();
@@ -68,19 +64,18 @@ struct RangeBaton {
     RangeBaton(v8::Local<v8::Object> buf,
                v8::Local<v8::Value> cb,
                std::uint32_t _start,
-               std::uint32_t _end) :
-        font_data(node::Buffer::Data(buf)),
-        font_size(node::Buffer::Length(buf)),
-        error_name(),
-        start(_start),
-        end(_end),
-        chars(),
-        message(),
-        request() {
-            request.data = this;
-            callback.Reset(cb.As<v8::Function>());
-            buffer.Reset(buf.As<v8::Object>());
-        }
+               std::uint32_t _end) : font_data(node::Buffer::Data(buf)),
+                                     font_size(node::Buffer::Length(buf)),
+                                     error_name(),
+                                     start(_start),
+                                     end(_end),
+                                     chars(),
+                                     message(),
+                                     request() {
+        request.data = this;
+        callback.Reset(cb.As<v8::Function>());
+        buffer.Reset(buf.As<v8::Object>());
+    }
     ~RangeBaton() {
         callback.Reset();
         buffer.Reset();
@@ -101,7 +96,7 @@ NAN_METHOD(Load) {
         return Nan::ThrowTypeError("Callback must be a function");
     }
 
-    LoadBaton* baton = new LoadBaton(obj,info[1]);
+    LoadBaton* baton = new LoadBaton(obj, info[1]);
     uv_queue_work(uv_default_loop(), &baton->request, LoadAsync, reinterpret_cast<uv_after_work_cb>(AfterLoad));
 }
 
@@ -148,29 +143,25 @@ NAN_METHOD(Range) {
 }
 
 struct ft_library_guard {
-    ft_library_guard(FT_Library * lib) :
-        library_(lib) {}
+    ft_library_guard(FT_Library* lib) : library_(lib) {}
 
-    ~ft_library_guard()
-    {
+    ~ft_library_guard() {
         if (library_) FT_Done_FreeType(*library_);
     }
 
-    FT_Library * library_;
+    FT_Library* library_;
 };
 
 struct ft_face_guard {
-    ft_face_guard(FT_Face * f) :
-        face_(f) {}
+    ft_face_guard(FT_Face* f) : face_(f) {}
 
-    ~ft_face_guard()
-    {
+    ~ft_face_guard() {
         if (face_) {
             FT_Done_Face(*face_);
         }
     }
 
-    FT_Face * face_;
+    FT_Face* face_;
 };
 
 void LoadAsync(uv_work_t* req) {
@@ -187,8 +178,7 @@ void LoadAsync(uv_work_t* req) {
         }
         FT_Face ft_face = 0;
         FT_Long num_faces = 0;
-        for ( int i = 0; ft_face == 0 || i < num_faces; ++i )
-        {
+        for (int i = 0; ft_face == 0 || i < num_faces; ++i) {
             ft_face_guard face_guard(&ft_face);
             FT_Error face_error = FT_New_Memory_Face(library, reinterpret_cast<FT_Byte const*>(baton->font_data), static_cast<FT_Long>(baton->font_size), i, &ft_face);
             if (face_error) {
@@ -232,7 +222,7 @@ void AfterLoad(uv_work_t* req) {
     LoadBaton* baton = static_cast<LoadBaton*>(req->data);
 
     if (!baton->error_name.empty()) {
-        v8::Local<v8::Value> argv[1] = { Nan::Error(baton->error_name.c_str()) };
+        v8::Local<v8::Value> argv[1] = {Nan::Error(baton->error_name.c_str())};
         Nan::MakeCallback(Nan::GetCurrentContext()->Global(), Nan::New(baton->callback), 1, argv);
     } else {
         v8::Local<v8::Array> js_faces = Nan::New<v8::Array>(baton->faces.size());
@@ -244,12 +234,12 @@ void AfterLoad(uv_work_t* req) {
             v8::Local<v8::Array> js_points = Nan::New<v8::Array>(face.points.size());
             unsigned p_idx = 0;
             for (auto const& pt : face.points) {
-                js_points->Set(p_idx++,Nan::New(pt));
+                js_points->Set(p_idx++, Nan::New(pt));
             }
             js_face->Set(Nan::New("points").ToLocalChecked(), js_points);
-            js_faces->Set(idx++,js_face);
+            js_faces->Set(idx++, js_face);
         }
-        v8::Local<v8::Value> argv[2] = { Nan::Null(), js_faces };
+        v8::Local<v8::Value> argv[2] = {Nan::Null(), js_faces};
         Nan::MakeCallback(Nan::GetCurrentContext()->Global(), Nan::New(baton->callback), 2, argv);
     }
     delete baton;
@@ -261,7 +251,7 @@ void RangeAsync(uv_work_t* req) {
 
         unsigned array_size = baton->end - baton->start;
         baton->chars.reserve(array_size);
-        for (unsigned i=baton->start; i <= baton->end; i++) {
+        for (unsigned i = baton->start; i <= baton->end; i++) {
             baton->chars.emplace_back(i);
         }
 
@@ -278,8 +268,7 @@ void RangeAsync(uv_work_t* req) {
         llmr::glyphs::glyphs glyphs;
         FT_Face ft_face = 0;
         FT_Long num_faces = 0;
-        for ( int i = 0; ft_face == 0 || i < num_faces; ++i )
-        {
+        for (int i = 0; ft_face == 0 || i < num_faces; ++i) {
             ft_face_guard face_guard(&ft_face);
             FT_Error face_error = FT_New_Memory_Face(library, reinterpret_cast<FT_Byte const*>(baton->font_data), static_cast<FT_Long>(baton->font_size), i, &ft_face);
             if (face_error) {
@@ -292,7 +281,7 @@ void RangeAsync(uv_work_t* req) {
             }
 
             if (ft_face->family_name) {
-                llmr::glyphs::fontstack *mutable_fontstack = glyphs.add_stacks();
+                llmr::glyphs::fontstack* mutable_fontstack = glyphs.add_stacks();
                 if (ft_face->style_name) {
                     mutable_fontstack->set_name(std::string(ft_face->family_name) + " " + std::string(ft_face->style_name));
                 } else {
@@ -305,7 +294,7 @@ void RangeAsync(uv_work_t* req) {
 
                 // Set character sizes.
                 double size = 24 * scale_factor;
-                FT_Set_Char_Size(ft_face,0,static_cast<FT_F26Dot6>(size * (1<<6)),0,0);
+                FT_Set_Char_Size(ft_face, 0, static_cast<FT_F26Dot6>(size * (1 << 6)), 0, 0);
 
                 for (std::vector<uint32_t>::size_type x = 0; x != baton->chars.size(); x++) {
                     FT_ULong char_code = baton->chars[x];
@@ -320,7 +309,7 @@ void RangeAsync(uv_work_t* req) {
                     sdf_glyph_foundry::RenderSDF(glyph, 24, 3, 0.25, ft_face);
 
                     // Add glyph to fontstack.
-                    llmr::glyphs::glyph *mutable_glyph = mutable_fontstack->add_glyphs();
+                    llmr::glyphs::glyph* mutable_glyph = mutable_fontstack->add_glyphs();
 
                     // direct type conversions, no need for checking or casting
                     mutable_glyph->set_width(glyph.width);
@@ -351,7 +340,6 @@ void RangeAsync(uv_work_t* req) {
                         mutable_glyph->set_advance(static_cast<std::uint32_t>(glyph.advance));
                     }
 
-
                     if (glyph.width > 0) {
                         mutable_glyph->set_bitmap(glyph.bitmap);
                     }
@@ -365,7 +353,6 @@ void RangeAsync(uv_work_t* req) {
     } catch (std::exception const& ex) {
         baton->error_name = ex.what();
     }
-
 }
 
 void AfterRange(uv_work_t* req) {
@@ -374,14 +361,14 @@ void AfterRange(uv_work_t* req) {
     RangeBaton* baton = static_cast<RangeBaton*>(req->data);
 
     if (!baton->error_name.empty()) {
-        v8::Local<v8::Value> argv[1] = { Nan::Error(baton->error_name.c_str()) };
+        v8::Local<v8::Value> argv[1] = {Nan::Error(baton->error_name.c_str())};
         Nan::MakeCallback(Nan::GetCurrentContext()->Global(), Nan::New(baton->callback), 1, argv);
     } else {
-        v8::Local<v8::Value> argv[2] = { Nan::Null(), Nan::CopyBuffer(baton->message.data(), static_cast<std::uint32_t>(baton->message.size())).ToLocalChecked() };
+        v8::Local<v8::Value> argv[2] = {Nan::Null(), Nan::CopyBuffer(baton->message.data(), static_cast<std::uint32_t>(baton->message.size())).ToLocalChecked()};
         Nan::MakeCallback(Nan::GetCurrentContext()->Global(), Nan::New(baton->callback), 2, argv);
     }
 
     delete baton;
 };
 
-} // ns node_fontnik
+} // namespace node_fontnik
