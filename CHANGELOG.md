@@ -1,3 +1,10 @@
+
+# 0.5.1
+
+- Stopped bundling node-pre-gyp
+- Added support for node v8 and v10
+- Various performance optimizations and safety checks
+
 # 0.5.0
 
 - Fixed crash on font with null family name
