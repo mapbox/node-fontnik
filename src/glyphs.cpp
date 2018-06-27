@@ -240,7 +240,7 @@ void LoadAsync(uv_work_t* req) {
     } catch (std::exception const& ex) {
         baton->error_name = ex.what();
     }
-};
+}
 
 void AfterLoad(uv_work_t* req) {
     Nan::HandleScope scope;
@@ -269,7 +269,7 @@ void AfterLoad(uv_work_t* req) {
         Nan::MakeCallback(Nan::GetCurrentContext()->Global(), Nan::New(baton->callback), 2, argv);
     }
     delete baton;
-};
+}
 
 void RangeAsync(uv_work_t* req) {
     RangeBaton* baton = static_cast<RangeBaton*>(req->data);
@@ -395,6 +395,6 @@ void AfterRange(uv_work_t* req) {
     }
 
     delete baton;
-};
+}
 
 } // namespace node_fontnik
