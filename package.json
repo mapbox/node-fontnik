@@ -30,6 +30,7 @@
     "queue-async": "^1.0.7"
   },
   "devDependencies": {
+    "@mapbox/cloudfriend": "^1.9.1",
     "aws-sdk": "^2.22.0",
     "benchmark": "^1.0.0",
     "mkdirp": "^0.5.1",
