@@ -30,7 +30,7 @@ However, other platforms will fall back to a source compile: see [building from 
 ```
 npm install --build-from-source
 ```
-Building from source should automatically install `boost`, `freetype` and `protobuf` locally using [mason](https://github.com/mapbox/mason). These dependencies can be installed manually by running `./scripts/install_mason.sh`.
+Building from source should automatically install `boost`, `freetype` and `protobuf` locally using [mason](https://github.com/mapbox/mason). These dependencies can be installed manually by running `./scripts/install_deps.sh`.
 
 ## Background reading
 - [Drawing Text with Signed Distance Fields in Mapbox GL](https://www.mapbox.com/blog/text-signed-distance-fields/)
