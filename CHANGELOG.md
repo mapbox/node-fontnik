@@ -1,3 +1,6 @@
+# 0.5.2
+
+- Adds .npmignore to keep downstream node_modules small.
 
 # 0.5.1
 
