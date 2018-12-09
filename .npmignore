@@ -1,0 +1,14 @@
+.clang*
+.mason
+.toolchain
+bench
+build
+fonts
+lib
+mason_packages
+node_modules
+scripts
+test
+README.md
+CHANGELOG.md
+LICENSE.txt
