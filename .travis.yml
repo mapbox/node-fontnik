@@ -33,7 +33,7 @@ before_script:
 # We set 'script' here to an empty array to prevent this section from automatically running 'npm test'
 # The reason we do this is mentioned above in the comment about the 'before_script' stage.
 # For reference, the default travis behavior which we override comes from https://github.com/travis-ci/travis-build/blob/e5a45cbf49e0d9e27398e76e5f25dd7706feb6aa/lib/travis/build/script/node_js.rb#L62-L69.
-script: []
+script:
 
 # the matrix allows you to specify different operating systems and environments to
 # run your tests and build binaries
