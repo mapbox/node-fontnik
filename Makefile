@@ -68,10 +68,10 @@ testpack:
 	npm pack
 
 testpacked: testpack
-		rm -rf /tmp/package
-		tar -xf *tgz --directory=/tmp/
-		du -h -d 0 /tmp/package
-		cp -r test /tmp/package/
-		cp -r fonts /tmp/package/
-		ln -s `pwd`/mason_packages /tmp/package/mason_packages
-		(cd /tmp/package && make && make test)
+	rm -rf /tmp/package
+	tar -xf *tgz --directory=/tmp/
+	du -h -d 0 /tmp/package
+	cp -r test /tmp/package/
+	cp -r fonts /tmp/package/
+	ln -s `pwd`/mason_packages /tmp/package/mason_packages
+	(cd /tmp/package && make && make test)
