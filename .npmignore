@@ -7,7 +7,6 @@ fonts
 lib
 mason_packages
 node_modules
-scripts
 test
 LICENSE.txt
 cloudformation
