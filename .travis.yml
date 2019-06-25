@@ -145,6 +145,9 @@ matrix:
         - which llvm-cov
         - pip install --user codecov
         - codecov --gcov-exec "llvm-cov gcov"
+      # avoid double-run of npm test
+      script:
+        - true
     # Clang format build
     - os: linux
       # can be generic since we don't need nodejs to run formatting
