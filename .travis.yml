@@ -143,7 +143,7 @@ matrix:
         - mason install llvm-cov ${MASON_LLVM_RELEASE}
         - mason link llvm-cov ${MASON_LLVM_RELEASE}
         - which llvm-cov
-        - pip install codecov
+        - pip install --user codecov
         - codecov --gcov-exec "llvm-cov gcov"
     # Clang format build
     - os: linux
