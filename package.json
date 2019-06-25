@@ -26,7 +26,7 @@
     "glob": "^7.1.1",
     "minimist": "^0.2.0",
     "nan": "~2.10.0",
-    "node-pre-gyp": "~0.10.0",
+    "node-pre-gyp": "^0.12.0",
     "queue-async": "^1.0.7"
   },
   "devDependencies": {
