@@ -143,9 +143,11 @@ matrix:
         - mason install llvm-cov ${MASON_LLVM_RELEASE}
         - mason link llvm-cov ${MASON_LLVM_RELEASE}
         - which llvm-cov
-        - curl -S -f https://codecov.io/bash -o codecov
-        - chmod +x codecov
-        - ./codecov -x "llvm-cov gcov" -Z
+        - pip install --user codecov
+        - codecov --gcov-exec "llvm-cov gcov"
+      # avoid double-run of npm test
+      script:
+        - true
     # Clang format build
     - os: linux
       # can be generic since we don't need nodejs to run formatting
