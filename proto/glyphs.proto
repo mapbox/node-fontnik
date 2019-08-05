@@ -10,7 +10,7 @@ option optimize_for = LITE_RUNTIME;
 message glyph {
     required uint32 id = 1;
 
-    // A signed distance field of the glyph with a border of 3 pixels.
+    // A signed distance field of a glyph with buffer documented in metadata.
     optional bytes bitmap = 2;
 
     // Glyph metrics.
@@ -21,11 +21,25 @@ message glyph {
     required uint32 advance = 7;
 }
 
-// Stores fontstack information and a list of faces.
+// Stores a face with glyphs and optional metadata.
 message fontstack {
-    required string name = 1;
-    required string range = 2;
-    repeated glyph glyphs = 3;
+    repeated Glyph glyphs = 1;
+
+    // Store SDF metadata.
+    message Metadata {
+        optional uint32 size = 1;
+        optional uint32 buffer = 2;
+        optional float cutoff = 3;
+        optional float scale = 4;
+    }
+
+    optional Metadata metadata = 2;
+
+    optional string family_name = 3;
+    optional string style_name = 4;
+    optional double ascender = 5;
+    optional double descender = 6;
+    optional double line_height = 7;
 }
 
 message glyphs {

@@ -309,17 +309,29 @@ void RangeAsync(uv_work_t* req) {
             if (ft_face->family_name) {
                 llmr::glyphs::fontstack* mutable_fontstack = glyphs.add_stacks();
                 if (ft_face->style_name) {
-                    mutable_fontstack->set_name(std::string(ft_face->family_name) + " " + std::string(ft_face->style_name));
+                    mutable_fontstack->set_family_name(std::string(ft_face->family_name) + " " + std::string(ft_face->style_name));
                 } else {
-                    mutable_fontstack->set_name(std::string(ft_face->family_name));
+                    mutable_fontstack->set_family_name(std::string(ft_face->family_name));
                 }
 
-                mutable_fontstack->set_range(std::to_string(baton->start) + "-" + std::to_string(baton->end));
+                // TODO mutable_fontstack->set_range(std::to_string(baton->start) + "-" + std::to_string(baton->end));
+                mutable_fontstack->set_family_name(ft_face->family_name);
+                mutable_fontstack->set_style_name(ft_face->style_name);
+                mutable_fontstack->set_ascender(ft_face->ascender);
+                mutable_fontstack->set_descender(ft_face->descender);
+                mutable_fontstack->set_line_height(ft_face->height);
+
+                // Add metadata to face.
+                mbgl::glyphs::Face::Metadata mutable_metadata = mutable_face->metadata();
+                mutable_metadata.set_size(char_size);
+                mutable_metadata.set_buffer(buffer_size);
+                mutable_metadata.set_cutoff(cutoff_size);
+                mutable_metadata.set_scale(scale_factor);
 
                 const double scale_factor = 1.0;
 
                 // Set character sizes.
-                double size = 24 * scale_factor;
+                double size = char_size * scale_factor;
                 FT_Set_Char_Size(ft_face, 0, static_cast<FT_F26Dot6>(size * (1 << 6)), 0, 0);
 
                 for (std::vector<uint32_t>::size_type x = 0; x != baton->chars.size(); x++) {
@@ -332,7 +344,7 @@ void RangeAsync(uv_work_t* req) {
                     if (!char_index) continue;
 
                     glyph.glyph_index = char_index;
-                    sdf_glyph_foundry::RenderSDF(glyph, 24, 3, 0.25, ft_face);
+                    sdf_glyph_foundry::RenderSDF(glyph, char_size, buffer_size, cutoff_size, ft_face);
 
                     // Add glyph to fontstack.
                     llmr::glyphs::glyph* mutable_glyph = mutable_fontstack->add_glyphs();

@@ -1,5 +1,4 @@
-#ifndef NODE_FONTNIK_GLYPHS_HPP
-#define NODE_FONTNIK_GLYPHS_HPP
+#pragma once
 
 #include "glyphs.pb.h"
 #include <nan.h>
@@ -15,4 +14,15 @@ void AfterRange(uv_work_t* req);
 
 } // namespace node_fontnik
 
-#endif // NODE_FONTNIK_GLYPHS_HPP
+void RenderSDF(glyph_info &glyph,
+               int size,
+               int buffer,
+               float cutoff,
+               FT_Face ft_face);
+
+const static int char_size = 24;
+const static int buffer_size = 3;
+const static float cutoff_size = 0.25;
+const static float scale_factor = 1.0;
+
+} // namespace node_fontnik
