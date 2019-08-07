@@ -41,6 +41,12 @@ Glyphs.prototype.readFontstack = function() {
         } else if (tag == 3) {
             var glyph = this.readGlyph();
             fontstack.glyphs[glyph.id] = glyph;
+        } else if (tag == 4) {
+            var ascender = buffer.readDouble();
+            fontstack.ascender = ascender;
+        } else if (tag == 5) {
+            var descender = buffer.readDouble();
+            fontstack.descender = descender;
         } else {
             buffer.skip(val);
         }

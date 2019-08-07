@@ -241,6 +241,8 @@ test('range', function(t) {
             var vt = new Glyphs(new Protobuf(new Uint8Array(data)));
             t.equal(vt.stacks.hasOwnProperty('?'), true);
             t.equal(vt.stacks['?'].hasOwnProperty('name'), true);
+            t.equal(vt.stacks['?'].hasOwnProperty('ascender'), true);
+            t.equal(vt.stacks['?'].hasOwnProperty('descender'), true);
             t.equal(vt.stacks['?'].name, '?');
             t.end();
         });
