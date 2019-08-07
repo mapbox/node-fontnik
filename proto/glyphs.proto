@@ -23,7 +23,7 @@ message glyph {
 
 // Stores a face with glyphs and optional metadata.
 message fontstack {
-    repeated Glyph glyphs = 1;
+    repeated glyph glyphs = 1;
 
     // Store SDF metadata.
     message Metadata {

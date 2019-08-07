@@ -12,14 +12,6 @@ NAN_METHOD(Range);
 void RangeAsync(uv_work_t* req);
 void AfterRange(uv_work_t* req);
 
-} // namespace node_fontnik
-
-void RenderSDF(glyph_info &glyph,
-               int size,
-               int buffer,
-               float cutoff,
-               FT_Face ft_face);
-
 const static int char_size = 24;
 const static int buffer_size = 3;
 const static float cutoff_size = 0.25;

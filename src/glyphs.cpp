@@ -322,13 +322,11 @@ void RangeAsync(uv_work_t* req) {
                 mutable_fontstack->set_line_height(ft_face->height);
 
                 // Add metadata to face.
-                mbgl::glyphs::Face::Metadata mutable_metadata = mutable_face->metadata();
+                llmr::glyphs::fontstack::Metadata mutable_metadata = mutable_fontstack->metadata();
                 mutable_metadata.set_size(char_size);
                 mutable_metadata.set_buffer(buffer_size);
                 mutable_metadata.set_cutoff(cutoff_size);
                 mutable_metadata.set_scale(scale_factor);
-
-                const double scale_factor = 1.0;
 
                 // Set character sizes.
                 double size = char_size * scale_factor;
