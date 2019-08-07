@@ -253,6 +253,12 @@ test('range', function(t) {
             t.error(err);
             var vt = new Glyphs(new Protobuf(new Uint8Array(data)));
             var glyphs = vt.stacks['Osaka Regular'].glyphs;
+            var stack = vt.stacks['Osaka Regular'];
+
+            t.equal(stack.name, 'Osaka Regular');
+            t.equal(stack.ascender, 256);
+            t.equal(stack.descender, -64);
+
             var keys = Object.keys(glyphs);
 
             var glyph;
