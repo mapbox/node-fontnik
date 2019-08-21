@@ -1,7 +1,6 @@
 #ifndef NODE_FONTNIK_GLYPHS_HPP
 #define NODE_FONTNIK_GLYPHS_HPP
 
-#include "glyphs.pb.h"
 #include <nan.h>
 
 namespace node_fontnik {

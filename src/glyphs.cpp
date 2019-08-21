@@ -1,6 +1,6 @@
 // fontnik
 #include "glyphs.hpp"
-
+#include <protozero/pbf_writer.hpp>
 // node
 #include <limits>
 #include <nan.h>
@@ -291,7 +291,7 @@ void RangeAsync(uv_work_t* req) {
             /* LCOV_EXCL_END */
         }
 
-        llmr::glyphs::glyphs glyphs;
+        protozero::pbf_writer pbf_writer{baton->message};
         FT_Face ft_face = 0;
         FT_Long num_faces = 0;
         for (int i = 0; ft_face == 0 || i < num_faces; ++i) {
@@ -307,14 +307,13 @@ void RangeAsync(uv_work_t* req) {
             }
 
             if (ft_face->family_name) {
-                llmr::glyphs::fontstack* mutable_fontstack = glyphs.add_stacks();
+                protozero::pbf_writer fontstack_writer{pbf_writer, 1};
                 if (ft_face->style_name) {
-                    mutable_fontstack->set_name(std::string(ft_face->family_name) + " " + std::string(ft_face->style_name));
+                    fontstack_writer.add_string(1,std::string(ft_face->family_name) + " " + std::string(ft_face->style_name));
                 } else {
-                    mutable_fontstack->set_name(std::string(ft_face->family_name));
+                    fontstack_writer.add_string(1,std::string(ft_face->family_name));
                 }
-
-                mutable_fontstack->set_range(std::to_string(baton->start) + "-" + std::to_string(baton->end));
+                fontstack_writer.add_string(2,std::to_string(baton->start) + "-" + std::to_string(baton->end));
 
                 const double scale_factor = 1.0;
 
@@ -335,47 +334,47 @@ void RangeAsync(uv_work_t* req) {
                     sdf_glyph_foundry::RenderSDF(glyph, 24, 3, 0.25, ft_face);
 
                     // Add glyph to fontstack.
-                    llmr::glyphs::glyph* mutable_glyph = mutable_fontstack->add_glyphs();
-
-                    // direct type conversions, no need for checking or casting
-                    mutable_glyph->set_width(glyph.width);
-                    mutable_glyph->set_height(glyph.height);
-                    mutable_glyph->set_left(glyph.left);
-
-                    // conversions requiring checks, for safety and correctness
+                    protozero::pbf_writer glyph_writer{fontstack_writer, 3};
 
                     // shortening conversion
                     if (char_code > std::numeric_limits<FT_ULong>::max()) {
                         throw std::runtime_error("Invalid value for char_code: too large");
                     } else {
-                        mutable_glyph->set_id(static_cast<std::uint32_t>(char_code));
+                        glyph_writer.add_uint32(1,static_cast<std::uint32_t>(char_code));
                     }
+
+                    if (glyph.width > 0) {
+                        glyph_writer.add_bytes(2,glyph.bitmap); 
+                    }
+
+                    // direct type conversions, no need for checking or casting
+                    glyph_writer.add_uint32(3,glyph.width);
+                    glyph_writer.add_uint32(4,glyph.width);
+                    glyph_writer.add_sint32(5,glyph.width);
+
+                    // conversions requiring checks, for safety and correctness
 
                     // double to int
                     double top = static_cast<double>(glyph.top) - glyph.ascender;
                     if (top < std::numeric_limits<std::int32_t>::min() || top > std::numeric_limits<std::int32_t>::max()) {
                         throw std::runtime_error("Invalid value for glyph.top-glyph.ascender");
                     } else {
-                        mutable_glyph->set_top(static_cast<std::int32_t>(top));
+                        glyph_writer.add_sint32(6,static_cast<std::int32_t>(top));
                     }
 
                     // double to uint
                     if (glyph.advance < std::numeric_limits<std::uint32_t>::min() || glyph.advance > std::numeric_limits<std::uint32_t>::max()) {
                         throw std::runtime_error("Invalid value for glyph.top-glyph.ascender");
                     } else {
-                        mutable_glyph->set_advance(static_cast<std::uint32_t>(glyph.advance));
+                        glyph_writer.add_uint32(7,static_cast<std::uint32_t>(glyph.advance));                      
                     }
 
-                    if (glyph.width > 0) {
-                        mutable_glyph->set_bitmap(glyph.bitmap);
-                    }
                 }
             } else {
                 baton->error_name = std::string("font does not have family_name");
                 return;
             }
         }
-        baton->message = glyphs.SerializeAsString();
     } catch (std::exception const& ex) {
         baton->error_name = ex.what();
     }
