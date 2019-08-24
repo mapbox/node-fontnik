@@ -5,16 +5,16 @@ export WERROR ?= false
 
 default: release
 
-node_modules:
+./node_modules/.bin/node-pre-gyp:
 	# install deps but for now ignore our own install script
 	# so that we can run it directly in either debug or release
 	npm install --ignore-scripts
 
-release: node_modules
+release: ./node_modules/.bin/node-pre-gyp
 	V=1 ./node_modules/.bin/node-pre-gyp configure build --error_on_warnings=$(WERROR) --loglevel=error
 	@echo "run 'make clean' for full rebuild"
 
-debug: node_modules
+debug: ./node_modules/.bin/node-pre-gyp
 	V=1 ./node_modules/.bin/node-pre-gyp configure build --error_on_warnings=$(WERROR) --loglevel=error --debug
 	@echo "run 'make clean' for full rebuild"
 
@@ -46,7 +46,7 @@ distclean: clean
 	rm -rf .toolchain
 	rm -f local.env
 
-xcode: node_modules
+xcode: ./node_modules/.bin/node-pre-gyp
 	./node_modules/.bin/node-pre-gyp configure -- -f xcode
 
 	@# If you need more targets, e.g. to run other npm scripts, duplicate the last line and change NPM_ARGUMENT
