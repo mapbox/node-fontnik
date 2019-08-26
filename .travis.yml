@@ -17,7 +17,6 @@ install:
   - which node
   - clang++ -v
   - which clang++
-  - make distclean
   - make ${BUILDTYPE}
 
 # *Here we run tests*
