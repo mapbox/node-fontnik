@@ -8,7 +8,7 @@ default: release
 ./node_modules/.bin/node-pre-gyp:
 	# install deps but for now ignore our own install script
 	# so that we can run it directly in either debug or release
-	npm install --ignore-scripts
+	npm ci --ignore-scripts
 
 release: ./node_modules/.bin/node-pre-gyp
 	V=1 ./node_modules/.bin/node-pre-gyp configure build --error_on_warnings=$(WERROR) --loglevel=error
