@@ -548,11 +548,11 @@ void RangeAsync(uv_work_t* req) {
             if (ft_face->family_name) {
                 protozero::pbf_writer fontstack_writer{pbf_writer, 1};
                 if (ft_face->style_name) {
-                    fontstack_writer.add_string(1,std::string(ft_face->family_name) + " " + std::string(ft_face->style_name));
+                    fontstack_writer.add_string(1, std::string(ft_face->family_name) + " " + std::string(ft_face->style_name));
                 } else {
-                    fontstack_writer.add_string(1,std::string(ft_face->family_name));
+                    fontstack_writer.add_string(1, std::string(ft_face->family_name));
                 }
-                fontstack_writer.add_string(2,std::to_string(baton->start) + "-" + std::to_string(baton->end));
+                fontstack_writer.add_string(2, std::to_string(baton->start) + "-" + std::to_string(baton->end));
 
                 const double scale_factor = 1.0;
 
@@ -579,17 +579,17 @@ void RangeAsync(uv_work_t* req) {
                     if (char_code > std::numeric_limits<FT_ULong>::max()) {
                         throw std::runtime_error("Invalid value for char_code: too large");
                     } else {
-                        glyph_writer.add_uint32(1,static_cast<std::uint32_t>(char_code));
+                        glyph_writer.add_uint32(1, static_cast<std::uint32_t>(char_code));
                     }
 
                     if (glyph.width > 0) {
-                        glyph_writer.add_bytes(2,glyph.bitmap); 
+                        glyph_writer.add_bytes(2, glyph.bitmap);
                     }
 
                     // direct type conversions, no need for checking or casting
-                    glyph_writer.add_uint32(3,glyph.width);
-                    glyph_writer.add_uint32(4,glyph.width);
-                    glyph_writer.add_sint32(5,glyph.width);
+                    glyph_writer.add_uint32(3, glyph.width);
+                    glyph_writer.add_uint32(4, glyph.width);
+                    glyph_writer.add_sint32(5, glyph.width);
 
                     // conversions requiring checks, for safety and correctness
 
@@ -598,16 +598,15 @@ void RangeAsync(uv_work_t* req) {
                     if (top < std::numeric_limits<std::int32_t>::min() || top > std::numeric_limits<std::int32_t>::max()) {
                         throw std::runtime_error("Invalid value for glyph.top-glyph.ascender");
                     } else {
-                        glyph_writer.add_sint32(6,static_cast<std::int32_t>(top));
+                        glyph_writer.add_sint32(6, static_cast<std::int32_t>(top));
                     }
 
                     // double to uint
                     if (glyph.advance < std::numeric_limits<std::uint32_t>::min() || glyph.advance > std::numeric_limits<std::uint32_t>::max()) {
                         throw std::runtime_error("Invalid value for glyph.top-glyph.ascender");
                     } else {
-                        glyph_writer.add_uint32(7,static_cast<std::uint32_t>(glyph.advance));                      
+                        glyph_writer.add_uint32(7, static_cast<std::uint32_t>(glyph.advance));
                     }
-
                 }
             } else {
                 baton->error_name = std::string("font does not have family_name");
