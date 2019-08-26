@@ -1,14 +1,19 @@
 // fontnik
 #include "glyphs.hpp"
+#include <protozero/pbf_reader.hpp>
 #include <protozero/pbf_writer.hpp>
 // node
 #include <limits>
 #include <nan.h>
 #include <node_buffer.h>
+#include <memory>
 
 // sdf-glyph-foundry
 #include <mapbox/glyph_foundry.hpp>
 #include <mapbox/glyph_foundry_impl.hpp>
+#include <gzip/compress.hpp>
+#include <gzip/decompress.hpp>
+#include <gzip/utils.hpp>
 
 namespace node_fontnik {
 
@@ -101,6 +106,54 @@ struct RangeBaton {
     }
 };
 
+struct GlyphPBF
+{
+    GlyphPBF(v8::Local<v8::Object>& buffer)
+        : data{node::Buffer::Data(buffer), node::Buffer::Length(buffer)},
+          buffer_ref{}
+    {
+        buffer_ref.Reset(buffer.As<v8::Object>());
+    }
+
+    ~GlyphPBF()
+    {
+        buffer_ref.Reset();
+    }
+
+    // non-copyable
+    GlyphPBF(GlyphPBF const&) = delete;
+    GlyphPBF& operator=(GlyphPBF const&) = delete;
+
+    // non-movable
+    GlyphPBF(GlyphPBF&&) = delete;
+    GlyphPBF& operator=(GlyphPBF&&) = delete;
+
+    protozero::data_view data;
+    Nan::Persistent<v8::Object> buffer_ref;
+};
+
+struct CompositeBaton {
+    CompositeBaton(CompositeBaton const&) = delete;
+    CompositeBaton& operator=(CompositeBaton const&) = delete;
+
+    Nan::Persistent<v8::Function> callback;
+    std::vector<std::unique_ptr<GlyphPBF>> glyphs{};
+    std::string error_name;
+    std::unique_ptr<std::string> message;
+    uv_work_t request;
+    CompositeBaton(unsigned size, v8::Local<v8::Value> cb) :
+      error_name(),
+      message(std::make_unique<std::string>()),
+      request() {
+        glyphs.reserve(size);
+        request.data = this;
+        callback.Reset(cb.As<v8::Function>());
+    }
+    ~CompositeBaton() {
+        callback.Reset();
+    }
+};
+
 NAN_METHOD(Load) {
     // Validate arguments.
     if (!info[0]->IsObject()) {
@@ -159,6 +212,192 @@ NAN_METHOD(Range) {
                                        start->Uint32Value(),
                                        end->Uint32Value());
     uv_queue_work(uv_default_loop(), &baton->request, RangeAsync, reinterpret_cast<uv_after_work_cb>(AfterRange));
+}
+
+namespace utils {
+
+  inline void CallbackError(std::string message, v8::Local<v8::Function> func)
+  {
+      Nan::Callback cb(func);
+      v8::Local<v8::Value> argv[1] = {Nan::Error(message.c_str())};
+      Nan::Call(cb, 1, argv);
+  }
+  
+}
+
+NAN_METHOD(Composite) {
+    // validate callback function
+    v8::Local<v8::Value> callback_val = info[info.Length() - 1];
+    if (!callback_val->IsFunction())
+    {
+        Nan::ThrowError("last argument must be a callback function");
+        return;
+    }
+    
+    v8::Local<v8::Function> callback = callback_val.As<v8::Function>();
+    
+    // validate glyphPBF array
+    if (!info[0]->IsArray())
+    {
+        return utils::CallbackError("first arg 'glyphs' must be an array of glyphs objects", callback);
+    }
+    
+    v8::Local<v8::Array> glyphs = info[0].As<v8::Array>();
+    unsigned num_glyphs = glyphs->Length();
+    
+    if (num_glyphs <= 0)
+    {
+        return utils::CallbackError("'glyphs' array must be of length greater than 0", callback);
+    }
+    
+    CompositeBaton* baton = new CompositeBaton(num_glyphs,callback);
+    
+    v8::Isolate* isolate = v8::Isolate::GetCurrent();
+
+    for (unsigned t = 0; t < num_glyphs; ++t)
+    {
+        v8::Local<v8::Value> buf_val = glyphs->Get(t);
+        if (buf_val->IsNull() || buf_val->IsUndefined())
+        {
+            return utils::CallbackError("buffer value in 'glyphs' array item is null or undefined", callback);
+        }
+        v8::MaybeLocal<v8::Object> maybe_buffer = buf_val->ToObject(isolate->GetCurrentContext());
+        if (maybe_buffer.IsEmpty())
+        {
+            return utils::CallbackError("buffer value in 'glyphs' array is empty", callback);
+        }
+        v8::Local<v8::Object> buffer = maybe_buffer.ToLocalChecked();
+
+        if (!node::Buffer::HasInstance(buffer))
+        {
+            return utils::CallbackError("buffer value in 'glyphs' array item is not a true buffer", callback);
+        }
+        baton->glyphs.push_back(std::make_unique<GlyphPBF>(buffer));
+    }
+    uv_queue_work(uv_default_loop(), &baton->request, CompositeAsync, reinterpret_cast<uv_after_work_cb>(AfterComposite));
+}
+
+using id_pair = std::pair<std::uint32_t,protozero::data_view>;
+struct CompareID {
+    bool operator()(id_pair const& r1, id_pair const& r2) {
+        return r1.first - r2.first;
+    }
+};
+
+void CompositeAsync(uv_work_t* req) {
+    CompositeBaton* baton = static_cast<CompositeBaton*>(req->data);
+    try {
+        std::vector<std::unique_ptr<std::vector<char>>> buffer_cache;
+        std::map<std::uint32_t,protozero::data_view> id_mapping;
+        bool first_buffer = true;
+        std::string fontstack_name;
+        std::string range;
+        std::string& fontstack_buffer = *baton->message.get();
+        protozero::pbf_writer pbf_writer(fontstack_buffer);
+        protozero::pbf_writer fontstack_writer{pbf_writer, 1};
+        // TODO(danespringmeyer): avoid duplicate fontstacks to be sent it
+        for (auto const& glyph_obj : baton->glyphs) {
+            protozero::data_view data_view{};
+            if (gzip::is_compressed(glyph_obj->data.data(), glyph_obj->data.size()))
+            {
+                buffer_cache.push_back(std::make_unique<std::vector<char>>());
+                gzip::Decompressor decompressor;
+                decompressor.decompress(*buffer_cache.back(), glyph_obj->data.data(), glyph_obj->data.size());
+                data_view = protozero::data_view{buffer_cache.back()->data(), buffer_cache.back()->size()};
+            }
+            else
+            {
+                data_view = glyph_obj->data;
+            }
+            protozero::pbf_reader fontstack_reader(data_view);
+            while (fontstack_reader.next(1)) {
+                auto stack_reader = fontstack_reader.get_message();
+                while (stack_reader.next()) {
+                    switch (stack_reader.tag()) {
+                        case 1: // name
+                            {
+                                if (first_buffer) {
+                                    fontstack_name = stack_reader.get_string();
+                                } else {
+                                    fontstack_name = fontstack_name + ", " + stack_reader.get_string();
+                                }
+                                break;
+                            }
+                        case 2: // range
+                            {
+                                if (first_buffer) {
+                                    range = stack_reader.get_string();
+                                } else {
+                                    stack_reader.skip();                          
+                                }
+                                break;
+                            }
+                        case 3: // glyphs
+                            {
+                                auto glyphs_data = stack_reader.get_view();
+                                // collect all ids from first
+                                if (first_buffer) {
+                                    protozero::pbf_reader glyphs_reader(glyphs_data);
+                                    std::uint32_t glyph_id;
+                                    while (glyphs_reader.next(1)) {
+                                        glyph_id = glyphs_reader.get_uint32();
+                                    }
+                                    id_mapping.emplace(glyph_id,glyphs_data);
+                                } else {
+                                  protozero::pbf_reader glyphs_reader(glyphs_data);
+                                  std::uint32_t glyph_id;
+                                  while (glyphs_reader.next(1)) {
+                                      glyph_id = glyphs_reader.get_uint32();
+                                  }
+                                  auto search = id_mapping.find(glyph_id);
+                                  if (search == id_mapping.end()) {
+                                      id_mapping.emplace(glyph_id,glyphs_data);
+                                  }
+                                }
+                                break;
+                            }
+                        default:
+                            // ignore data for unknown tags to allow for future extensions
+                            stack_reader.skip();
+                    }                  
+                }
+            }
+            first_buffer = false;
+        }
+        fontstack_writer.add_string(1,fontstack_name);
+        fontstack_writer.add_string(2,range);
+        for (auto const& glyph_pair : id_mapping) {
+          fontstack_writer.add_message(3,glyph_pair.second);
+        }
+    } catch (std::exception const& ex) {
+        baton->error_name = ex.what();
+    }
+}
+
+void AfterComposite(uv_work_t* req) {
+    Nan::HandleScope scope;
+
+    CompositeBaton* baton = static_cast<CompositeBaton*>(req->data);
+
+    if (!baton->error_name.empty()) {
+        v8::Local<v8::Value> argv[1] = {Nan::Error(baton->error_name.c_str())};
+        Nan::MakeCallback(Nan::GetCurrentContext()->Global(), Nan::New(baton->callback), 1, argv);
+    } else {
+        std::string& fontstack_message = *baton->message.get();
+        const auto argc = 2u;
+        v8::Local<v8::Value> argv[argc] = {
+             Nan::Null(),
+             Nan::NewBuffer(&fontstack_message[0],
+                            static_cast<unsigned int>(fontstack_message.size()),
+                            [](char*, void* hint) {
+                                delete reinterpret_cast<std::string*>(hint);
+                            },
+                            baton->message.release())
+                 .ToLocalChecked()};
+        Nan::MakeCallback(Nan::GetCurrentContext()->Global(), Nan::New(baton->callback), 2, argv);
+    }
+
+    delete baton;
 }
 
 struct ft_library_guard {

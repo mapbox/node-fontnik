@@ -25,7 +25,8 @@
         '-Wuninitialized',
         '-Wunreachable-code',
         '-Wold-style-cast',
-        '-Wno-error=unused-variable'
+        '-Wno-error=unused-variable',
+        '-Wno-deprecated-declarations'
       ]
   },
   # `targets` is a list of targets for gyp to run.
@@ -105,7 +106,7 @@
         'GCC_ENABLE_CPP_EXCEPTIONS': 'YES',
         'MACOSX_DEPLOYMENT_TARGET':'10.8',
         'CLANG_CXX_LIBRARY': 'libc++',
-        'CLANG_CXX_LANGUAGE_STANDARD':'c++11',
+        'CLANG_CXX_LANGUAGE_STANDARD':'c++14',
         'GCC_VERSION': 'com.apple.compilers.llvm.clang.1_0'
       }
     }
