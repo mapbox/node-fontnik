@@ -315,14 +315,16 @@ void RangeAsync(uv_work_t* req) {
                 }
 
                 mutable_fontstack->set_range(std::to_string(baton->start) + "-" + std::to_string(baton->end));
-                mutable_fontstack->set_ascender(ft_face->ascender);
-                mutable_fontstack->set_descender(ft_face->descender);
 
                 const double scale_factor = 1.0;
 
                 // Set character sizes.
                 double size = 24 * scale_factor;
                 FT_Set_Char_Size(ft_face, 0, static_cast<FT_F26Dot6>(size * (1 << 6)), 0, 0);
+
+                // Set ascender and descender in 26.6 fractional pixels.
+                mutable_fontstack->set_ascender(ft_face->size->metrics.ascender / 64) ;
+                mutable_fontstack->set_descender(ft_face->size->metrics.descender / 64);
 
                 for (std::vector<uint32_t>::size_type x = 0; x != baton->chars.size(); x++) {
                     FT_ULong char_code = baton->chars[x];

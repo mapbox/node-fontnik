@@ -256,8 +256,8 @@ test('range', function(t) {
             var stack = vt.stacks['Osaka Regular'];
 
             t.equal(stack.name, 'Osaka Regular');
-            t.equal(stack.ascender, 256);
-            t.equal(stack.descender, -64);
+            t.equal(stack.ascender, 24);
+            t.equal(stack.descender, -6);
 
             var keys = Object.keys(glyphs);
 
