@@ -323,8 +323,8 @@ void RangeAsync(uv_work_t* req) {
                 FT_Set_Char_Size(ft_face, 0, static_cast<FT_F26Dot6>(size * (1 << 6)), 0, 0);
 
                 // Set ascender and descender in 26.6 fractional pixels.
-                mutable_fontstack->set_ascender(ft_face->size->metrics.ascender / 64);
-                mutable_fontstack->set_descender(ft_face->size->metrics.descender / 64);
+                mutable_fontstack->set_ascender(static_cast<int32_t>(ft_face->size->metrics.ascender / 64));
+                mutable_fontstack->set_descender(static_cast<int32_t>(ft_face->size->metrics.descender / 64));
 
                 for (std::vector<uint32_t>::size_type x = 0; x != baton->chars.size(); x++) {
                     FT_ULong char_code = baton->chars[x];

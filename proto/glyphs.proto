@@ -27,8 +27,8 @@ message fontstack {
     required string range = 2;
     repeated glyph glyphs = 3;
 
-    optional double ascender = 4;
-    optional double descender = 5;
+    optional sint32 ascender = 4;
+    optional sint32 descender = 5;
 }
 
 message glyphs {
