@@ -40,7 +40,7 @@ Run tests with
 npm test
 ```
 
-If you make any changes to the C++ files in the `src/` directory, you'll need to recompile the node bindings (`fontnike.node`) before testing locally:
+If you make any changes to the C++ files in the `src/` directory, you'll need to recompile the node bindings (`fontnik.node`) before testing locally:
 
 ```
 make
