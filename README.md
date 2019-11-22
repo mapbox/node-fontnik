@@ -32,6 +32,22 @@ npm install --build-from-source
 ```
 Building from source should automatically install `boost`, `freetype` and `protobuf` locally using [mason](https://github.com/mapbox/mason). These dependencies can be installed manually by running `./scripts/install_deps.sh`.
 
+## Local testing
+
+Run tests with
+
+```
+npm test
+```
+
+If you make any changes to the C++ files in the `src/` directory, you'll need to recompile the node bindings (`fontnik.node`) before testing locally:
+
+```
+make
+```
+
+See the `Makefile` for additional tasks you can run, such as `make coverage`.
+
 ## Background reading
 - [Drawing Text with Signed Distance Fields in Mapbox GL](https://www.mapbox.com/blog/text-signed-distance-fields/)
 - [State of Text Rendering](http://behdad.org/text/)
