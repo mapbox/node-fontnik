@@ -105,9 +105,9 @@ matrix:
         - true
     # g++ build (default builds all use clang++)
     - os: linux
-      # Note: -std=gnu++14 is needed to workaround:
+      # Note: -fext-numeric-literals is needed to workaround gcc bug:
       # boost/math/constants/constants.hpp:269:3: error: unable to find numeric literal operator 'operatorQ'
-      env: BUILDTYPE=debug CXX="g++-6" CC="gcc-6" CXXFLAGS="-std=gnu++14"
+      env: BUILDTYPE=debug CXX="g++-6" CC="gcc-6" CXXFLAGS="-fext-numeric-literals"
       node_js: 10
       addons:
         apt:
