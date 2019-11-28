@@ -5,9 +5,9 @@
 namespace node_fontnik {
 
 static void init(v8::Local<v8::Object> target) {
-    Nan::SetMethod(target,"load",Load);
-    Nan::SetMethod(target,"range",Range);
-    Nan::SetMethod(target,"composite",Composite);
+    Nan::SetMethod(target, "load", Load);
+    Nan::SetMethod(target, "range", Range);
+    Nan::SetMethod(target, "composite", Composite);
 }
 
 // We mark this NOLINT to avoid the clang-tidy checks
