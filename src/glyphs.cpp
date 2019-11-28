@@ -361,10 +361,10 @@ void AfterComposite(uv_work_t* req) {
     Nan::HandleScope scope;
 
     CompositeBaton* baton = static_cast<CompositeBaton*>(req->data);
-
+    Nan::AsyncResource async_resource(__func__);
     if (!baton->error_name.empty()) {
         v8::Local<v8::Value> argv[1] = {Nan::Error(baton->error_name.c_str())};
-        Nan::MakeCallback(Nan::GetCurrentContext()->Global(), Nan::New(baton->callback), 1, argv);
+        async_resource.runInAsyncScope(Nan::GetCurrentContext()->Global(), Nan::New(baton->callback), 1, argv);
     } else {
         std::string& fontstack_message = *baton->message.get();
         const auto argc = 2u;
@@ -377,7 +377,7 @@ void AfterComposite(uv_work_t* req) {
                            },
                            baton->message.release())
                 .ToLocalChecked()};
-        Nan::MakeCallback(Nan::GetCurrentContext()->Global(), Nan::New(baton->callback), 2, argv);
+        async_resource.runInAsyncScope(Nan::GetCurrentContext()->Global(), Nan::New(baton->callback), 2, argv);
     }
 
     delete baton;
@@ -468,10 +468,10 @@ void AfterLoad(uv_work_t* req) {
     Nan::HandleScope scope;
 
     LoadBaton* baton = static_cast<LoadBaton*>(req->data);
-
+    Nan::AsyncResource async_resource(__func__);
     if (!baton->error_name.empty()) {
         v8::Local<v8::Value> argv[1] = {Nan::Error(baton->error_name.c_str())};
-        Nan::MakeCallback(Nan::GetCurrentContext()->Global(), Nan::New(baton->callback), 1, argv);
+        async_resource.runInAsyncScope(Nan::GetCurrentContext()->Global(), Nan::New(baton->callback), 1, argv);
     } else {
         v8::Local<v8::Array> js_faces = Nan::New<v8::Array>(baton->faces.size());
         unsigned idx = 0;
@@ -488,7 +488,7 @@ void AfterLoad(uv_work_t* req) {
             js_faces->Set(idx++, js_face);
         }
         v8::Local<v8::Value> argv[2] = {Nan::Null(), js_faces};
-        Nan::MakeCallback(Nan::GetCurrentContext()->Global(), Nan::New(baton->callback), 2, argv);
+        async_resource.runInAsyncScope(Nan::GetCurrentContext()->Global(), Nan::New(baton->callback), 2, argv);
     }
     delete baton;
 }
@@ -605,13 +605,13 @@ void AfterRange(uv_work_t* req) {
     Nan::HandleScope scope;
 
     RangeBaton* baton = static_cast<RangeBaton*>(req->data);
-
+    Nan::AsyncResource async_resource(__func__);
     if (!baton->error_name.empty()) {
         v8::Local<v8::Value> argv[1] = {Nan::Error(baton->error_name.c_str())};
-        Nan::MakeCallback(Nan::GetCurrentContext()->Global(), Nan::New(baton->callback), 1, argv);
+        async_resource.runInAsyncScope(Nan::GetCurrentContext()->Global(), Nan::New(baton->callback), 1, argv);
     } else {
         v8::Local<v8::Value> argv[2] = {Nan::Null(), Nan::CopyBuffer(baton->message.data(), static_cast<std::uint32_t>(baton->message.size())).ToLocalChecked()};
-        Nan::MakeCallback(Nan::GetCurrentContext()->Global(), Nan::New(baton->callback), 2, argv);
+        async_resource.runInAsyncScope(Nan::GetCurrentContext()->Global(), Nan::New(baton->callback), 2, argv);
     }
 
     delete baton;
