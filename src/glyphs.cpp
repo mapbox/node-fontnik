@@ -155,7 +155,7 @@ NAN_METHOD(Load) {
     if (!info[0]->IsObject()) {
         return Nan::ThrowTypeError("First argument must be a font buffer");
     }
-    v8::Local<v8::Object> obj = info[0]->ToObject();
+    v8::Local<v8::Object> obj = info[0]->ToObject(Nan::GetCurrentContext()).ToLocalChecked();
     if (obj->IsNull() || obj->IsUndefined() || !node::Buffer::HasInstance(obj)) {
         return Nan::ThrowTypeError("First argument must be a font buffer");
     }
@@ -179,7 +179,7 @@ NAN_METHOD(Range) {
     if (!font_buffer->IsObject()) {
         return Nan::ThrowTypeError("Font buffer is not an object");
     }
-    v8::Local<v8::Object> obj = font_buffer->ToObject();
+    v8::Local<v8::Object> obj = font_buffer->ToObject(Nan::GetCurrentContext()).ToLocalChecked();
     v8::Local<v8::Value> start = options->Get(Nan::New<v8::String>("start").ToLocalChecked());
     v8::Local<v8::Value> end = options->Get(Nan::New<v8::String>("end").ToLocalChecked());
 
@@ -187,15 +187,15 @@ NAN_METHOD(Range) {
         return Nan::ThrowTypeError("First argument must be a font buffer");
     }
 
-    if (!start->IsNumber() || start->IntegerValue() < 0) {
+    if (!start->IsNumber() || Nan::To<std::int32_t>(start).FromJust() < 0) {
         return Nan::ThrowTypeError("option `start` must be a number from 0-65535");
     }
 
-    if (!end->IsNumber() || end->IntegerValue() > 65535) {
+    if (!end->IsNumber() || Nan::To<std::int32_t>(end).FromJust() > 65535) {
         return Nan::ThrowTypeError("option `end` must be a number from 0-65535");
     }
 
-    if (end->IntegerValue() < start->IntegerValue()) {
+    if (Nan::To<std::int32_t>(end).FromJust() < Nan::To<std::int32_t>(start).FromJust()) {
         return Nan::ThrowTypeError("`start` must be less than or equal to `end`");
     }
 
@@ -205,8 +205,8 @@ NAN_METHOD(Range) {
 
     RangeBaton* baton = new RangeBaton(obj,
                                        info[1],
-                                       start->Uint32Value(),
-                                       end->Uint32Value());
+                                       Nan::To<std::uint32_t>(start).FromJust(),
+                                       Nan::To<std::uint32_t>(end).FromJust());
     uv_queue_work(uv_default_loop(), &baton->request, RangeAsync, reinterpret_cast<uv_after_work_cb>(AfterRange));
 }
 
@@ -244,14 +244,12 @@ NAN_METHOD(Composite) {
 
     CompositeBaton* baton = new CompositeBaton(num_glyphs, callback);
 
-    v8::Isolate* isolate = v8::Isolate::GetCurrent();
-
     for (unsigned t = 0; t < num_glyphs; ++t) {
         v8::Local<v8::Value> buf_val = glyphs->Get(t);
         if (buf_val->IsNull() || buf_val->IsUndefined()) {
             return utils::CallbackError("buffer value in 'glyphs' array item is null or undefined", callback);
         }
-        v8::MaybeLocal<v8::Object> maybe_buffer = buf_val->ToObject(isolate->GetCurrentContext());
+        v8::MaybeLocal<v8::Object> maybe_buffer = buf_val->ToObject(Nan::GetCurrentContext()).ToLocalChecked();
         if (maybe_buffer.IsEmpty()) {
             return utils::CallbackError("buffer value in 'glyphs' array is empty", callback);
         }
