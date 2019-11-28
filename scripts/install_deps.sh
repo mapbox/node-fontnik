@@ -12,7 +12,7 @@ function install() {
 ./scripts/setup.sh --config local.env
 source local.env
 
-install boost 1.63.0
+install boost 1.67.0
 install freetype 2.7.1
 install protozero 1.6.8
 install sdf-glyph-foundry 0.1.1
