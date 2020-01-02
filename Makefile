@@ -1,5 +1,5 @@
 MODULE_NAME := $(shell node -e "console.log(require('./package.json').binary.module_name)")
-OS := $(uname | tr A-Z a-z)
+OS=$(shell uname | tr A-Z a-z)
 
 # Whether to turn compiler warnings into errors
 export WERROR ?= false
@@ -12,21 +12,21 @@ default: release
 	npm install --ignore-scripts
 
 release: ./node_modules/.bin/node-pre-gyp
-	ifeq($(OS),darwin)
-		./scripts/setup.sh --config local.env
-		. local.env; V=1 ./node_modules/.bin/node-pre-gyp configure build --error_on_warnings=$(WERROR) --loglevel=error
-	else
-		V=1 ./node_modules/.bin/node-pre-gyp configure build --error_on_warnings=$(WERROR) --loglevel=error
-	endif
+ifeq ($(OS),darwin)
+	./scripts/setup.sh --config local.env
+	. local.env; V=1 ./node_modules/.bin/node-pre-gyp configure build --error_on_warnings=$(WERROR) --loglevel=error
+else
+	V=1 ./node_modules/.bin/node-pre-gyp configure build --error_on_warnings=$(WERROR) --loglevel=error
+endif
 	@echo "run 'make clean' for full rebuild"
 
 debug: ./node_modules/.bin/node-pre-gyp
-	ifeq($(OS),darwin)
-		./scripts/setup.sh --config local.env
-		. local.env; V=1 ./node_modules/.bin/node-pre-gyp configure build --error_on_warnings=$(WERROR) --loglevel=error --debug
-	else
-		V=1 ./node_modules/.bin/node-pre-gyp configure build --error_on_warnings=$(WERROR) --loglevel=error --debug
-	endif
+ifeq ($(OS),darwin)
+	./scripts/setup.sh --config local.env
+	. local.env; V=1 ./node_modules/.bin/node-pre-gyp configure build --error_on_warnings=$(WERROR) --loglevel=error --debug
+else
+	V=1 ./node_modules/.bin/node-pre-gyp configure build --error_on_warnings=$(WERROR) --loglevel=error --debug
+endif
 	@echo "run 'make clean' for full rebuild"
 
 coverage:
