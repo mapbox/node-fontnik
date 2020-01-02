@@ -11,7 +11,8 @@ default: release
 	npm install --ignore-scripts
 
 release: ./node_modules/.bin/node-pre-gyp
-	V=1 ./node_modules/.bin/node-pre-gyp configure build --error_on_warnings=$(WERROR) --loglevel=error
+	./scripts/setup.sh --config local.env
+	. local.env; V=1 ./node_modules/.bin/node-pre-gyp configure build --error_on_warnings=$(WERROR) --loglevel=error
 	@echo "run 'make clean' for full rebuild"
 
 debug: ./node_modules/.bin/node-pre-gyp

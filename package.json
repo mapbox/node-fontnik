@@ -43,7 +43,7 @@
     "font-inspect": "./bin/font-inspect"
   },
   "scripts": {
-    "install": "node-pre-gyp install --fallback-to-build=true",
+    "install": "./scripts/setup.sh --config local.env; . local.env; node-pre-gyp install --fallback-to-build=true",
     "test": "./node_modules/.bin/tape test/**/*.test.js",
     "prepublishOnly": "npm ls"
   },
