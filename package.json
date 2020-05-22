@@ -44,8 +44,7 @@
   },
   "scripts": {
     "install": "node-pre-gyp install --fallback-to-build=true",
-    "test": "./node_modules/.bin/tape test/**/*.test.js",
-    "prepublishOnly": "npm ls"
+    "test": "./node_modules/.bin/tape test/**/*.test.js"
   },
   "binary": {
     "module_name": "fontnik",
