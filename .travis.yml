@@ -39,22 +39,6 @@ script:
 # run your tests and build binaries
 matrix:
   include:
-    # linux publishable node v4/release
-    - os: linux
-      env: BUILDTYPE=release
-      node_js: 4
-    # linux publishable node v4/debug
-    - os: linux
-      env: BUILDTYPE=debug
-      node_js: 4
-    # linux publishable node v6
-    - os: linux
-      env: BUILDTYPE=release
-      node_js: 6
-    # linux publishable node v6/debug
-    - os: linux
-      env: BUILDTYPE=debug
-      node_js: 6
     # linux publishable node v8
     - os: linux
       env: BUILDTYPE=release
@@ -63,38 +47,41 @@ matrix:
     - os: linux
       env: BUILDTYPE=debug
       node_js: 8
-    # linux publishable node v8
+    # linux publishable node v10
     - os: linux
       env: BUILDTYPE=release
       node_js: 10
-    # linux publishable node v8/debug
+    # linux publishable node v10/debug
     - os: linux
       env: BUILDTYPE=debug
       node_js: 10
-    # osx publishable node v4
-    - os: osx
-      osx_image: xcode8.2
+    # linux publishable node v10
+    - os: linux
       env: BUILDTYPE=release
-      node_js: 4
-    # osx publishable node v6
-    - os: osx
-      osx_image: xcode8.2
-      env: BUILDTYPE=release
-      node_js: 6
-    # osx publishable node v6
+      node_js: 12
+    # linux publishable node v10/debug
+    - os: linux
+      env: BUILDTYPE=debug
+      node_js: 12
+    # osx publishable node v8
     - os: osx
       osx_image: xcode8.2
       env: BUILDTYPE=release
       node_js: 8
-    # osx publishable node v6
+    # osx publishable node v10
     - os: osx
       osx_image: xcode8.2
       env: BUILDTYPE=release
       node_js: 10
-    # Sanitizer build node v4/Debug
+    # osx publishable node v12
+    - os: osx
+      osx_image: xcode8.2
+      env: BUILDTYPE=release
+      node_js: 12
+    # Sanitizer build node v10/Debug
     - os: linux
       env: BUILDTYPE=debug TOOLSET=asan
-      node_js: 4
+      node_js: 10
       sudo: required
       # Overrides `install` to set up custom asan flags
       install:
@@ -118,8 +105,10 @@ matrix:
         - true
     # g++ build (default builds all use clang++)
     - os: linux
-      env: BUILDTYPE=debug CXX="g++-6" CC="gcc-6"
-      node_js: 4
+      # Note: -fext-numeric-literals is needed to workaround gcc bug:
+      # boost/math/constants/constants.hpp:269:3: error: unable to find numeric literal operator 'operatorQ'
+      env: BUILDTYPE=debug CXX="g++-6" CC="gcc-6" CXXFLAGS="-fext-numeric-literals"
+      node_js: 10
       addons:
         apt:
           sources:
@@ -136,7 +125,7 @@ matrix:
     # Coverage build
     - os: linux
       env: BUILDTYPE=debug CXXFLAGS="--coverage" LDFLAGS="--coverage"
-      node_js: 4
+      node_js: 10
       # Overrides `script` to publish coverage data to codecov
       before_script:
         - npm test
@@ -164,7 +153,7 @@ matrix:
     # Clang tidy build
     - os: linux
       env: CLANG_TIDY
-      node_js: 4
+      node_js: 10
       # Overrides `install` to avoid initializing clang toolchain
       install:
         # First run the clang-tidy target

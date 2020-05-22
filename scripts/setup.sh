@@ -85,6 +85,7 @@ function run() {
     echo "leak:v8::internal" >> ${SUPPRESSION_FILE}
     echo "leak:node::CreateEnvironment" >> ${SUPPRESSION_FILE}
     echo "leak:node::Init" >> ${SUPPRESSION_FILE}
+    echo "leak:node::Buffer::Copy" >> ${SUPPRESSION_FILE}
     echo "export ASAN_SYMBOLIZER_PATH=${llvm_toolchain_dir}/bin/llvm-symbolizer" >> ${config}
     echo "export MSAN_SYMBOLIZER_PATH=${llvm_toolchain_dir}/bin/llvm-symbolizer" >> ${config}
     echo "export UBSAN_OPTIONS=print_stacktrace=1" >> ${config}
