@@ -1,3 +1,11 @@
+# 0.6.0
+
+- Adds node v12 and v14 support
+- Adds `fontnik.composite`
+- Drops `libprotobuf` dependency, uses `protozero` instead
+- Requires c++14 compatible compiler
+- Binaries are published using clang++ 10.0.0
+
 # 0.5.2
 
 - Adds .npmignore to keep downstream node_modules small.
