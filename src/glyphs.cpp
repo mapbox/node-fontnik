@@ -175,13 +175,13 @@ NAN_METHOD(Range) {
     }
 
     v8::Local<v8::Object> options = info[0].As<v8::Object>();
-    v8::Local<v8::Value> font_buffer = Nan::Get(options,Nan::New<v8::String>("font").ToLocalChecked()).ToLocalChecked();
+    v8::Local<v8::Value> font_buffer = Nan::Get(options, Nan::New<v8::String>("font").ToLocalChecked()).ToLocalChecked();
     if (!font_buffer->IsObject()) {
         return Nan::ThrowTypeError("Font buffer is not an object");
     }
     v8::Local<v8::Object> obj = font_buffer->ToObject(Nan::GetCurrentContext()).ToLocalChecked();
-    v8::Local<v8::Value> start = Nan::Get(options,Nan::New<v8::String>("start").ToLocalChecked()).ToLocalChecked();
-    v8::Local<v8::Value> end = Nan::Get(options,Nan::New<v8::String>("end").ToLocalChecked()).ToLocalChecked();
+    v8::Local<v8::Value> start = Nan::Get(options, Nan::New<v8::String>("start").ToLocalChecked()).ToLocalChecked();
+    v8::Local<v8::Value> end = Nan::Get(options, Nan::New<v8::String>("end").ToLocalChecked()).ToLocalChecked();
 
     if (obj->IsNull() || obj->IsUndefined() || !node::Buffer::HasInstance(obj)) {
         return Nan::ThrowTypeError("First argument must be a font buffer");
@@ -245,7 +245,7 @@ NAN_METHOD(Composite) {
     CompositeBaton* baton = new CompositeBaton(num_glyphs, callback);
 
     for (unsigned t = 0; t < num_glyphs; ++t) {
-        v8::Local<v8::Value> buf_val = Nan::Get(glyphs,t).ToLocalChecked();
+        v8::Local<v8::Value> buf_val = Nan::Get(glyphs, t).ToLocalChecked();
         if (buf_val->IsNull() || buf_val->IsUndefined()) {
             return utils::CallbackError("buffer value in 'glyphs' array item is null or undefined", callback);
         }
@@ -370,12 +370,13 @@ void AfterComposite(uv_work_t* req) {
         const auto argc = 2u;
         v8::Local<v8::Value> argv[argc] = {
             Nan::Null(),
-            Nan::NewBuffer(&fontstack_message[0],
-                           static_cast<unsigned int>(fontstack_message.size()),
-                           [](char*, void* hint) {
-                               delete reinterpret_cast<std::string*>(hint);
-                           },
-                           baton->message.release())
+            Nan::NewBuffer(
+                &fontstack_message[0],
+                static_cast<unsigned int>(fontstack_message.size()),
+                [](char*, void* hint) {
+                    delete reinterpret_cast<std::string*>(hint);
+                },
+                baton->message.release())
                 .ToLocalChecked()};
         async_resource.runInAsyncScope(Nan::GetCurrentContext()->Global(), Nan::New(baton->callback), 2, argv);
     }
@@ -477,9 +478,9 @@ void AfterLoad(uv_work_t* req) {
         unsigned idx = 0;
         for (auto const& face : baton->faces) {
             v8::Local<v8::Object> js_face = Nan::New<v8::Object>();
-            Nan::Set(js_face,Nan::New("family_name").ToLocalChecked(), Nan::New(face.family_name).ToLocalChecked());
+            Nan::Set(js_face, Nan::New("family_name").ToLocalChecked(), Nan::New(face.family_name).ToLocalChecked());
             if (!face.style_name.empty()) {
-              Nan::Set(js_face,Nan::New("style_name").ToLocalChecked(), Nan::New(face.style_name).ToLocalChecked());
+                Nan::Set(js_face, Nan::New("style_name").ToLocalChecked(), Nan::New(face.style_name).ToLocalChecked());
             }
             v8::Local<v8::Array> js_points = Nan::New<v8::Array>(face.points.size());
             unsigned p_idx = 0;
