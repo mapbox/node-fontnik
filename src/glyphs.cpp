@@ -571,8 +571,8 @@ void RangeAsync(uv_work_t* req) {
 
                     // direct type conversions, no need for checking or casting
                     glyph_writer.add_uint32(3, glyph.width);
-                    glyph_writer.add_uint32(4, glyph.width);
-                    glyph_writer.add_sint32(5, glyph.width);
+                    glyph_writer.add_uint32(4, glyph.height);
+                    glyph_writer.add_sint32(5, glyph.left);
 
                     // conversions requiring checks, for safety and correctness
 
