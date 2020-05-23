@@ -164,15 +164,15 @@ matrix:
       # Overrides `script`, no need to run tests
       before_script:
     # Clang tidy build
-    - os: linux
-      env: CLANG_TIDY
-      node_js: 10
-      # Overrides `install` to avoid initializing clang toolchain
-      install:
-        # First run the clang-tidy target
-        # Any code formatting fixes automatically applied by clang-tidy
-        # will trigger the build to fail (idea here is to get us to pay attention
-        # and get in the habit of running these locally before committing)
-        - make tidy
-      # Overrides `script`, no need to run tests
-      before_script:
+    # - os: linux
+    #   env: CLANG_TIDY
+    #   node_js: 10
+    #   # Overrides `install` to avoid initializing clang toolchain
+    #   install:
+    #     # First run the clang-tidy target
+    #     # Any code formatting fixes automatically applied by clang-tidy
+    #     # will trigger the build to fail (idea here is to get us to pay attention
+    #     # and get in the habit of running these locally before committing)
+    #     - make tidy
+    #   # Overrides `script`, no need to run tests
+    #   before_script:
