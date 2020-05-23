@@ -14,6 +14,8 @@
 #include <gzip/utils.hpp>
 #include <mapbox/glyph_foundry.hpp>
 #include <mapbox/glyph_foundry_impl.hpp>
+#include <utility>
+
 
 namespace node_fontnik {
 
@@ -27,13 +29,13 @@ struct FaceMetadata {
     std::string family_name{};
     std::string style_name{};
     std::vector<int> points{};
-    FaceMetadata(std::string const& _family_name,
-                 std::string const& _style_name,
-                 std::vector<int>&& _points) : family_name(_family_name),
-                                               style_name(_style_name),
+    FaceMetadata(std::string  _family_name,
+                 std::string  _style_name,
+                 std::vector<int>&& _points) : family_name(std::move(_family_name)),
+                                               style_name(std::move(_style_name)),
                                                points(std::move(_points)) {}
-    FaceMetadata(std::string const& _family_name,
-                 std::vector<int>&& _points) : family_name(_family_name),
+    FaceMetadata(std::string  _family_name,
+                 std::vector<int>&& _points) : family_name(std::move(_family_name)),
                                                points(std::move(_points)) {}
 };
 
@@ -55,8 +57,7 @@ struct LoadBaton {
     LoadBaton(v8::Local<v8::Object> buf,
               v8::Local<v8::Value> cb) : font_data(node::Buffer::Data(buf)),
                                          font_size(node::Buffer::Length(buf)),
-                                         error_name(),
-                                         faces(),
+                                         
                                          request() {
         request.data = this;
         callback.Reset(cb.As<v8::Function>());
@@ -90,11 +91,10 @@ struct RangeBaton {
                std::uint32_t _start,
                std::uint32_t _end) : font_data(node::Buffer::Data(buf)),
                                      font_size(node::Buffer::Length(buf)),
-                                     error_name(),
+                                     
                                      start(_start),
                                      end(_end),
-                                     chars(),
-                                     message(),
+                                     
                                      request() {
         request.data = this;
         callback.Reset(cb.As<v8::Function>());
@@ -107,9 +107,9 @@ struct RangeBaton {
 };
 
 struct GlyphPBF {
-    GlyphPBF(v8::Local<v8::Object>& buffer)
+    explicit GlyphPBF(v8::Local<v8::Object>& buffer)
         : data{node::Buffer::Data(buffer), node::Buffer::Length(buffer)},
-          buffer_ref{} {
+          {
         buffer_ref.Reset(buffer.As<v8::Object>());
     }
 
@@ -138,7 +138,7 @@ struct CompositeBaton {
     std::string error_name;
     std::unique_ptr<std::string> message;
     uv_work_t request;
-    CompositeBaton(unsigned size, v8::Local<v8::Value> cb) : error_name(),
+    CompositeBaton(unsigned size, v8::Local<v8::Value> cb) : 
                                                              message(std::make_unique<std::string>()),
                                                              request() {
         glyphs.reserve(size);
@@ -164,7 +164,7 @@ NAN_METHOD(Load) {
         return Nan::ThrowTypeError("Callback must be a function");
     }
 
-    LoadBaton* baton = new LoadBaton(obj, info[1]);
+    auto* baton = new LoadBaton(obj, info[1]);
     uv_queue_work(uv_default_loop(), &baton->request, LoadAsync, reinterpret_cast<uv_after_work_cb>(AfterLoad));
 }
 
@@ -203,7 +203,7 @@ NAN_METHOD(Range) {
         return Nan::ThrowTypeError("Callback must be a function");
     }
 
-    RangeBaton* baton = new RangeBaton(obj,
+    auto* baton = new RangeBaton(obj,
                                        info[1],
                                        Nan::To<std::uint32_t>(start).FromJust(),
                                        Nan::To<std::uint32_t>(end).FromJust());
@@ -212,7 +212,7 @@ NAN_METHOD(Range) {
 
 namespace utils {
 
-inline void CallbackError(std::string message, v8::Local<v8::Function> func) {
+inline void CallbackError(const std::string& message, v8::Local<v8::Function> func) {
     Nan::Callback cb(func);
     v8::Local<v8::Value> argv[1] = {Nan::Error(message.c_str())};
     Nan::Call(cb, 1, argv);
@@ -242,7 +242,7 @@ NAN_METHOD(Composite) {
         return utils::CallbackError("'glyphs' array must be of length greater than 0", callback);
     }
 
-    CompositeBaton* baton = new CompositeBaton(num_glyphs, callback);
+    auto* baton = new CompositeBaton(num_glyphs, callback);
 
     for (unsigned t = 0; t < num_glyphs; ++t) {
         v8::Local<v8::Value> buf_val = Nan::Get(glyphs, t).ToLocalChecked();
@@ -266,19 +266,19 @@ NAN_METHOD(Composite) {
 using id_pair = std::pair<std::uint32_t, protozero::data_view>;
 struct CompareID {
     bool operator()(id_pair const& r1, id_pair const& r2) {
-        return r1.first - r2.first;
+        return (r1.first - r2.first) != 0u;
     }
 };
 
 void CompositeAsync(uv_work_t* req) {
-    CompositeBaton* baton = static_cast<CompositeBaton*>(req->data);
+    auto* baton = static_cast<CompositeBaton*>(req->data);
     try {
         std::vector<std::unique_ptr<std::vector<char>>> buffer_cache;
         std::map<std::uint32_t, protozero::data_view> id_mapping;
         bool first_buffer = true;
         std::string fontstack_name;
         std::string range;
-        std::string& fontstack_buffer = *baton->message.get();
+        std::string& fontstack_buffer = *baton->message;
         protozero::pbf_writer pbf_writer(fontstack_buffer);
         protozero::pbf_writer fontstack_writer{pbf_writer, 1};
         // TODO(danespringmeyer): avoid duplicate fontstacks to be sent it
@@ -360,20 +360,20 @@ void CompositeAsync(uv_work_t* req) {
 void AfterComposite(uv_work_t* req) {
     Nan::HandleScope scope;
 
-    CompositeBaton* baton = static_cast<CompositeBaton*>(req->data);
+    auto* baton = static_cast<CompositeBaton*>(req->data);
     Nan::AsyncResource async_resource(__func__);
     if (!baton->error_name.empty()) {
         v8::Local<v8::Value> argv[1] = {Nan::Error(baton->error_name.c_str())};
         async_resource.runInAsyncScope(Nan::GetCurrentContext()->Global(), Nan::New(baton->callback), 1, argv);
     } else {
-        std::string& fontstack_message = *baton->message.get();
-        const auto argc = 2u;
+        std::string& fontstack_message = *baton->message;
+        const auto argc = 2U;
         v8::Local<v8::Value> argv[argc] = {
             Nan::Null(),
             Nan::NewBuffer(
                 &fontstack_message[0],
                 static_cast<unsigned int>(fontstack_message.size()),
-                [](char*, void* hint) {
+                [](char* /*unused*/, void* hint) {
                     delete reinterpret_cast<std::string*>(hint);
                 },
                 baton->message.release())
@@ -389,10 +389,12 @@ struct ft_library_guard {
     ft_library_guard(ft_library_guard const&) = delete;
     ft_library_guard& operator=(ft_library_guard const&) = delete;
 
-    ft_library_guard(FT_Library* lib) : library_(lib) {}
+    explicit ft_library_guard(FT_Library* lib) : library_(lib) {}
 
     ~ft_library_guard() {
-        if (library_) FT_Done_FreeType(*library_);
+        if (library_ != nullptr) { FT_Done_FreeType(*library_);
+
+}
     }
 
     FT_Library* library_;
@@ -402,10 +404,10 @@ struct ft_face_guard {
     // non copyable
     ft_face_guard(ft_face_guard const&) = delete;
     ft_face_guard& operator=(ft_face_guard const&) = delete;
-    ft_face_guard(FT_Face* f) : face_(f) {}
+    explicit ft_face_guard(FT_Face* f) : face_(f) {}
 
     ~ft_face_guard() {
-        if (face_) {
+        if (face_ != nullptr) {
             FT_Done_Face(*face_);
         }
     }
@@ -414,23 +416,23 @@ struct ft_face_guard {
 };
 
 void LoadAsync(uv_work_t* req) {
-    LoadBaton* baton = static_cast<LoadBaton*>(req->data);
+    auto* baton = static_cast<LoadBaton*>(req->data);
     try {
         FT_Library library = nullptr;
         ft_library_guard library_guard(&library);
         FT_Error error = FT_Init_FreeType(&library);
-        if (error) {
+        if (error != 0) {
             /* LCOV_EXCL_START */
             baton->error_name = std::string("could not open FreeType library");
             return;
             /* LCOV_EXCL_END */
         }
-        FT_Face ft_face = 0;
+        FT_Face ft_face = nullptr;
         FT_Long num_faces = 0;
-        for (int i = 0; ft_face == 0 || i < num_faces; ++i) {
+        for (int i = 0; ft_face == nullptr || i < num_faces; ++i) {
             ft_face_guard face_guard(&ft_face);
             FT_Error face_error = FT_New_Memory_Face(library, reinterpret_cast<FT_Byte const*>(baton->font_data), static_cast<FT_Long>(baton->font_size), i, &ft_face);
-            if (face_error) {
+            if (face_error != 0) {
                 baton->error_name = std::string("could not open font file");
                 return;
             }
@@ -438,19 +440,21 @@ void LoadAsync(uv_work_t* req) {
                 num_faces = ft_face->num_faces;
             }
 
-            if (ft_face->family_name) {
+            if (ft_face->family_name != nullptr) {
                 std::set<int> points;
                 FT_ULong charcode;
                 FT_UInt gindex;
                 charcode = FT_Get_First_Char(ft_face, &gindex);
                 while (gindex != 0) {
                     charcode = FT_Get_Next_Char(ft_face, charcode, &gindex);
-                    if (charcode != 0) points.emplace(charcode);
+                    if (charcode != 0) { points.emplace(charcode);
+
+}
                 }
 
                 std::vector<int> points_vec(points.begin(), points.end());
 
-                if (ft_face->style_name) {
+                if (ft_face->style_name != nullptr) {
                     baton->faces.emplace_back(ft_face->family_name, ft_face->style_name, std::move(points_vec));
                 } else {
                     baton->faces.emplace_back(ft_face->family_name, std::move(points_vec));
@@ -468,7 +472,7 @@ void LoadAsync(uv_work_t* req) {
 void AfterLoad(uv_work_t* req) {
     Nan::HandleScope scope;
 
-    LoadBaton* baton = static_cast<LoadBaton*>(req->data);
+    auto* baton = static_cast<LoadBaton*>(req->data);
     Nan::AsyncResource async_resource(__func__);
     if (!baton->error_name.empty()) {
         v8::Local<v8::Value> argv[1] = {Nan::Error(baton->error_name.c_str())};
@@ -497,7 +501,7 @@ void AfterLoad(uv_work_t* req) {
 }
 
 void RangeAsync(uv_work_t* req) {
-    RangeBaton* baton = static_cast<RangeBaton*>(req->data);
+    auto* baton = static_cast<RangeBaton*>(req->data);
     try {
 
         unsigned array_size = baton->end - baton->start;
@@ -509,7 +513,7 @@ void RangeAsync(uv_work_t* req) {
         FT_Library library = nullptr;
         ft_library_guard library_guard(&library);
         FT_Error error = FT_Init_FreeType(&library);
-        if (error) {
+        if (error != 0) {
             /* LCOV_EXCL_START */
             baton->error_name = std::string("could not open FreeType library");
             return;
@@ -517,12 +521,12 @@ void RangeAsync(uv_work_t* req) {
         }
 
         protozero::pbf_writer pbf_writer{baton->message};
-        FT_Face ft_face = 0;
+        FT_Face ft_face = nullptr;
         FT_Long num_faces = 0;
-        for (int i = 0; ft_face == 0 || i < num_faces; ++i) {
+        for (int i = 0; ft_face == nullptr || i < num_faces; ++i) {
             ft_face_guard face_guard(&ft_face);
             FT_Error face_error = FT_New_Memory_Face(library, reinterpret_cast<FT_Byte const*>(baton->font_data), static_cast<FT_Long>(baton->font_size), i, &ft_face);
-            if (face_error) {
+            if (face_error != 0) {
                 baton->error_name = std::string("could not open font");
                 return;
             }
@@ -531,9 +535,9 @@ void RangeAsync(uv_work_t* req) {
                 num_faces = ft_face->num_faces;
             }
 
-            if (ft_face->family_name) {
+            if (ft_face->family_name != nullptr) {
                 protozero::pbf_writer fontstack_writer{pbf_writer, 1};
-                if (ft_face->style_name) {
+                if (ft_face->style_name != nullptr) {
                     fontstack_writer.add_string(1, std::string(ft_face->family_name) + " " + std::string(ft_face->style_name));
                 } else {
                     fontstack_writer.add_string(1, std::string(ft_face->family_name));
@@ -553,7 +557,9 @@ void RangeAsync(uv_work_t* req) {
                     // Get FreeType face from face_ptr.
                     FT_UInt char_index = FT_Get_Char_Index(ft_face, char_code);
 
-                    if (!char_index) continue;
+                    if (char_index == 0u) { continue;
+
+}
 
                     glyph.glyph_index = char_index;
                     sdf_glyph_foundry::RenderSDF(glyph, 24, 3, 0.25, ft_face);
@@ -564,9 +570,9 @@ void RangeAsync(uv_work_t* req) {
                     // shortening conversion
                     if (char_code > std::numeric_limits<FT_ULong>::max()) {
                         throw std::runtime_error("Invalid value for char_code: too large");
-                    } else {
+                    } 
                         glyph_writer.add_uint32(1, static_cast<std::uint32_t>(char_code));
-                    }
+                    
 
                     if (glyph.width > 0) {
                         glyph_writer.add_bytes(2, glyph.bitmap);
@@ -583,16 +589,16 @@ void RangeAsync(uv_work_t* req) {
                     double top = static_cast<double>(glyph.top) - glyph.ascender;
                     if (top < std::numeric_limits<std::int32_t>::min() || top > std::numeric_limits<std::int32_t>::max()) {
                         throw std::runtime_error("Invalid value for glyph.top-glyph.ascender");
-                    } else {
+                    } 
                         glyph_writer.add_sint32(6, static_cast<std::int32_t>(top));
-                    }
+                    
 
                     // double to uint
                     if (glyph.advance < std::numeric_limits<std::uint32_t>::min() || glyph.advance > std::numeric_limits<std::uint32_t>::max()) {
                         throw std::runtime_error("Invalid value for glyph.top-glyph.ascender");
-                    } else {
+                    } 
                         glyph_writer.add_uint32(7, static_cast<std::uint32_t>(glyph.advance));
-                    }
+                    
                 }
             } else {
                 baton->error_name = std::string("font does not have family_name");
@@ -607,7 +613,7 @@ void RangeAsync(uv_work_t* req) {
 void AfterRange(uv_work_t* req) {
     Nan::HandleScope scope;
 
-    RangeBaton* baton = static_cast<RangeBaton*>(req->data);
+    auto* baton = static_cast<RangeBaton*>(req->data);
     Nan::AsyncResource async_resource(__func__);
     if (!baton->error_name.empty()) {
         v8::Local<v8::Value> argv[1] = {Nan::Error(baton->error_name.c_str())};
