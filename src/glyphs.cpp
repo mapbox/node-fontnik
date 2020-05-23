@@ -266,7 +266,7 @@ NAN_METHOD(Composite) {
 using id_pair = std::pair<std::uint32_t, protozero::data_view>;
 struct CompareID {
     bool operator()(id_pair const& r1, id_pair const& r2) {
-        return (r1.first - r2.first) != 0u;
+        return (r1.first - r2.first) != 0U;
     }
 };
 
@@ -557,7 +557,7 @@ void RangeAsync(uv_work_t* req) {
                     // Get FreeType face from face_ptr.
                     FT_UInt char_index = FT_Get_Char_Index(ft_face, char_code);
 
-                    if (char_index == 0u) { continue;
+                    if (char_index == 0U) { continue;
 
 }
 
