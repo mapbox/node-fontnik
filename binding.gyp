@@ -9,8 +9,7 @@
       'system_includes': [
         "-isystem <(module_root_dir)/<!(node -e \"require('nan')\")",
         "-isystem <(module_root_dir)/mason_packages/.link/include/",
-        "-isystem <(module_root_dir)/mason_packages/.link/include/freetype2",
-        '-isystem <(SHARED_INTERMEDIATE_DIR)'
+        "-isystem <(module_root_dir)/mason_packages/.link/include/freetype2"
       ],
       # Flags we pass to the compiler to ensure the compiler
       # warns us about potentially buggy or dangerous code
@@ -26,7 +25,8 @@
         '-Wuninitialized',
         '-Wunreachable-code',
         '-Wold-style-cast',
-        '-Wno-error=unused-variable'
+        '-Wno-error=unused-variable',
+        '-Wno-deprecated-declarations'
       ]
   },
   # `targets` is a list of targets for gyp to run.
@@ -54,31 +54,11 @@
       ]
     },
     {
-      'target_name': 'action_before_build2',
-      'type': 'none',
-      'dependencies': [
-        'action_before_build'
-      ],
-      'hard_dependency': 1,
-      'actions': [
-        {
-          'action_name': 'run_protoc_glyphs',
-          'inputs': [
-            './proto/glyphs.proto'
-          ],
-          'outputs': [
-            "<(SHARED_INTERMEDIATE_DIR)/glyphs.pb.cc"
-          ],
-          'action': ['./mason_packages/.link/bin/protoc','-Iproto/','--cpp_out=<(SHARED_INTERMEDIATE_DIR)/','./proto/glyphs.proto']
-        }
-      ]
-    },
-    {
       # module_name and module_path are both variables passed by node-pre-gyp from package.json
       'target_name': '<(module_name)', # sets the name of the binary file
       'product_dir': '<(module_path)', # controls where the node binary file gets copied to (./lib/binding/module.node)
       'type': 'loadable_module',
-      'dependencies': [ 'action_before_build2' ],
+      'dependencies': [ 'action_before_build' ],
       # "make" only watches files specified here, and will sometimes cache these files after the first compile.
       # This cache can sometimes cause confusing errors when removing/renaming/adding new files.
       # Running "make clean" helps to prevent this "mysterious error by cache" scenario
@@ -86,13 +66,11 @@
       # See: https://github.com/mapbox/node-cpp-skel/pull/44#discussion_r122050205
       'sources': [
         'src/node_fontnik.cpp',
-        'src/glyphs.cpp',
-        '<(SHARED_INTERMEDIATE_DIR)/glyphs.pb.cc'
+        'src/glyphs.cpp'
       ],
       "link_settings": {
         "libraries": [
-         "-lfreetype",
-         "-lprotobuf-lite"
+         "-lfreetype"
          ],
         "library_dirs": [
           "<(module_root_dir)/mason_packages/.link/lib"
@@ -128,7 +106,7 @@
         'GCC_ENABLE_CPP_EXCEPTIONS': 'YES',
         'MACOSX_DEPLOYMENT_TARGET':'10.8',
         'CLANG_CXX_LIBRARY': 'libc++',
-        'CLANG_CXX_LANGUAGE_STANDARD':'c++11',
+        'CLANG_CXX_LANGUAGE_STANDARD':'c++14',
         'GCC_VERSION': 'com.apple.compilers.llvm.clang.1_0'
       }
     }

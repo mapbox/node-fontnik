@@ -2,6 +2,7 @@
 .mason
 .toolchain
 bench
+glyphs
 build
 fonts
 lib

@@ -4,9 +4,11 @@
 [![Build Status](https://travis-ci.org/mapbox/node-fontnik.svg?branch=master)](https://travis-ci.org/mapbox/node-fontnik)
 [![codecov](https://codecov.io/gh/mapbox/node-fontnik/branch/master/graph/badge.svg)](https://codecov.io/gh/mapbox/node-fontnik)
 
-A library that delivers a range of glyphs rendered as SDFs (signed distance fields) in a protocol buffer. We use these encoded glyphs as the basic blocks of font rendering in [Mapbox GL](https://github.com/mapbox/mapbox-gl-js). SDF encoding is superior to traditional fonts for our usecase terms of scaling, rotation, and quickly deriving halos - WebGL doesn't have built-in font rendering, so the decision is between vectorization, which tends to be slow, and SDF generation.
+A library that delivers a range of glyphs rendered as SDFs (signed distance fields) in a protocol buffer. We use these encoded glyphs as the basic blocks of font rendering in [Mapbox GL](https://github.com/mapbox/mapbox-gl-js). SDF encoding is superior to traditional fonts for our usecase in terms of scaling, rotation, and quickly deriving halos - WebGL doesn't have built-in font rendering, so the decision is between vectorization, which tends to be slow, and SDF generation.
 
 The approach this library takes is to parse and rasterize the font with Freetype (hence the C++ requirement), and then generate a distance field from that rasterized image.
+
+See also [TinySDF](https://github.com/mapbox/tiny-sdf), which is a faster but less precise approach to generating SDFs for fonts.
 
 ## [API](API.md)
 
@@ -15,7 +17,7 @@ The approach this library takes is to parse and rasterize the font with Freetype
 By default, installs binaries. On these platforms no external dependencies are needed.
 
 - 64 bit OS X or 64 bit Linux
-- Node.js v0.10.x, v0.12.x, v4.x or v6.x
+- Node.js v8-v14
 
 Just run:
 
@@ -30,7 +32,7 @@ However, other platforms will fall back to a source compile: see [building from 
 ```
 npm install --build-from-source
 ```
-Building from source should automatically install `boost`, `freetype` and `protobuf` locally using [mason](https://github.com/mapbox/mason). These dependencies can be installed manually by running `./scripts/install_deps.sh`.
+Building from source should automatically install `boost`, `freetype` and `protozero` locally using [mason](https://github.com/mapbox/mason). These dependencies can be installed manually by running `./scripts/install_deps.sh`.
 
 ## Local testing
 

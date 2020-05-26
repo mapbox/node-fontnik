@@ -1,5 +1,5 @@
 ---
-Checks:          '*'
+Checks:          '*,-llvm-header-guard,-fuchsia*,-modernize-use-trailing-return-type,-cppcoreguidelines-avoid-magic-numbers,-readability-magic-numbers'
 WarningsAsErrors: '*'
 HeaderFilterRegex: '\/src\/'
 AnalyzeTemporaryDtors: false
