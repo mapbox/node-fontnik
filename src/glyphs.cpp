@@ -16,7 +16,6 @@
 #include <mapbox/glyph_foundry_impl.hpp>
 #include <utility>
 
-
 namespace node_fontnik {
 
 struct FaceMetadata {
@@ -29,12 +28,12 @@ struct FaceMetadata {
     std::string family_name{};
     std::string style_name{};
     std::vector<int> points{};
-    FaceMetadata(std::string  _family_name,
-                 std::string  _style_name,
+    FaceMetadata(std::string _family_name,
+                 std::string _style_name,
                  std::vector<int>&& _points) : family_name(std::move(_family_name)),
                                                style_name(std::move(_style_name)),
                                                points(std::move(_points)) {}
-    FaceMetadata(std::string  _family_name,
+    FaceMetadata(std::string _family_name,
                  std::vector<int>&& _points) : family_name(std::move(_family_name)),
                                                points(std::move(_points)) {}
 };
@@ -57,7 +56,7 @@ struct LoadBaton {
     LoadBaton(v8::Local<v8::Object> buf,
               v8::Local<v8::Value> cb) : font_data(node::Buffer::Data(buf)),
                                          font_size(node::Buffer::Length(buf)),
-                                         
+
                                          request() {
         request.data = this;
         callback.Reset(cb.As<v8::Function>());
@@ -91,10 +90,10 @@ struct RangeBaton {
                std::uint32_t _start,
                std::uint32_t _end) : font_data(node::Buffer::Data(buf)),
                                      font_size(node::Buffer::Length(buf)),
-                                     
+
                                      start(_start),
                                      end(_end),
-                                     
+
                                      request() {
         request.data = this;
         callback.Reset(cb.As<v8::Function>());
@@ -109,8 +108,8 @@ struct RangeBaton {
 struct GlyphPBF {
     explicit GlyphPBF(v8::Local<v8::Object>& buffer)
         : data{node::Buffer::Data(buffer), node::Buffer::Length(buffer)} {
-            buffer_ref.Reset(buffer.As<v8::Object>());
-        }
+        buffer_ref.Reset(buffer.As<v8::Object>());
+    }
 
     ~GlyphPBF() {
         buffer_ref.Reset();
@@ -137,8 +136,7 @@ struct CompositeBaton {
     std::string error_name;
     std::unique_ptr<std::string> message;
     uv_work_t request;
-    CompositeBaton(unsigned size, v8::Local<v8::Value> cb) : 
-                                                             message(std::make_unique<std::string>()),
+    CompositeBaton(unsigned size, v8::Local<v8::Value> cb) : message(std::make_unique<std::string>()),
                                                              request() {
         glyphs.reserve(size);
         request.data = this;
@@ -203,9 +201,9 @@ NAN_METHOD(Range) {
     }
 
     auto* baton = new RangeBaton(obj,
-                                       info[1],
-                                       Nan::To<std::uint32_t>(start).FromJust(),
-                                       Nan::To<std::uint32_t>(end).FromJust());
+                                 info[1],
+                                 Nan::To<std::uint32_t>(start).FromJust(),
+                                 Nan::To<std::uint32_t>(end).FromJust());
     uv_queue_work(uv_default_loop(), &baton->request, RangeAsync, reinterpret_cast<uv_after_work_cb>(AfterRange));
 }
 
@@ -391,9 +389,9 @@ struct ft_library_guard {
     explicit ft_library_guard(FT_Library* lib) : library_(lib) {}
 
     ~ft_library_guard() {
-        if (library_ != nullptr) { FT_Done_FreeType(*library_);
-
-}
+        if (library_ != nullptr) {
+            FT_Done_FreeType(*library_);
+        }
     }
 
     FT_Library* library_;
@@ -446,9 +444,9 @@ void LoadAsync(uv_work_t* req) {
                 charcode = FT_Get_First_Char(ft_face, &gindex);
                 while (gindex != 0) {
                     charcode = FT_Get_Next_Char(ft_face, charcode, &gindex);
-                    if (charcode != 0) { points.emplace(charcode);
-
-}
+                    if (charcode != 0) {
+                        points.emplace(charcode);
+                    }
                 }
 
                 std::vector<int> points_vec(points.begin(), points.end());
@@ -556,9 +554,9 @@ void RangeAsync(uv_work_t* req) {
                     // Get FreeType face from face_ptr.
                     FT_UInt char_index = FT_Get_Char_Index(ft_face, char_code);
 
-                    if (char_index == 0U) { continue;
-
-}
+                    if (char_index == 0U) {
+                        continue;
+                    }
 
                     glyph.glyph_index = char_index;
                     sdf_glyph_foundry::RenderSDF(glyph, 24, 3, 0.25, ft_face);
@@ -569,9 +567,8 @@ void RangeAsync(uv_work_t* req) {
                     // shortening conversion
                     if (char_code > std::numeric_limits<FT_ULong>::max()) {
                         throw std::runtime_error("Invalid value for char_code: too large");
-                    } 
-                        glyph_writer.add_uint32(1, static_cast<std::uint32_t>(char_code));
-                    
+                    }
+                    glyph_writer.add_uint32(1, static_cast<std::uint32_t>(char_code));
 
                     if (glyph.width > 0) {
                         glyph_writer.add_bytes(2, glyph.bitmap);
@@ -588,16 +585,14 @@ void RangeAsync(uv_work_t* req) {
                     double top = static_cast<double>(glyph.top) - glyph.ascender;
                     if (top < std::numeric_limits<std::int32_t>::min() || top > std::numeric_limits<std::int32_t>::max()) {
                         throw std::runtime_error("Invalid value for glyph.top-glyph.ascender");
-                    } 
-                        glyph_writer.add_sint32(6, static_cast<std::int32_t>(top));
-                    
+                    }
+                    glyph_writer.add_sint32(6, static_cast<std::int32_t>(top));
 
                     // double to uint
                     if (glyph.advance < std::numeric_limits<std::uint32_t>::min() || glyph.advance > std::numeric_limits<std::uint32_t>::max()) {
                         throw std::runtime_error("Invalid value for glyph.top-glyph.ascender");
-                    } 
-                        glyph_writer.add_uint32(7, static_cast<std::uint32_t>(glyph.advance));
-                    
+                    }
+                    glyph_writer.add_uint32(7, static_cast<std::uint32_t>(glyph.advance));
                 }
             } else {
                 baton->error_name = std::string("font does not have family_name");
