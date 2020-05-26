@@ -1,6 +1,7 @@
 # 0.6.0
 
 - Adds node v12 and v14 support
+- Dropped node v4 and v6 support
 - Adds `fontnik.composite`
 - Drops `libprotobuf` dependency, uses `protozero` instead
 - Requires c++14 compatible compiler
