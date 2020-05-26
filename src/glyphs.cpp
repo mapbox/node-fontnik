@@ -108,10 +108,9 @@ struct RangeBaton {
 
 struct GlyphPBF {
     explicit GlyphPBF(v8::Local<v8::Object>& buffer)
-        : data{node::Buffer::Data(buffer), node::Buffer::Length(buffer)},
-          {
-        buffer_ref.Reset(buffer.As<v8::Object>());
-    }
+        : data{node::Buffer::Data(buffer), node::Buffer::Length(buffer)} {
+            buffer_ref.Reset(buffer.As<v8::Object>());
+        }
 
     ~GlyphPBF() {
         buffer_ref.Reset();
