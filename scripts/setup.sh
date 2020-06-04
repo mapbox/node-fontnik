@@ -3,8 +3,8 @@
 set -eu
 set -o pipefail
 
-export MASON_RELEASE="${MASON_RELEASE:-eeba3b5}"
-export MASON_LLVM_RELEASE="${MASON_LLVM_RELEASE:-5.0.0}"
+export MASON_RELEASE="${MASON_RELEASE:-master}"
+export MASON_LLVM_RELEASE="${MASON_LLVM_RELEASE:-10.0.0}"
 
 PLATFORM=$(uname | tr A-Z a-z)
 if [[ ${PLATFORM} == 'darwin' ]]; then
@@ -85,6 +85,7 @@ function run() {
     echo "leak:v8::internal" >> ${SUPPRESSION_FILE}
     echo "leak:node::CreateEnvironment" >> ${SUPPRESSION_FILE}
     echo "leak:node::Init" >> ${SUPPRESSION_FILE}
+    echo "leak:node::Buffer::Copy" >> ${SUPPRESSION_FILE}
     echo "export ASAN_SYMBOLIZER_PATH=${llvm_toolchain_dir}/bin/llvm-symbolizer" >> ${config}
     echo "export MSAN_SYMBOLIZER_PATH=${llvm_toolchain_dir}/bin/llvm-symbolizer" >> ${config}
     echo "export UBSAN_OPTIONS=print_stacktrace=1" >> ${config}

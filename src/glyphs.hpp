@@ -1,7 +1,6 @@
 #ifndef NODE_FONTNIK_GLYPHS_HPP
 #define NODE_FONTNIK_GLYPHS_HPP
 
-#include "glyphs.pb.h"
 #include <nan.h>
 
 namespace node_fontnik {
@@ -12,6 +11,9 @@ void AfterLoad(uv_work_t* req);
 NAN_METHOD(Range);
 void RangeAsync(uv_work_t* req);
 void AfterRange(uv_work_t* req);
+NAN_METHOD(Composite);
+void CompositeAsync(uv_work_t* req);
+void AfterComposite(uv_work_t* req);
 
 } // namespace node_fontnik
 
