@@ -547,6 +547,10 @@ void RangeAsync(uv_work_t* req) {
                 double size = 24 * scale_factor;
                 FT_Set_Char_Size(ft_face, 0, static_cast<FT_F26Dot6>(size * (1 << 6)), 0, 0);
 
+                // Set ascender and descender in 26.6 fractional pixels.
+                fontstack_writer.add_sint32(4, static_cast<std::int32_t>(ft_face->size->metrics.ascender / 64));
+                fontstack_writer.add_sint32(5, static_cast<std::int32_t>(ft_face->size->metrics.descender / 64));
+
                 for (std::vector<uint32_t>::size_type x = 0; x != baton->chars.size(); x++) {
                     FT_ULong char_code = baton->chars[x];
                     sdf_glyph_foundry::glyph_info glyph;

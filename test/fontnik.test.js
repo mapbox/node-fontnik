@@ -241,6 +241,8 @@ test('range', function(t) {
             var vt = new Glyphs(new Protobuf(new Uint8Array(data)));
             t.equal(vt.stacks.hasOwnProperty('?'), true);
             t.equal(vt.stacks['?'].hasOwnProperty('name'), true);
+            t.equal(vt.stacks['?'].hasOwnProperty('ascender'), true);
+            t.equal(vt.stacks['?'].hasOwnProperty('descender'), true);
             t.equal(vt.stacks['?'].name, '?');
             t.end();
         });
@@ -251,6 +253,12 @@ test('range', function(t) {
             t.error(err);
             var vt = new Glyphs(new Protobuf(new Uint8Array(data)));
             var glyphs = vt.stacks['Osaka Regular'].glyphs;
+            var stack = vt.stacks['Osaka Regular'];
+
+            t.equal(stack.name, 'Osaka Regular');
+            t.equal(stack.ascender, 24);
+            t.equal(stack.descender, -6);
+
             var keys = Object.keys(glyphs);
 
             var glyph;
