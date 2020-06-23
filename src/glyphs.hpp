@@ -1,20 +1,12 @@
-#ifndef NODE_FONTNIK_GLYPHS_HPP
-#define NODE_FONTNIK_GLYPHS_HPP
+#pragma once
 
-#include <nan.h>
+#include <napi.h>
+#include <uv.h>
 
 namespace node_fontnik {
 
-NAN_METHOD(Load);
-void LoadAsync(uv_work_t* req);
-void AfterLoad(uv_work_t* req);
-NAN_METHOD(Range);
-void RangeAsync(uv_work_t* req);
-void AfterRange(uv_work_t* req);
-NAN_METHOD(Composite);
-void CompositeAsync(uv_work_t* req);
-void AfterComposite(uv_work_t* req);
+Napi::Value Load(Napi::CallbackInfo const& info);
+Napi::Value Range(Napi::CallbackInfo const& info);
+Napi::Value Composite(Napi::CallbackInfo const& info);
 
 } // namespace node_fontnik
-
-#endif // NODE_FONTNIK_GLYPHS_HPP
