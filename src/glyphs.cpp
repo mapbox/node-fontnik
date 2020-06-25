@@ -386,8 +386,7 @@ struct AsyncComposite : Napi::AsyncWorker {
             bool first_buffer = true;
             std::string fontstack_name;
             std::string range;
-            std::string& fontstack_buffer = *message_;
-            protozero::pbf_writer pbf_writer(fontstack_buffer);
+            protozero::pbf_writer pbf_writer(*message_);
             protozero::pbf_writer fontstack_writer{pbf_writer, 1};
             // TODO(danespringmeyer): avoid duplicate fontstacks to be sent it
             for (auto const& glyph_obj : glyphs_) {
