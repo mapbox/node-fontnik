@@ -118,8 +118,11 @@ struct AsyncLoad : Napi::AsyncWorker {
                     SetError("could not open font file");
                     return;
                 }
-                if (num_faces == 0) num_faces = ft_face->num_faces;
-
+                if (num_faces == 0)
+                {
+                    num_faces = ft_face->num_faces;
+                    faces_.reserve(static_cast<std::size_t>(num_faces));
+                }
                 if (ft_face->family_name != nullptr) {
                     std::set<int> points;
                     FT_ULong charcode;
@@ -230,7 +233,7 @@ struct AsyncRange : Napi::AsyncWorker {
                     double size = 24 * scale_factor;
                     FT_Set_Char_Size(ft_face, 0, static_cast<FT_F26Dot6>(size * (1 << 6)), 0, 0);
 
-                    for (std::vector<uint32_t>::size_type x = 0; x != chars_.size(); x++) {
+                    for (std::vector<uint32_t>::size_type x = 0; x != chars_.size(); ++x) {
                         FT_ULong char_code = chars_[x];
                         sdf_glyph_foundry::glyph_info glyph;
                         // Get FreeType face from face_ptr.
