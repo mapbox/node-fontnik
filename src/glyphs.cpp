@@ -5,9 +5,7 @@
 // node
 #include <limits>
 #include <memory>
-#include <nan.h>
-#include <node_buffer.h>
-
+#include <napi.h>
 // sdf-glyph-foundry
 #include <gzip/compress.hpp>
 #include <gzip/decompress.hpp>
@@ -25,95 +23,27 @@ struct FaceMetadata {
     // movaable only for highest efficiency
     FaceMetadata& operator=(FaceMetadata&& c) = default;
     FaceMetadata(FaceMetadata&& c) = default;
+
     std::string family_name{};
     std::string style_name{};
     std::vector<int> points{};
     FaceMetadata(std::string _family_name,
                  std::string _style_name,
-                 std::vector<int>&& _points) : family_name(std::move(_family_name)),
-                                               style_name(std::move(_style_name)),
-                                               points(std::move(_points)) {}
+                 std::vector<int>&& _points)
+        : family_name(std::move(_family_name)),
+          style_name(std::move(_style_name)),
+          points(std::move(_points)) {}
     FaceMetadata(std::string _family_name,
-                 std::vector<int>&& _points) : family_name(std::move(_family_name)),
-                                               points(std::move(_points)) {}
-};
-
-struct LoadBaton {
-    // We explicitly delete the copy constructor and assignment operator below
-    // This allows us to have the `const char* font_data` without needing to define copy semantics
-    // and avoids a g++ warning of ‘struct node_fontnik::LoadBaton’ has pointer data members [-Weffc++]
-    // but does not override ‘node_fontnik::LoadBaton(const node_fontnik::LoadBaton&)’'
-    LoadBaton(LoadBaton const&) = delete;
-    LoadBaton& operator=(LoadBaton const&) = delete;
-
-    Nan::Persistent<v8::Function> callback;
-    Nan::Persistent<v8::Object> buffer;
-    const char* font_data;
-    std::size_t font_size;
-    std::string error_name;
-    std::vector<FaceMetadata> faces;
-    uv_work_t request;
-    LoadBaton(v8::Local<v8::Object> buf,
-              v8::Local<v8::Value> cb) : font_data(node::Buffer::Data(buf)),
-                                         font_size(node::Buffer::Length(buf)),
-
-                                         request() {
-        request.data = this;
-        callback.Reset(cb.As<v8::Function>());
-        buffer.Reset(buf.As<v8::Object>());
-    }
-    ~LoadBaton() {
-        callback.Reset();
-        buffer.Reset();
-    }
-};
-
-struct RangeBaton {
-    // We explicitly delete the copy constructor and assignment operator below
-    // This allows us to have the `const char* font_data` without needing to define copy semantics
-    // and avoids a g++ warning of ‘struct node_fontnik::LoadBaton’ has pointer data members [-Weffc++]
-    // but does not override ‘node_fontnik::LoadBaton(const node_fontnik::LoadBaton&)’'
-    RangeBaton(RangeBaton const&) = delete;
-    RangeBaton& operator=(RangeBaton const&) = delete;
-    Nan::Persistent<v8::Function> callback;
-    Nan::Persistent<v8::Object> buffer;
-    const char* font_data;
-    std::size_t font_size;
-    std::string error_name;
-    std::uint32_t start;
-    std::uint32_t end;
-    std::vector<std::uint32_t> chars;
-    std::string message;
-    uv_work_t request;
-    RangeBaton(v8::Local<v8::Object> buf,
-               v8::Local<v8::Value> cb,
-               std::uint32_t _start,
-               std::uint32_t _end) : font_data(node::Buffer::Data(buf)),
-                                     font_size(node::Buffer::Length(buf)),
-
-                                     start(_start),
-                                     end(_end),
-
-                                     request() {
-        request.data = this;
-        callback.Reset(cb.As<v8::Function>());
-        buffer.Reset(buf.As<v8::Object>());
-    }
-    ~RangeBaton() {
-        callback.Reset();
-        buffer.Reset();
-    }
+                 std::vector<int>&& _points)
+        : family_name(std::move(_family_name)),
+          points(std::move(_points)) {}
 };
 
 struct GlyphPBF {
-    explicit GlyphPBF(v8::Local<v8::Object>& buffer)
-        : data{node::Buffer::Data(buffer), node::Buffer::Length(buffer)} {
-        buffer_ref.Reset(buffer.As<v8::Object>());
-    }
-
-    ~GlyphPBF() {
-        buffer_ref.Reset();
-    }
+    explicit GlyphPBF(Napi::Buffer<char> const& buffer)
+        : data{buffer.As<Napi::Buffer<char>>().Data(),
+               buffer.As<Napi::Buffer<char>>().Length()},
+          buffer_ref_{Napi::Persistent(buffer)} {}
 
     // non-copyable
     GlyphPBF(GlyphPBF const&) = delete;
@@ -124,262 +54,8 @@ struct GlyphPBF {
     GlyphPBF& operator=(GlyphPBF&&) = delete;
 
     protozero::data_view data;
-    Nan::Persistent<v8::Object> buffer_ref;
+    Napi::Reference<Napi::Buffer<char>> buffer_ref_;
 };
-
-struct CompositeBaton {
-    CompositeBaton(CompositeBaton const&) = delete;
-    CompositeBaton& operator=(CompositeBaton const&) = delete;
-
-    Nan::Persistent<v8::Function> callback;
-    std::vector<std::unique_ptr<GlyphPBF>> glyphs{};
-    std::string error_name;
-    std::unique_ptr<std::string> message;
-    uv_work_t request;
-    CompositeBaton(unsigned size, v8::Local<v8::Value> cb) : message(std::make_unique<std::string>()),
-                                                             request() {
-        glyphs.reserve(size);
-        request.data = this;
-        callback.Reset(cb.As<v8::Function>());
-    }
-    ~CompositeBaton() {
-        callback.Reset();
-    }
-};
-
-NAN_METHOD(Load) {
-    // Validate arguments.
-    if (!info[0]->IsObject()) {
-        return Nan::ThrowTypeError("First argument must be a font buffer");
-    }
-    v8::Local<v8::Object> obj = info[0]->ToObject(Nan::GetCurrentContext()).ToLocalChecked();
-    if (obj->IsNull() || obj->IsUndefined() || !node::Buffer::HasInstance(obj)) {
-        return Nan::ThrowTypeError("First argument must be a font buffer");
-    }
-
-    if (info.Length() < 2 || !info[1]->IsFunction()) {
-        return Nan::ThrowTypeError("Callback must be a function");
-    }
-
-    auto* baton = new LoadBaton(obj, info[1]);
-    uv_queue_work(uv_default_loop(), &baton->request, LoadAsync, reinterpret_cast<uv_after_work_cb>(AfterLoad));
-}
-
-NAN_METHOD(Range) {
-    // Validate arguments.
-    if (info.Length() < 1 || !info[0]->IsObject()) {
-        return Nan::ThrowTypeError("First argument must be an object of options");
-    }
-
-    v8::Local<v8::Object> options = info[0].As<v8::Object>();
-    v8::Local<v8::Value> font_buffer = Nan::Get(options, Nan::New<v8::String>("font").ToLocalChecked()).ToLocalChecked();
-    if (!font_buffer->IsObject()) {
-        return Nan::ThrowTypeError("Font buffer is not an object");
-    }
-    v8::Local<v8::Object> obj = font_buffer->ToObject(Nan::GetCurrentContext()).ToLocalChecked();
-    v8::Local<v8::Value> start = Nan::Get(options, Nan::New<v8::String>("start").ToLocalChecked()).ToLocalChecked();
-    v8::Local<v8::Value> end = Nan::Get(options, Nan::New<v8::String>("end").ToLocalChecked()).ToLocalChecked();
-
-    if (obj->IsNull() || obj->IsUndefined() || !node::Buffer::HasInstance(obj)) {
-        return Nan::ThrowTypeError("First argument must be a font buffer");
-    }
-
-    if (!start->IsNumber() || Nan::To<std::int32_t>(start).FromJust() < 0) {
-        return Nan::ThrowTypeError("option `start` must be a number from 0-65535");
-    }
-
-    if (!end->IsNumber() || Nan::To<std::int32_t>(end).FromJust() > 65535) {
-        return Nan::ThrowTypeError("option `end` must be a number from 0-65535");
-    }
-
-    if (Nan::To<std::int32_t>(end).FromJust() < Nan::To<std::int32_t>(start).FromJust()) {
-        return Nan::ThrowTypeError("`start` must be less than or equal to `end`");
-    }
-
-    if (info.Length() < 2 || !info[1]->IsFunction()) {
-        return Nan::ThrowTypeError("Callback must be a function");
-    }
-
-    auto* baton = new RangeBaton(obj,
-                                 info[1],
-                                 Nan::To<std::uint32_t>(start).FromJust(),
-                                 Nan::To<std::uint32_t>(end).FromJust());
-    uv_queue_work(uv_default_loop(), &baton->request, RangeAsync, reinterpret_cast<uv_after_work_cb>(AfterRange));
-}
-
-namespace utils {
-
-inline void CallbackError(const std::string& message, v8::Local<v8::Function> func) {
-    Nan::Callback cb(func);
-    v8::Local<v8::Value> argv[1] = {Nan::Error(message.c_str())};
-    Nan::Call(cb, 1, argv);
-}
-
-} // namespace utils
-
-NAN_METHOD(Composite) {
-    // validate callback function
-    v8::Local<v8::Value> callback_val = info[info.Length() - 1];
-    if (!callback_val->IsFunction()) {
-        Nan::ThrowError("last argument must be a callback function");
-        return;
-    }
-
-    v8::Local<v8::Function> callback = callback_val.As<v8::Function>();
-
-    // validate glyphPBF array
-    if (!info[0]->IsArray()) {
-        return utils::CallbackError("first arg 'glyphs' must be an array of glyphs objects", callback);
-    }
-
-    v8::Local<v8::Array> glyphs = info[0].As<v8::Array>();
-    unsigned num_glyphs = glyphs->Length();
-
-    if (num_glyphs <= 0) {
-        return utils::CallbackError("'glyphs' array must be of length greater than 0", callback);
-    }
-
-    auto* baton = new CompositeBaton(num_glyphs, callback);
-
-    for (unsigned t = 0; t < num_glyphs; ++t) {
-        v8::Local<v8::Value> buf_val = Nan::Get(glyphs, t).ToLocalChecked();
-        if (buf_val->IsNull() || buf_val->IsUndefined()) {
-            return utils::CallbackError("buffer value in 'glyphs' array item is null or undefined", callback);
-        }
-        v8::MaybeLocal<v8::Object> maybe_buffer = buf_val->ToObject(Nan::GetCurrentContext()).ToLocalChecked();
-        if (maybe_buffer.IsEmpty()) {
-            return utils::CallbackError("buffer value in 'glyphs' array is empty", callback);
-        }
-        v8::Local<v8::Object> buffer = maybe_buffer.ToLocalChecked();
-
-        if (!node::Buffer::HasInstance(buffer)) {
-            return utils::CallbackError("buffer value in 'glyphs' array item is not a true buffer", callback);
-        }
-        baton->glyphs.push_back(std::make_unique<GlyphPBF>(buffer));
-    }
-    uv_queue_work(uv_default_loop(), &baton->request, CompositeAsync, reinterpret_cast<uv_after_work_cb>(AfterComposite));
-}
-
-using id_pair = std::pair<std::uint32_t, protozero::data_view>;
-struct CompareID {
-    bool operator()(id_pair const& r1, id_pair const& r2) {
-        return (r1.first - r2.first) != 0U;
-    }
-};
-
-void CompositeAsync(uv_work_t* req) {
-    auto* baton = static_cast<CompositeBaton*>(req->data);
-    try {
-        std::vector<std::unique_ptr<std::vector<char>>> buffer_cache;
-        std::map<std::uint32_t, protozero::data_view> id_mapping;
-        bool first_buffer = true;
-        std::string fontstack_name;
-        std::string range;
-        std::string& fontstack_buffer = *baton->message;
-        protozero::pbf_writer pbf_writer(fontstack_buffer);
-        protozero::pbf_writer fontstack_writer{pbf_writer, 1};
-        // TODO(danespringmeyer): avoid duplicate fontstacks to be sent it
-        for (auto const& glyph_obj : baton->glyphs) {
-            protozero::data_view data_view{};
-            if (gzip::is_compressed(glyph_obj->data.data(), glyph_obj->data.size())) {
-                buffer_cache.push_back(std::make_unique<std::vector<char>>());
-                gzip::Decompressor decompressor;
-                decompressor.decompress(*buffer_cache.back(), glyph_obj->data.data(), glyph_obj->data.size());
-                data_view = protozero::data_view{buffer_cache.back()->data(), buffer_cache.back()->size()};
-            } else {
-                data_view = glyph_obj->data;
-            }
-            protozero::pbf_reader fontstack_reader(data_view);
-            while (fontstack_reader.next(1)) {
-                auto stack_reader = fontstack_reader.get_message();
-                while (stack_reader.next()) {
-                    switch (stack_reader.tag()) {
-                    case 1: // name
-                    {
-                        if (first_buffer) {
-                            fontstack_name = stack_reader.get_string();
-                        } else {
-                            fontstack_name = fontstack_name + ", " + stack_reader.get_string();
-                        }
-                        break;
-                    }
-                    case 2: // range
-                    {
-                        if (first_buffer) {
-                            range = stack_reader.get_string();
-                        } else {
-                            stack_reader.skip();
-                        }
-                        break;
-                    }
-                    case 3: // glyphs
-                    {
-                        auto glyphs_data = stack_reader.get_view();
-                        // collect all ids from first
-                        if (first_buffer) {
-                            protozero::pbf_reader glyphs_reader(glyphs_data);
-                            std::uint32_t glyph_id;
-                            while (glyphs_reader.next(1)) {
-                                glyph_id = glyphs_reader.get_uint32();
-                            }
-                            id_mapping.emplace(glyph_id, glyphs_data);
-                        } else {
-                            protozero::pbf_reader glyphs_reader(glyphs_data);
-                            std::uint32_t glyph_id;
-                            while (glyphs_reader.next(1)) {
-                                glyph_id = glyphs_reader.get_uint32();
-                            }
-                            auto search = id_mapping.find(glyph_id);
-                            if (search == id_mapping.end()) {
-                                id_mapping.emplace(glyph_id, glyphs_data);
-                            }
-                        }
-                        break;
-                    }
-                    default:
-                        // ignore data for unknown tags to allow for future extensions
-                        stack_reader.skip();
-                    }
-                }
-            }
-            first_buffer = false;
-        }
-        fontstack_writer.add_string(1, fontstack_name);
-        fontstack_writer.add_string(2, range);
-        for (auto const& glyph_pair : id_mapping) {
-            fontstack_writer.add_message(3, glyph_pair.second);
-        }
-    } catch (std::exception const& ex) {
-        baton->error_name = ex.what();
-    }
-}
-
-void AfterComposite(uv_work_t* req) {
-    Nan::HandleScope scope;
-
-    auto* baton = static_cast<CompositeBaton*>(req->data);
-    Nan::AsyncResource async_resource(__func__);
-    if (!baton->error_name.empty()) {
-        v8::Local<v8::Value> argv[1] = {Nan::Error(baton->error_name.c_str())};
-        async_resource.runInAsyncScope(Nan::GetCurrentContext()->Global(), Nan::New(baton->callback), 1, argv);
-    } else {
-        std::string& fontstack_message = *baton->message;
-        const auto argc = 2U;
-        v8::Local<v8::Value> argv[argc] = {
-            Nan::Null(),
-            Nan::NewBuffer(
-                &fontstack_message[0],
-                static_cast<unsigned int>(fontstack_message.size()),
-                [](char* /*unused*/, void* hint) {
-                    delete reinterpret_cast<std::string*>(hint);
-                },
-                baton->message.release())
-                .ToLocalChecked()};
-        async_resource.runInAsyncScope(Nan::GetCurrentContext()->Global(), Nan::New(baton->callback), 2, argv);
-    }
-
-    delete baton;
-}
 
 struct ft_library_guard {
     // non copyable
@@ -412,212 +88,446 @@ struct ft_face_guard {
     FT_Face* face_;
 };
 
-void LoadAsync(uv_work_t* req) {
-    auto* baton = static_cast<LoadBaton*>(req->data);
-    try {
-        FT_Library library = nullptr;
-        ft_library_guard library_guard(&library);
-        FT_Error error = FT_Init_FreeType(&library);
-        if (error != 0) {
-            /* LCOV_EXCL_START */
-            baton->error_name = std::string("could not open FreeType library");
-            return;
-            /* LCOV_EXCL_END */
-        }
-        FT_Face ft_face = nullptr;
-        FT_Long num_faces = 0;
-        for (int i = 0; ft_face == nullptr || i < num_faces; ++i) {
-            ft_face_guard face_guard(&ft_face);
-            FT_Error face_error = FT_New_Memory_Face(library, reinterpret_cast<FT_Byte const*>(baton->font_data), static_cast<FT_Long>(baton->font_size), i, &ft_face);
-            if (face_error != 0) {
-                baton->error_name = std::string("could not open font file");
-                return;
-            }
-            if (num_faces == 0) {
-                num_faces = ft_face->num_faces;
-            }
+struct AsyncLoad : Napi::AsyncWorker {
+    using Base = Napi::AsyncWorker;
+    AsyncLoad(Napi::Buffer<char> const& buffer, Napi::Function const& callback)
+        : Base(callback),
+          font_data_{buffer.Data()},
+          font_size_{buffer.Length()},
+          buffer_ref_{Napi::Persistent(buffer)} {}
 
-            if (ft_face->family_name != nullptr) {
-                std::set<int> points;
-                FT_ULong charcode;
-                FT_UInt gindex;
-                charcode = FT_Get_First_Char(ft_face, &gindex);
-                while (gindex != 0) {
-                    charcode = FT_Get_Next_Char(ft_face, charcode, &gindex);
-                    if (charcode != 0) {
-                        points.emplace(charcode);
+    void Execute() override {
+        try {
+            FT_Library library = nullptr;
+            ft_library_guard library_guard(&library);
+            FT_Error error = FT_Init_FreeType(&library);
+            if (error != 0) {
+                //LCOV_EXCL_START
+                SetError("could not open FreeType library");
+                return;
+                // LCOV_EXCL_END
+            }
+            FT_Face ft_face = nullptr;
+            FT_Long num_faces = 0;
+            for (int i = 0; ft_face == nullptr || i < num_faces; ++i) {
+                ft_face_guard face_guard(&ft_face);
+                FT_Error face_error = FT_New_Memory_Face(library,
+                                                         reinterpret_cast<FT_Byte const*>(font_data_),
+                                                         static_cast<FT_Long>(font_size_), i, &ft_face);
+                if (face_error != 0) {
+                    SetError("could not open font file");
+                    return;
+                }
+                if (num_faces == 0) {
+                    num_faces = ft_face->num_faces;
+                    faces_.reserve(static_cast<std::size_t>(num_faces));
+                }
+                if (ft_face->family_name != nullptr) {
+                    std::set<int> points;
+                    FT_ULong charcode;
+                    FT_UInt gindex;
+                    charcode = FT_Get_First_Char(ft_face, &gindex);
+                    while (gindex != 0) {
+                        charcode = FT_Get_Next_Char(ft_face, charcode, &gindex);
+                        if (charcode != 0) points.emplace(charcode);
                     }
-                }
-
-                std::vector<int> points_vec(points.begin(), points.end());
-
-                if (ft_face->style_name != nullptr) {
-                    baton->faces.emplace_back(ft_face->family_name, ft_face->style_name, std::move(points_vec));
+                    std::vector<int> points_vec(points.begin(), points.end());
+                    if (ft_face->style_name != nullptr) {
+                        faces_.emplace_back(ft_face->family_name, ft_face->style_name, std::move(points_vec));
+                    } else {
+                        faces_.emplace_back(ft_face->family_name, std::move(points_vec));
+                    }
                 } else {
-                    baton->faces.emplace_back(ft_face->family_name, std::move(points_vec));
+                    SetError("font does not have family_name or style_name");
+                    return;
                 }
-            } else {
-                baton->error_name = std::string("font does not have family_name or style_name");
-                return;
             }
+        } catch (std::exception const& ex) {
+            SetError(ex.what());
         }
-    } catch (std::exception const& ex) {
-        baton->error_name = ex.what();
     }
-}
 
-void AfterLoad(uv_work_t* req) {
-    Nan::HandleScope scope;
-
-    auto* baton = static_cast<LoadBaton*>(req->data);
-    Nan::AsyncResource async_resource(__func__);
-    if (!baton->error_name.empty()) {
-        v8::Local<v8::Value> argv[1] = {Nan::Error(baton->error_name.c_str())};
-        async_resource.runInAsyncScope(Nan::GetCurrentContext()->Global(), Nan::New(baton->callback), 1, argv);
-    } else {
-        v8::Local<v8::Array> js_faces = Nan::New<v8::Array>(baton->faces.size());
-        unsigned idx = 0;
-        for (auto const& face : baton->faces) {
-            v8::Local<v8::Object> js_face = Nan::New<v8::Object>();
-            Nan::Set(js_face, Nan::New("family_name").ToLocalChecked(), Nan::New(face.family_name).ToLocalChecked());
+    std::vector<napi_value> GetResult(Napi::Env env) override {
+        Napi::Array js_faces = Napi::Array::New(env, faces_.size());
+        std::uint32_t index = 0;
+        for (auto const& face : faces_) {
+            Napi::Object js_face = Napi::Object::New(env);
+            js_face.Set("family_name", face.family_name);
             if (!face.style_name.empty()) {
-                Nan::Set(js_face, Nan::New("style_name").ToLocalChecked(), Nan::New(face.style_name).ToLocalChecked());
+                js_face.Set("style_name", face.style_name);
             }
-            v8::Local<v8::Array> js_points = Nan::New<v8::Array>(face.points.size());
-            unsigned p_idx = 0;
+            Napi::Array js_points = Napi::Array::New(env, face.points.size());
+            std::uint32_t p_idx = 0;
             for (auto const& pt : face.points) {
-                Nan::Set(js_points, p_idx++, Nan::New(pt));
+                js_points.Set(p_idx++, pt);
             }
-            Nan::Set(js_face, Nan::New("points").ToLocalChecked(), js_points);
-            Nan::Set(js_faces, idx++, js_face);
+            js_face.Set("points", js_points);
+            js_faces.Set(index++, js_face);
         }
-        v8::Local<v8::Value> argv[2] = {Nan::Null(), js_faces};
-        async_resource.runInAsyncScope(Nan::GetCurrentContext()->Global(), Nan::New(baton->callback), 2, argv);
+        return {env.Null(), js_faces};
     }
-    delete baton;
-}
 
-void RangeAsync(uv_work_t* req) {
-    auto* baton = static_cast<RangeBaton*>(req->data);
-    try {
+  private:
+    char const* font_data_;
+    std::size_t font_size_;
+    Napi::Reference<Napi::Buffer<char>> buffer_ref_;
+    std::vector<FaceMetadata> faces_;
+};
 
-        unsigned array_size = baton->end - baton->start;
-        baton->chars.reserve(array_size);
-        for (unsigned i = baton->start; i <= baton->end; i++) {
-            baton->chars.emplace_back(i);
-        }
+struct AsyncRange : Napi::AsyncWorker {
+    using Base = Napi::AsyncWorker;
+    AsyncRange(Napi::Buffer<char> const& buffer, std::uint32_t start, std::uint32_t end, Napi::Function const& callback)
+        : Base(callback),
+          font_data_{buffer.Data()},
+          font_size_{buffer.Length()},
+          start_(start),
+          end_(end),
+          buffer_ref_{Napi::Persistent(buffer)} {}
 
-        FT_Library library = nullptr;
-        ft_library_guard library_guard(&library);
-        FT_Error error = FT_Init_FreeType(&library);
-        if (error != 0) {
-            /* LCOV_EXCL_START */
-            baton->error_name = std::string("could not open FreeType library");
-            return;
-            /* LCOV_EXCL_END */
-        }
+    void Execute() override {
+        try {
+            unsigned array_size = end_ - start_;
+            chars_.reserve(array_size);
+            for (unsigned i = start_; i <= end_; ++i) {
+                chars_.emplace_back(i);
+            }
 
-        protozero::pbf_writer pbf_writer{baton->message};
-        FT_Face ft_face = nullptr;
-        FT_Long num_faces = 0;
-        for (int i = 0; ft_face == nullptr || i < num_faces; ++i) {
-            ft_face_guard face_guard(&ft_face);
-            FT_Error face_error = FT_New_Memory_Face(library, reinterpret_cast<FT_Byte const*>(baton->font_data), static_cast<FT_Long>(baton->font_size), i, &ft_face);
-            if (face_error != 0) {
-                baton->error_name = std::string("could not open font");
+            FT_Library library = nullptr;
+            ft_library_guard library_guard(&library);
+            FT_Error error = FT_Init_FreeType(&library);
+            if (error != 0) {
+                // LCOV_EXCL_START
+                SetError("could not open FreeType library");
                 return;
+                // LCOV_EXCL_END
             }
 
-            if (num_faces == 0) {
-                num_faces = ft_face->num_faces;
-            }
+            protozero::pbf_writer pbf_writer{message_};
+            FT_Face ft_face = nullptr;
+            FT_Long num_faces = 0;
+            for (int i = 0; ft_face == nullptr || i < num_faces; ++i) {
+                ft_face_guard face_guard(&ft_face);
+                FT_Error face_error = FT_New_Memory_Face(library,
+                                                         reinterpret_cast<FT_Byte const*>(font_data_),
+                                                         static_cast<FT_Long>(font_size_), i, &ft_face);
+                if (face_error != 0) {
+                    SetError("could not open font");
+                    return;
+                }
 
-            if (ft_face->family_name != nullptr) {
-                protozero::pbf_writer fontstack_writer{pbf_writer, 1};
-                if (ft_face->style_name != nullptr) {
-                    fontstack_writer.add_string(1, std::string(ft_face->family_name) + " " + std::string(ft_face->style_name));
+                if (num_faces == 0) num_faces = ft_face->num_faces;
+
+                if (ft_face->family_name != nullptr) {
+                    protozero::pbf_writer fontstack_writer{pbf_writer, 1};
+                    if (ft_face->style_name != nullptr) {
+                        fontstack_writer.add_string(1, std::string(ft_face->family_name) + " " + std::string(ft_face->style_name));
+                    } else {
+                        fontstack_writer.add_string(1, std::string(ft_face->family_name));
+                    }
+                    fontstack_writer.add_string(2, std::to_string(start_) + "-" + std::to_string(end_));
+
+                    const double scale_factor = 1.0;
+
+                    // Set character sizes.
+                    double size = 24 * scale_factor;
+                    FT_Set_Char_Size(ft_face, 0, static_cast<FT_F26Dot6>(size * (1 << 6)), 0, 0);
+
+                    for (std::vector<uint32_t>::size_type x = 0; x != chars_.size(); ++x) {
+                        FT_ULong char_code = chars_[x];
+                        sdf_glyph_foundry::glyph_info glyph;
+                        // Get FreeType face from face_ptr.
+                        FT_UInt char_index = FT_Get_Char_Index(ft_face, char_code);
+                        if (char_index == 0U) continue;
+
+                        glyph.glyph_index = char_index;
+                        sdf_glyph_foundry::RenderSDF(glyph, 24, 3, 0.25, ft_face);
+
+                        // Add glyph to fontstack.
+                        protozero::pbf_writer glyph_writer{fontstack_writer, 3};
+
+                        // shortening conversion
+                        if (char_code > std::numeric_limits<FT_ULong>::max()) {
+                            SetError("Invalid value for char_code: too large");
+                            return;
+                        }
+                        glyph_writer.add_uint32(1, static_cast<std::uint32_t>(char_code));
+
+                        if (glyph.width > 0) glyph_writer.add_bytes(2, glyph.bitmap);
+
+                        // direct type conversions, no need for checking or casting
+                        glyph_writer.add_uint32(3, glyph.width);
+                        glyph_writer.add_uint32(4, glyph.height);
+                        glyph_writer.add_sint32(5, glyph.left);
+
+                        // conversions requiring checks, for safety and correctness
+
+                        // double to int
+                        double top = static_cast<double>(glyph.top) - glyph.ascender;
+                        if (top < std::numeric_limits<std::int32_t>::min() || top > std::numeric_limits<std::int32_t>::max()) {
+                            SetError("Invalid value for glyph.top-glyph.ascender");
+                            return;
+                        }
+                        glyph_writer.add_sint32(6, static_cast<std::int32_t>(top));
+
+                        // double to uint
+                        if (glyph.advance < std::numeric_limits<std::uint32_t>::min() || glyph.advance > std::numeric_limits<std::uint32_t>::max()) {
+                            SetError("Invalid value for glyph.top-glyph.ascender");
+                            return;
+                        }
+                        glyph_writer.add_uint32(7, static_cast<std::uint32_t>(glyph.advance));
+                    }
                 } else {
-                    fontstack_writer.add_string(1, std::string(ft_face->family_name));
+                    SetError("font does not have family_name");
+                    return;
                 }
-                fontstack_writer.add_string(2, std::to_string(baton->start) + "-" + std::to_string(baton->end));
-
-                const double scale_factor = 1.0;
-
-                // Set character sizes.
-                double size = 24 * scale_factor;
-                FT_Set_Char_Size(ft_face, 0, static_cast<FT_F26Dot6>(size * (1 << 6)), 0, 0);
-
-                for (std::vector<uint32_t>::size_type x = 0; x != baton->chars.size(); x++) {
-                    FT_ULong char_code = baton->chars[x];
-                    sdf_glyph_foundry::glyph_info glyph;
-
-                    // Get FreeType face from face_ptr.
-                    FT_UInt char_index = FT_Get_Char_Index(ft_face, char_code);
-
-                    if (char_index == 0U) {
-                        continue;
-                    }
-
-                    glyph.glyph_index = char_index;
-                    sdf_glyph_foundry::RenderSDF(glyph, 24, 3, 0.25, ft_face);
-
-                    // Add glyph to fontstack.
-                    protozero::pbf_writer glyph_writer{fontstack_writer, 3};
-
-                    // shortening conversion
-                    if (char_code > std::numeric_limits<FT_ULong>::max()) {
-                        throw std::runtime_error("Invalid value for char_code: too large");
-                    }
-                    glyph_writer.add_uint32(1, static_cast<std::uint32_t>(char_code));
-
-                    if (glyph.width > 0) {
-                        glyph_writer.add_bytes(2, glyph.bitmap);
-                    }
-
-                    // direct type conversions, no need for checking or casting
-                    glyph_writer.add_uint32(3, glyph.width);
-                    glyph_writer.add_uint32(4, glyph.height);
-                    glyph_writer.add_sint32(5, glyph.left);
-
-                    // conversions requiring checks, for safety and correctness
-
-                    // double to int
-                    double top = static_cast<double>(glyph.top) - glyph.ascender;
-                    if (top < std::numeric_limits<std::int32_t>::min() || top > std::numeric_limits<std::int32_t>::max()) {
-                        throw std::runtime_error("Invalid value for glyph.top-glyph.ascender");
-                    }
-                    glyph_writer.add_sint32(6, static_cast<std::int32_t>(top));
-
-                    // double to uint
-                    if (glyph.advance < std::numeric_limits<std::uint32_t>::min() || glyph.advance > std::numeric_limits<std::uint32_t>::max()) {
-                        throw std::runtime_error("Invalid value for glyph.top-glyph.ascender");
-                    }
-                    glyph_writer.add_uint32(7, static_cast<std::uint32_t>(glyph.advance));
-                }
-            } else {
-                baton->error_name = std::string("font does not have family_name");
-                return;
             }
+        } catch (std::exception const& ex) {
+            SetError(ex.what());
         }
-    } catch (std::exception const& ex) {
-        baton->error_name = ex.what();
     }
+
+    std::vector<napi_value> GetResult(Napi::Env env) override {
+        return {env.Null(), Napi::Buffer<char>::Copy(env, message_.data(), message_.size())};
+    }
+
+  private:
+    char const* font_data_;
+    std::size_t font_size_;
+    std::uint32_t start_;
+    std::uint32_t end_;
+    Napi::Reference<Napi::Buffer<char>> buffer_ref_;
+    std::vector<std::uint32_t> chars_;
+    std::string message_;
+};
+
+Napi::Value Load(Napi::CallbackInfo const& info) {
+    Napi::Env env = info.Env();
+    // Validate arguments.
+    if (info.Length() < 1 || !info[0].IsObject()) {
+        Napi::TypeError::New(env, "First argument must be a font buffer").ThrowAsJavaScriptException();
+        return env.Undefined();
+    }
+    Napi::Object obj = info[0].As<Napi::Object>();
+
+    if (!obj.IsBuffer()) {
+        Napi::TypeError::New(env, "First argument must be a font buffer").ThrowAsJavaScriptException();
+        return env.Undefined();
+    }
+
+    if (info.Length() < 2 || !info[1].IsFunction()) {
+        Napi::TypeError::New(env, "Callback must be a function").ThrowAsJavaScriptException();
+        return env.Undefined();
+    }
+    auto* worker = new AsyncLoad(obj.As<Napi::Buffer<char>>(), info[1].As<Napi::Function>());
+    worker->Queue();
+    return env.Undefined();
 }
 
-void AfterRange(uv_work_t* req) {
-    Nan::HandleScope scope;
+Napi::Value Range(Napi::CallbackInfo const& info) {
+    Napi::Env env = info.Env();
 
-    auto* baton = static_cast<RangeBaton*>(req->data);
-    Nan::AsyncResource async_resource(__func__);
-    if (!baton->error_name.empty()) {
-        v8::Local<v8::Value> argv[1] = {Nan::Error(baton->error_name.c_str())};
-        async_resource.runInAsyncScope(Nan::GetCurrentContext()->Global(), Nan::New(baton->callback), 1, argv);
-    } else {
-        v8::Local<v8::Value> argv[2] = {Nan::Null(), Nan::CopyBuffer(baton->message.data(), static_cast<std::uint32_t>(baton->message.size())).ToLocalChecked()};
-        async_resource.runInAsyncScope(Nan::GetCurrentContext()->Global(), Nan::New(baton->callback), 2, argv);
+    // Validate arguments.
+    if (info.Length() < 1 || !info[0].IsObject()) {
+        Napi::TypeError::New(env, "First argument must be an object of options").ThrowAsJavaScriptException();
+        return env.Undefined();
+    }
+    Napi::Object options = info[0].As<Napi::Object>();
+    Napi::Value font_buffer = options.Get("font");
+    if (!font_buffer.IsObject()) {
+        Napi::TypeError::New(env, "Font buffer is not an object").ThrowAsJavaScriptException();
+        return env.Undefined();
+    }
+    Napi::Object obj = font_buffer.As<Napi::Object>();
+    Napi::Value start_val = options.Get("start");
+    Napi::Value end_val = options.Get("end");
+
+    if (!obj.IsBuffer()) {
+        Napi::TypeError::New(env, "First argument must be a font buffer").ThrowAsJavaScriptException();
+        return env.Undefined();
     }
 
-    delete baton;
+    if (!start_val.IsNumber() || start_val.As<Napi::Number>().Int32Value() < 0) {
+        Napi::TypeError::New(env, "option `start` must be a number from 0-65535").ThrowAsJavaScriptException();
+        return env.Undefined();
+    }
+
+    if (!end_val.IsNumber() || end_val.As<Napi::Number>().Int32Value() > 65535) {
+        Napi::TypeError::New(env, "option `end` must be a number from 0-65535").ThrowAsJavaScriptException();
+        return env.Undefined();
+    }
+    std::uint32_t start = start_val.As<Napi::Number>().Uint32Value();
+    std::uint32_t end = end_val.As<Napi::Number>().Uint32Value();
+
+    if (end < start) {
+        Napi::TypeError::New(env, "`start` must be less than or equal to `end`").ThrowAsJavaScriptException();
+        return env.Undefined();
+    }
+
+    if (info.Length() < 2 || !info[1].IsFunction()) {
+        Napi::TypeError::New(env, "Callback must be a function").ThrowAsJavaScriptException();
+        return env.Undefined();
+    }
+
+    auto* worker = new AsyncRange(obj.As<Napi::Buffer<char>>(), start, end, info[1].As<Napi::Function>());
+    worker->Queue();
+    return env.Undefined();
+}
+
+struct AsyncComposite : Napi::AsyncWorker {
+    using Base = Napi::AsyncWorker;
+
+    AsyncComposite(std::vector<std::unique_ptr<GlyphPBF>>&& glyphs, Napi::Function const& callback)
+        : Base(callback),
+          glyphs_(std::move(glyphs)),
+          message_(std::make_unique<std::string>()) {}
+
+    void Execute() override {
+        try {
+            std::vector<std::unique_ptr<std::vector<char>>> buffer_cache;
+            std::map<std::uint32_t, protozero::data_view> id_mapping;
+            bool first_buffer = true;
+            std::string fontstack_name;
+            std::string range;
+            protozero::pbf_writer pbf_writer(*message_);
+            protozero::pbf_writer fontstack_writer{pbf_writer, 1};
+            // TODO(danespringmeyer): avoid duplicate fontstacks to be sent it
+            for (auto const& glyph_obj : glyphs_) {
+                protozero::data_view data_view{};
+                if (gzip::is_compressed(glyph_obj->data.data(), glyph_obj->data.size())) {
+                    buffer_cache.push_back(std::make_unique<std::vector<char>>());
+                    gzip::Decompressor decompressor;
+                    decompressor.decompress(*buffer_cache.back(), glyph_obj->data.data(), glyph_obj->data.size());
+                    data_view = protozero::data_view{buffer_cache.back()->data(), buffer_cache.back()->size()};
+                } else {
+                    data_view = glyph_obj->data;
+                }
+                protozero::pbf_reader fontstack_reader(data_view);
+                while (fontstack_reader.next(1)) {
+                    auto stack_reader = fontstack_reader.get_message();
+                    while (stack_reader.next()) {
+                        switch (stack_reader.tag()) {
+                        case 1: // name
+                        {
+                            if (first_buffer) {
+                                fontstack_name = stack_reader.get_string();
+                            } else {
+                                fontstack_name = fontstack_name + ", " + stack_reader.get_string();
+                            }
+                            break;
+                        }
+                        case 2: // range
+                        {
+                            if (first_buffer) {
+                                range = stack_reader.get_string();
+                            } else {
+                                stack_reader.skip();
+                            }
+                            break;
+                        }
+                        case 3: // glyphs
+                        {
+                            auto glyphs_data = stack_reader.get_view();
+                            // collect all ids from first
+                            if (first_buffer) {
+                                protozero::pbf_reader glyphs_reader(glyphs_data);
+                                std::uint32_t glyph_id;
+                                while (glyphs_reader.next(1)) {
+                                    glyph_id = glyphs_reader.get_uint32();
+                                }
+                                id_mapping.emplace(glyph_id, glyphs_data);
+                            } else {
+                                protozero::pbf_reader glyphs_reader(glyphs_data);
+                                std::uint32_t glyph_id;
+                                while (glyphs_reader.next(1)) {
+                                    glyph_id = glyphs_reader.get_uint32();
+                                }
+                                auto search = id_mapping.find(glyph_id);
+                                if (search == id_mapping.end()) {
+                                    id_mapping.emplace(glyph_id, glyphs_data);
+                                }
+                            }
+                            break;
+                        }
+                        default:
+                            // ignore data for unknown tags to allow for future extensions
+                            stack_reader.skip();
+                        }
+                    }
+                }
+                first_buffer = false;
+            }
+            fontstack_writer.add_string(1, fontstack_name);
+            fontstack_writer.add_string(2, range);
+            for (auto const& glyph_pair : id_mapping) {
+                fontstack_writer.add_message(3, glyph_pair.second);
+            }
+        } catch (std::exception const& ex) {
+            SetError(ex.what());
+        }
+    }
+
+    std::vector<napi_value> GetResult(Napi::Env env) override {
+        std::string& str = *message_;
+        auto buffer = Napi::Buffer<char>::New(
+            env, &str[0], str.size(),
+            [](Napi::Env env_, char* /*unused*/, std::string* str_ptr) {
+                if (str_ptr != nullptr) {
+                    Napi::MemoryManagement::AdjustExternalMemory(env_, -static_cast<std::int64_t>(str_ptr->size()));
+                }
+                delete str_ptr;
+            },
+            message_.release());
+        Napi::MemoryManagement::AdjustExternalMemory(env, static_cast<std::int64_t>(str.size()));
+        return {env.Null(), buffer};
+    }
+
+  private:
+    std::vector<std::unique_ptr<GlyphPBF>> glyphs_;
+    std::unique_ptr<std::string> message_;
+};
+
+Napi::Value Composite(const Napi::CallbackInfo& info) {
+    Napi::Env env = info.Env();
+
+    // validate callback function
+    Napi::Value callback_val = info[info.Length() - 1];
+    if (!callback_val.IsFunction()) {
+        Napi::Error::New(env, "last argument must be a callback function").ThrowAsJavaScriptException();
+        return env.Undefined();
+    }
+    // validate glyphPBF array
+    if (!info[0].IsArray()) {
+        Napi::TypeError::New(env, "first arg 'glyphs' must be an array of glyphs objects").ThrowAsJavaScriptException();
+        return env.Undefined();
+    }
+
+    Napi::Array glyphs_array = info[0].As<Napi::Array>();
+    std::size_t num_glyphs = glyphs_array.Length();
+
+    if (num_glyphs <= 0) {
+        Napi::TypeError::New(env, "'glyphs' array must be of length greater than 0").ThrowAsJavaScriptException();
+        return env.Undefined();
+    }
+
+    std::vector<std::unique_ptr<GlyphPBF>> glyphs{};
+    glyphs.reserve(num_glyphs);
+    for (std::uint32_t index = 0; index < num_glyphs; ++index) {
+        Napi::Value buf_val = glyphs_array.Get(index);
+        if (!buf_val.IsBuffer()) {
+            Napi::TypeError::New(env, "buffer value in 'glyphs' array item is not a true buffer");
+            return env.Undefined();
+        }
+        Napi::Buffer<char> buffer = buf_val.As<Napi::Buffer<char>>();
+        if (buffer.IsEmpty()) {
+            Napi::TypeError::New(env, "buffer value in 'glyphs' array is empty");
+            return env.Undefined();
+        }
+        glyphs.push_back(std::make_unique<GlyphPBF>(buffer));
+    }
+
+    auto* worker = new AsyncComposite(std::move(glyphs), callback_val.As<Napi::Function>());
+    worker->Queue();
+    return env.Undefined();
 }
 
 } // namespace node_fontnik

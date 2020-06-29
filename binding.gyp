@@ -3,11 +3,11 @@
   'includes': [ 'common.gypi' ], # brings in a default set of options that are inherited from gyp
   'variables': { # custom variables we use specific to this file
       'error_on_warnings%':'true', # can be overriden by a command line variable because of the % sign using "WERROR" (defined in Makefile)
-      # Use this variable to silence warnings from mason dependencies and from NAN
+      # Use this variable to silence warnings from mason dependencies and from N-API
       # It's a variable to make easy to pass to
       # cflags (linux) and xcode (mac)
       'system_includes': [
-        "-isystem <(module_root_dir)/<!(node -e \"require('nan')\")",
+        "-isystem <!@(node -p \"require('node-addon-api').include.slice(1,-1)\")",
         "-isystem <(module_root_dir)/mason_packages/.link/include/",
         "-isystem <(module_root_dir)/mason_packages/.link/include/freetype2"
       ],
