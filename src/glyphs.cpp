@@ -118,8 +118,7 @@ struct AsyncLoad : Napi::AsyncWorker {
                     SetError("could not open font file");
                     return;
                 }
-                if (num_faces == 0)
-                {
+                if (num_faces == 0) {
                     num_faces = ft_face->num_faces;
                     faces_.reserve(static_cast<std::size_t>(num_faces));
                 }
