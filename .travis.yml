@@ -35,18 +35,18 @@ matrix:
     - os: linux
       env: BUILDTYPE=release
       node_js: 12
-    # linux publishable node v10/debug
+    # linux publishable node v12/debug
     - os: linux
       env: BUILDTYPE=debug
-      node_js: 14
+      node_js: 12
     # linux publishable node v14
     - os: linux
       env: BUILDTYPE=release
       node_js: 14
-    # linux publishable node v10/debug
+    # linux publishable node v14/debug
     - os: linux
       env: BUILDTYPE=debug
-      node_js: 12
+      node_js: 14
     # osx publishable node v12
     - os: osx
       osx_image: xcode11
