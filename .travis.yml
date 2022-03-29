@@ -54,7 +54,7 @@ matrix:
       node_js: 12
     # Sanitizer build node v12/Debug
     - os: linux
-      env: BUILDTYPE=debug TOOLSET=asan
+      env: BUILDTYPE=debug TOOLSET=asan CXXFLAGS="-fext-numeric-literals"
       node_js: 12
       sudo: required
       # Overrides `install` to set up custom asan flags
