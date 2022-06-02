@@ -3,6 +3,8 @@
     'default_configuration': 'Release',
     'cflags_cc' : [
       '-std=c++14',
+      '-fext-numeric-literals',
+      '-Wno-error=effc++',
       # The assumption is that projects based on node-cpp-skel will also
       # depend on mason packages. Currently (this will change in future mason versions)
       # mason packages default to being built/linked with the CXX11_ABI=0.
