@@ -3,7 +3,7 @@
 var fontnik = require('../index.js');
 var path = require('path');
 var fs = require('fs');
-var queue = require('queue-async');
+var queue = require('d3-queue');
 
 if (process.argv.length !== 4) {
     console.log('Usage:');

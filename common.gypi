@@ -2,7 +2,9 @@
   'target_defaults': {
     'default_configuration': 'Release',
     'cflags_cc' : [
-      '-std=c++14',
+      '-std=gnu++14',
+      '-Wno-error=effc++',
+      '-fno-exceptions',
       # The assumption is that projects based on node-cpp-skel will also
       # depend on mason packages. Currently (this will change in future mason versions)
       # mason packages default to being built/linked with the CXX11_ABI=0.
@@ -12,7 +14,12 @@
       # More details at https://github.com/mapbox/mason/issues/319
       '-D_GLIBCXX_USE_CXX11_ABI=0'
     ],
-    'cflags_cc!': ['-std=gnu++0x','-fno-rtti', '-fno-exceptions'],
+    'cflags_cc!': [
+      '-std=gnu++0x',
+      '-fno-rtti',
+      '-D_GLIBCXX_USE_CXX11_ABI=0',
+      '-fno-exceptions'
+    ],
     'configurations': {
       'Debug': {
         'defines!': [

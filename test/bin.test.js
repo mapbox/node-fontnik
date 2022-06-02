@@ -2,7 +2,7 @@ var fs = require('fs');
 var path = require('path');
 var exec = require('child_process').exec;
 var test = require('tape');
-var queue = require('queue-async');
+var queue = require('d3-queue');
 var mkdirp = require('mkdirp');
 
 var bin_output = path.resolve(__dirname + '/bin_output');

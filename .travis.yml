@@ -52,6 +52,37 @@ matrix:
       osx_image: xcode11
       env: BUILDTYPE=release
       node_js: 12
+    # Sanitizer build node v14/Debug
+    - os: linux
+      env: BUILDTYPE=debug TOOLSET=asan CXXFLAGS="-fext-numeric-literals"
+      node_js: 14
+      sudo: required
+      # Overrides `install` to set up custom asan flags
+      install:
+        - ./scripts/setup.sh --config local.env
+        # put mason and clang++ on PATH
+        - source local.env
+        # Note: to build without stopping on errors remove the -fno-sanitize-recover=all flag
+        # You might want to do this if there are multiple errors and you want to see them all before fixing
+        - export CXXFLAGS="${MASON_SANITIZE_CXXFLAGS} -fno-sanitize-recover=all"
+        - export LDFLAGS="${MASON_SANITIZE_LDFLAGS}"
+        - make ${BUILDTYPE}
+      # Overrides `script` to disable asan LD_PRELOAD before publishing
+      before_script:
+        - export LD_PRELOAD=${MASON_LLVM_RT_PRELOAD}
+        - export ASAN_OPTIONS=fast_unwind_on_malloc=0:${ASAN_OPTIONS}
+        - npm test
+        - unset LD_PRELOAD
+        # after successful tests, publish binaries if specified in commit message
+        - ./scripts/publish.sh --toolset=${TOOLSET:-} --debug=$([ "${BUILDTYPE}" == 'debug' ] && echo "true" || echo "false")
+      script:
+        - true
+      # Overrides `install` to avoid initializing clang toolchain
+      install:
+        - make ${BUILDTYPE}
+      # Overrides `script` to disable publishing
+      before_script:
+        - npm test
     # Sanitizer build node v12/Debug
     - os: linux
       env: BUILDTYPE=debug TOOLSET=asan CXXFLAGS="-fext-numeric-literals"

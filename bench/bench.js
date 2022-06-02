@@ -2,7 +2,7 @@
 
 var path = require('path');
 var fontnik = require('../');
-var queue = require('queue-async');
+var queue = require('d3-queue');
 var fs = require('fs');
 
 // https://gist.github.com/mourner/96b1335c6a43e68af252
