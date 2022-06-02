@@ -30,7 +30,7 @@
     "node-addon-api": "^3.2.1"
   },
   "devDependencies": {
-    "@mapbox/cloudfriend": "^1.9.1",
+    "@mapbox/cloudfriend": "^5.1.1",
     "aws-sdk": "^2.1147.0",
     "benchmark": "^1.0.0",
     "mkdirp": "^0.5.6",
