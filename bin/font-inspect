@@ -2,7 +2,7 @@
 
 var path = require('path');
 var fs = require('fs');
-var queue = require('queue-async');
+var queue = require('d3-queue');
 var glob = require('glob');
 var argv = require('minimist')(process.argv.slice(2), {
     boolean: ['verbose', 'help']
