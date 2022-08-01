@@ -1,13 +1,5 @@
 language: node_js
 
-sudo: false
-
-# enable c++11/14 builds
-addons:
-  apt:
-    sources: [ 'ubuntu-toolchain-r-test' ]
-    packages: [ 'libstdc++-4.9-dev' ]
-
 install:
   # set up the environment by installing mason and clang++
   - ./scripts/setup.sh --config local.env
@@ -39,62 +31,31 @@ script:
 # run your tests and build binaries
 matrix:
   include:
-    # linux publishable node v8
-    - os: linux
-      env: BUILDTYPE=release
-      node_js: 8
-    # linux publishable node v8/debug
-    - os: linux
-      env: BUILDTYPE=debug
-      node_js: 8
-    # linux publishable node v10
-    - os: linux
-      env: BUILDTYPE=release
-      node_js: 10
-    # linux publishable node v10/debug
-    - os: linux
-      env: BUILDTYPE=debug
-      node_js: 10
     # linux publishable node v12
     - os: linux
       env: BUILDTYPE=release
       node_js: 12
-    # linux publishable node v10/debug
+    # linux publishable node v12/debug
     - os: linux
       env: BUILDTYPE=debug
-      node_js: 14
+      node_js: 12
     # linux publishable node v14
     - os: linux
       env: BUILDTYPE=release
       node_js: 14
-    # linux publishable node v10/debug
+    # linux publishable node v14/debug
     - os: linux
       env: BUILDTYPE=debug
-      node_js: 12
-    # osx publishable node v8
-    - os: osx
-      osx_image: xcode11
-      env: BUILDTYPE=release
-      node_js: 8
-    # osx publishable node v10
-    - os: osx
-      osx_image: xcode11
-      env: BUILDTYPE=release
-      node_js: 10
-    # osx publishable node v12
-    - os: osx
-      osx_image: xcode11
-      env: BUILDTYPE=release
-      node_js: 12
-    # osx publishable node v12
-    - os: osx
-      osx_image: xcode11
-      env: BUILDTYPE=release
       node_js: 14
-    # Sanitizer build node v10/Debug
+    # osx publishable node v12
+    - os: osx
+      osx_image: xcode11
+      env: BUILDTYPE=release
+      node_js: 12
+    # Sanitizer build node v12/Debug
     - os: linux
-      env: BUILDTYPE=debug TOOLSET=asan
-      node_js: 10
+      env: BUILDTYPE=debug TOOLSET=asan CXXFLAGS="-fext-numeric-literals"
+      node_js: 12
       sudo: required
       # Overrides `install` to set up custom asan flags
       install:
@@ -116,19 +77,6 @@ matrix:
         - ./scripts/publish.sh --toolset=${TOOLSET:-} --debug=$([ "${BUILDTYPE}" == 'debug' ] && echo "true" || echo "false")
       script:
         - true
-    # g++ build (default builds all use clang++)
-    - os: linux
-      # Note: -fext-numeric-literals is needed to workaround gcc bug:
-      # boost/math/constants/constants.hpp:269:3: error: unable to find numeric literal operator 'operatorQ'
-      env: BUILDTYPE=debug CXX="g++-6" CC="gcc-6" CXXFLAGS="-fext-numeric-literals"
-      node_js: 10
-      addons:
-        apt:
-          sources:
-            - ubuntu-toolchain-r-test
-          packages:
-            - libstdc++-6-dev
-            - g++-6
       # Overrides `install` to avoid initializing clang toolchain
       install:
         - make ${BUILDTYPE}
