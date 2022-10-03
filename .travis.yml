@@ -137,7 +137,7 @@ matrix:
     - os: linux
       # Note: -fext-numeric-literals is needed to workaround gcc bug:
       # boost/math/constants/constants.hpp:269:3: error: unable to find numeric literal operator 'operatorQ'
-      env: BUILDTYPE=debug CXX="g++-6" CC="gcc-6" CXXFLAGS="-fext-numeric-literals"
+      env: BUILDTYPE=debug CXX="g++-9" CC="gcc-9" CXXFLAGS="-fext-numeric-literals"
       node_js: 10
       addons:
         apt:
@@ -145,7 +145,7 @@ matrix:
             - sourceline: "ppa:ubuntu-toolchain-r/test"
           packages:
             - libstdc++-10-dev
-            - g++-6
+            - g++-9
       # Overrides `install` to avoid initializing clang toolchain
       install:
         - make ${BUILDTYPE}
