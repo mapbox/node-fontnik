@@ -2,7 +2,7 @@
 
 var path = require('path');
 var fontnik = require('../');
-var queue = require('queue-async');
+var { queue } = require('d3-queue');
 var fs = require('fs');
 
 // https://gist.github.com/mourner/96b1335c6a43e68af252
@@ -12,15 +12,15 @@ function now() {
     return hr[0] + hr[1] / 1e9;
 }
 
-function bench(opts,cb) {
+function bench(opts, cb) {
     var q = queue(opts.concurrency);
     var start = now();
     for (var i = 1; i <= opts.iterations; i++) {
-        q.defer.apply({},opts.args);
+        q.defer.apply({}, opts.args);
     }
-    q.awaitAll(function(error, results) {
+    q.awaitAll(function (error, results) {
         var seconds = now() - start;
-        console.log(opts.name, Math.round(opts.iterations / (seconds)),'ops/sec',opts.iterations,opts.concurrency);
+        console.log(opts.name, Math.round(opts.iterations / (seconds)), 'ops/sec', opts.iterations, opts.concurrency);
         return cb();
     });
 }
@@ -30,18 +30,18 @@ function main() {
 
     var suite = queue(1);
     suite.defer(bench, {
-        name:"fontnik.load",
-        args:[fontnik.load,opensans],
+        name: "fontnik.load",
+        args: [fontnik.load, opensans],
         iterations: 10,
         concurrency: 10
     });
     suite.defer(bench, {
-        name:"fontnik.range",
-        args:[fontnik.range,{font:opensans,start:0,end:256}],
+        name: "fontnik.range",
+        args: [fontnik.range, { font: opensans, start: 0, end: 256 }],
         iterations: 1000,
         concurrency: 100
     });
-    suite.awaitAll(function(err) {
+    suite.awaitAll(function (err) {
         if (err) throw err;
     })
 }

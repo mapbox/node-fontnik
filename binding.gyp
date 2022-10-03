@@ -16,7 +16,6 @@
       'compiler_checks': [
         '-Wall',
         '-Wextra',
-        '-Weffc++',
         '-Wconversion',
         '-pedantic-errors',
         '-Wconversion',

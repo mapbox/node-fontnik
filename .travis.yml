@@ -5,8 +5,8 @@ sudo: false
 # enable c++11/14 builds
 addons:
   apt:
-    sources: [ 'ubuntu-toolchain-r-test' ]
-    packages: [ 'libstdc++-4.9-dev' ]
+    sources: ["ubuntu-toolchain-r-test"]
+    packages: ["libstdc++-4.9-dev"]
 
 install:
   # set up the environment by installing mason and clang++
@@ -59,7 +59,7 @@ matrix:
     - os: linux
       env: BUILDTYPE=release
       node_js: 12
-    # linux publishable node v10/debug
+    # linux publishable node v14/debug
     - os: linux
       env: BUILDTYPE=debug
       node_js: 14
@@ -67,10 +67,18 @@ matrix:
     - os: linux
       env: BUILDTYPE=release
       node_js: 14
-    # linux publishable node v10/debug
+    # linux publishable node v12/debug
     - os: linux
       env: BUILDTYPE=debug
       node_js: 12
+    # linux publishable node v16
+    - os: linux
+      env: BUILDTYPE=release
+      node_js: 16
+    # linux publishable node v16/debug
+    - os: linux
+      env: BUILDTYPE=debug
+      node_js: 16
     # osx publishable node v8
     - os: osx
       osx_image: xcode11
@@ -86,11 +94,16 @@ matrix:
       osx_image: xcode11
       env: BUILDTYPE=release
       node_js: 12
-    # osx publishable node v12
+    # osx publishable node v14
     - os: osx
       osx_image: xcode11
       env: BUILDTYPE=release
       node_js: 14
+    # osx publishable node v16
+    - os: osx
+      osx_image: xcode11
+      env: BUILDTYPE=release
+      node_js: 16
     # Sanitizer build node v10/Debug
     - os: linux
       env: BUILDTYPE=debug TOOLSET=asan
