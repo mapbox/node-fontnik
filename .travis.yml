@@ -1,18 +1,12 @@
-dist: focal
 language: node_js
 
-sudo: true
+sudo: false
 
 # enable c++11/14 builds
-# addons:
-#   apt:
-#     sources: [ 'ppa:ubuntu-toolchain-r/test' ]
-#     packages: [ 'libstdc++-4.9-dev' ]
-
-before_install:
-  - sudo add-apt-repository -y ppa:ubuntu-toolchain-r/test
-  - sudo apt-get -q update
-  - sudo apt-get install libstdc++-4.9-dev
+addons:
+  apt:
+    sources: [ 'ppa:ubuntu-toolchain-r/test' ]
+    packages: [ 'libstdc++-4.9-dev' ]
 
 install:
   # set up the environment by installing mason and clang++
