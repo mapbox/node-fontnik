@@ -10,7 +10,7 @@ addons:
       - sourceline: "ppa:ubuntu-toolchain-r/test"
     # sources: [ 'ppa:ubuntu-toolchain-r/test' ]
     packages:
-      - "libstdc++-4.9-dev"
+      - "libstdc++6-dev"
 
 install:
   # set up the environment by installing mason and clang++
