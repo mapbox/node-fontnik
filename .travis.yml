@@ -5,8 +5,8 @@ sudo: false
 # enable c++11/14 builds
 addons:
   apt:
-    sources: ["ubuntu-toolchain-r-test"]
-    packages: ["libstdc++-4.9-dev"]
+    sources: [ 'ubuntu-toolchain-r-test' ]
+    packages: [ 'libstdc++-4.9-dev' ]
 
 install:
   # set up the environment by installing mason and clang++
