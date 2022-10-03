@@ -5,13 +5,12 @@ sudo: true
 # enable c++11/14 builds
 addons:
   apt:
-    sources: ["ubuntu-toolchain-r-test"]
-    packages: ["libstdc++-4.9-dev"]
-
-before_install:
-  - sudo apt-get update
-  - sudo add-apt-repository -y ppa:deadsnakes/ppa
-  - sudo apt install python3.7
+    sources:
+      - "ubuntu-toolchain-r-test"
+      - "deadsnakes"
+    packages:
+      - "libstdc++-4.9-dev"
+      - "python3.7-dev"
 
 install:
   # set up the environment by installing mason and clang++
