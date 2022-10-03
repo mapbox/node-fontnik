@@ -23,11 +23,11 @@
     }
   ],
   "dependencies": {
-    "@mapbox/node-pre-gyp": "^1.0.10",
     "d3-queue": "^3.0.7",
     "glob": "^7.1.6",
     "minimist": "^1.2.5",
-    "node-addon-api": "^2.0.1"
+    "node-addon-api": "^2.0.1",
+    "node-pre-gyp": "^0.14.0"
   },
   "devDependencies": {
     "@mapbox/cloudfriend": "^5.1.1",
