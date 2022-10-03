@@ -10,7 +10,8 @@ addons:
 
 before_install:
   - sudo apt-get update
-  - sudo apt-get install python-minimal
+  - sudo add-apt-repository ppa:deadsnakes/ppa
+  - sudo apt install python3.7
 
 install:
   # set up the environment by installing mason and clang++
