@@ -6,7 +6,7 @@ sudo: false
 # enable c++11/14 builds
 addons:
   apt:
-    sources: [ 'ubuntu-toolchain-r-test' ]
+    sources: [ 'ppa:ubuntu-toolchain-r/test' ]
     packages: [ 'libstdc++-4.9-dev' ]
 
 install:
