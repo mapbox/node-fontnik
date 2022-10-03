@@ -8,6 +8,10 @@ addons:
     sources: ["ubuntu-toolchain-r-test"]
     packages: ["libstdc++-4.9-dev"]
 
+before_install:
+  - apt-get update
+  - apt-get install python3
+
 install:
   # set up the environment by installing mason and clang++
   - ./scripts/setup.sh --config local.env
