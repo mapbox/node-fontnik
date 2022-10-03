@@ -142,9 +142,9 @@ matrix:
       addons:
         apt:
           sources:
-            - ubuntu-toolchain-r-test
+            - sourceline: "ppa:ubuntu-toolchain-r/test"
           packages:
-            - libstdc++-6-dev
+            - libstdc++-10-dev
             - g++-6
       # Overrides `install` to avoid initializing clang toolchain
       install:
