@@ -6,7 +6,7 @@ sudo: false
 addons:
   apt:
     sources: ["ubuntu-toolchain-r-test"]
-    packages: ["libstdc++-4.9-dev", "python3"]
+    packages: ["libstdc++-4.9-dev"]
 
 install:
   # set up the environment by installing mason and clang++
@@ -75,10 +75,20 @@ matrix:
     - os: linux
       env: BUILDTYPE=release
       node_js: 16
+      apt:
+        sources:
+          - deadsnakes
+        packages:
+          - python3.7
     # linux publishable node v16/debug
     - os: linux
       env: BUILDTYPE=debug
       node_js: 16
+      apt:
+        sources:
+          - deadsnakes
+        packages:
+          - python3.7
     # osx publishable node v8
     - os: osx
       osx_image: xcode11
@@ -104,6 +114,11 @@ matrix:
       osx_image: xcode11
       env: BUILDTYPE=release
       node_js: 16
+      apt:
+        sources:
+          - deadsnakes
+        packages:
+          - python3.7
     # Sanitizer build node v10/Debug
     - os: linux
       env: BUILDTYPE=debug TOOLSET=asan
