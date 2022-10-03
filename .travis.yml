@@ -1,16 +1,12 @@
 language: node_js
 
-sudo: true
+sudo: false
 
 # enable c++11/14 builds
 addons:
   apt:
-    sources:
-      - "ubuntu-toolchain-r-test"
-      - "deadsnakes"
-    packages:
-      - "libstdc++-4.9-dev"
-      - "python3.7-dev"
+    sources: ["ubuntu-toolchain-r-test"]
+    packages: ["libstdc++-4.9-dev"]
 
 install:
   # set up the environment by installing mason and clang++
