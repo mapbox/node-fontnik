@@ -152,10 +152,10 @@ jobs:
     #   before_script:
     - stage: publish
       name: "Publish Release"
-      script: echo "publishing release"
+      script: ./scripts/publish.sh --debug=false
       env: BUILDTYPE=release
       node_js: 16
     - name: "Publish Debug"
-      script: echo "publishing debug"
+      script: ./scripts/publish.sh --debug=true
       env: BUILDTYPE=debug
       node_js: 16
