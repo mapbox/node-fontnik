@@ -38,74 +38,99 @@ before_script:
 # For reference, the default travis behavior which we override comes from https://github.com/travis-ci/travis-build/blob/e5a45cbf49e0d9e27398e76e5f25dd7706feb6aa/lib/travis/build/script/node_js.rb#L62-L69.
 script:
 
+
+# Node versions for the job matrix
+nodejs_version:
+  - 8
+  - 10
+  - 12
+  - 14
+  - 16
+
+
+# Env variables for the job matrix
+env:
+  - BUILDTYPE=debug
+  - BUILDTYPE=release
+
+
+# OS for build
+os:
+  - linux
+  - osx
+
 # Build all binaries and if all succeed then publish based on the commit message
 jobs:
   include:
-    # linux publishable node v8
-    - os: linux
-      env: BUILDTYPE=release
-      node_js: 8
-    # linux publishable node v8/debug
-    - os: linux
-      env: BUILDTYPE=debug
-      node_js: 8
-    # linux publishable node v10
-    - os: linux
-      env: BUILDTYPE=release
-      node_js: 10
-    # linux publishable node v10/debug
-    - os: linux
-      env: BUILDTYPE=debug
-      node_js: 10
-    # linux publishable node v12
-    - os: linux
-      env: BUILDTYPE=release
-      node_js: 12
-    # linux publishable node v14/debug
-    - os: linux
-      env: BUILDTYPE=debug
-      node_js: 14
-    # linux publishable node v14
-    - os: linux
-      env: BUILDTYPE=release
-      node_js: 14
-    # linux publishable node v12/debug
-    - os: linux
-      env: BUILDTYPE=debug
-      node_js: 12
-    # linux publishable node v16
-    - os: linux
-      env: BUILDTYPE=release
-      node_js: 16
-    # linux publishable node v16/debug
-    - os: linux
-      env: BUILDTYPE=debug
-      node_js: 16
-    # osx publishable node v8
-    - os: osx
-      osx_image: xcode11
-      env: BUILDTYPE=release
-      node_js: 8
-    # osx publishable node v10
-    - os: osx
-      osx_image: xcode11
-      env: BUILDTYPE=release
-      node_js: 10
-    # osx publishable node v12
-    - os: osx
-      osx_image: xcode11
-      env: BUILDTYPE=release
-      node_js: 12
-    # osx publishable node v14
-    - os: osx
-      osx_image: xcode11
-      env: BUILDTYPE=release
-      node_js: 14
-    # osx publishable node v16
-    - os: osx
-      osx_image: xcode11
-      env: BUILDTYPE=release
-      node_js: 16
+    - stage: test
+      os: os
+      env: env
+      node_js: nodejs_version
+    # # linux publishable node v8
+    # - os: linux
+    #   env: BUILDTYPE=release
+    #   node_js: 8
+    # # linux publishable node v8/debug
+    # - os: linux
+    #   env: BUILDTYPE=debug
+    #   node_js: 8
+    # # linux publishable node v10
+    # - os: linux
+    #   env: BUILDTYPE=release
+    #   node_js: 10
+    # # linux publishable node v10/debug
+    # - os: linux
+    #   env: BUILDTYPE=debug
+    #   node_js: 10
+    # # linux publishable node v12
+    # - os: linux
+    #   env: BUILDTYPE=release
+    #   node_js: 12
+    # # linux publishable node v14/debug
+    # - os: linux
+    #   env: BUILDTYPE=debug
+    #   node_js: 14
+    # # linux publishable node v14
+    # - os: linux
+    #   env: BUILDTYPE=release
+    #   node_js: 14
+    # # linux publishable node v12/debug
+    # - os: linux
+    #   env: BUILDTYPE=debug
+    #   node_js: 12
+    # # linux publishable node v16
+    # - os: linux
+    #   env: BUILDTYPE=release
+    #   node_js: 16
+    # # linux publishable node v16/debug
+    # - os: linux
+    #   env: BUILDTYPE=debug
+    #   node_js: 16
+    # # osx publishable node v8
+    # - os: osx
+    #   osx_image: xcode11
+    #   env: BUILDTYPE=release
+    #   node_js: 8
+    # # osx publishable node v10
+    # - os: osx
+    #   osx_image: xcode11
+    #   env: BUILDTYPE=release
+    #   node_js: 10
+    # # osx publishable node v12
+    # - os: osx
+    #   osx_image: xcode11
+    #   env: BUILDTYPE=release
+    #   node_js: 12
+    # # osx publishable node v14
+    # - os: osx
+    #   osx_image: xcode11
+    #   env: BUILDTYPE=release
+    #   node_js: 14
+    # # osx publishable node v16
+    # - os: osx
+    #   osx_image: xcode11
+    #   env: BUILDTYPE=release
+    #   node_js: 16
     # Sanitizer build node v10/Debug
     - os: linux
       env: BUILDTYPE=debug TOOLSET=asan
