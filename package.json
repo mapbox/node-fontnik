@@ -23,15 +23,15 @@
     }
   ],
   "dependencies": {
+    "@mapbox/node-pre-gyp": "^1.0.10",
     "d3-queue": "^3.0.7",
     "glob": "^7.1.6",
     "minimist": "^1.2.5",
-    "node-pre-gyp": "^0.14.0",
     "node-addon-api": "^2.0.1"
   },
   "devDependencies": {
-    "@mapbox/cloudfriend": "^1.9.1",
-    "aws-sdk": "^2.22.0",
+    "@mapbox/cloudfriend": "^5.1.1",
+    "aws-sdk": "^2.1227.0",
     "benchmark": "^1.0.0",
     "mkdirp": "^0.5.1",
     "pbf": "^1.3.5",
