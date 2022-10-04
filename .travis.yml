@@ -56,8 +56,14 @@ os:
   - linux
   - osx
 
+osx_image:
+  - xcode11
+
 # Build all binaries and if all succeed then publish based on the commit message
 jobs:
+  exclude:
+    - os: osx
+      env: BUILDTYPE=debug
   include:
     # # linux publishable node v8
     # - os: linux
