@@ -30,6 +30,8 @@ install:
 # For this reason, we disable the 'script' section below, since we prefer using 'before_script'.
 before_script:
   - npm test
+  # after successful tests, publish binaries if specified in commit message
+  - ./scripts/publish.sh --toolset=${TOOLSET:-} --debug=$([ "${BUILDTYPE}" == 'debug' ] && echo "true" || echo "false")
 
 # We set 'script' here to an empty array to prevent this section from automatically running 'npm test'
 # The reason we do this is mentioned above in the comment about the 'before_script' stage.
@@ -127,7 +129,7 @@ matrix:
         - npm test
         - unset LD_PRELOAD
         # after successful tests, publish binaries if specified in commit message
-        # - ./scripts/publish.sh --toolset=${TOOLSET:-} --debug=$([ "${BUILDTYPE}" == 'debug' ] && echo "true" || echo "false")
+        - ./scripts/publish.sh --toolset=${TOOLSET:-} --debug=$([ "${BUILDTYPE}" == 'debug' ] && echo "true" || echo "false")
       script:
         - true
     # g++ build (default builds all use clang++)
@@ -190,10 +192,3 @@ matrix:
     #     - make tidy
     #   # Overrides `script`, no need to run tests
     #   before_script:
-
-after_success:
-  # after successful steps, publish binaries if specified in commit message
-  # Publish release build
-  - ./scripts/publish.sh --debug=false
-  # Publish debug build
-  - ./scripts/publish.sh --debug=true
