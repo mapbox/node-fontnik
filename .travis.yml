@@ -38,7 +38,6 @@ before_script:
 # For reference, the default travis behavior which we override comes from https://github.com/travis-ci/travis-build/blob/e5a45cbf49e0d9e27398e76e5f25dd7706feb6aa/lib/travis/build/script/node_js.rb#L62-L69.
 script:
 
-
 # Node versions for the job matrix
 nodejs_version:
   - 8
@@ -47,12 +46,10 @@ nodejs_version:
   - 14
   - 16
 
-
 # Env variables for the job matrix
 env:
   - BUILDTYPE=debug
   - BUILDTYPE=release
-
 
 # OS for build
 os:
@@ -63,9 +60,9 @@ os:
 jobs:
   include:
     - stage: test
-      os: os
-      env: env
-      node_js: nodejs_version
+      os: linux
+      env: BUILDTYPE=debug
+      node_js: 8
     # # linux publishable node v8
     # - os: linux
     #   env: BUILDTYPE=release
