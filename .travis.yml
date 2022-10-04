@@ -39,7 +39,7 @@ before_script:
 script:
 
 # Node versions for the job matrix
-nodejs_version:
+node_js:
   - 8
   - 10
   - 12
@@ -59,10 +59,6 @@ os:
 # Build all binaries and if all succeed then publish based on the commit message
 jobs:
   include:
-    - stage: test
-      os: linux
-      env: BUILDTYPE=debug
-      node_js: 8
     # # linux publishable node v8
     # - os: linux
     #   env: BUILDTYPE=release
