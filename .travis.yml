@@ -38,16 +38,16 @@ before_script:
 # For reference, the default travis behavior which we override comes from https://github.com/travis-ci/travis-build/blob/e5a45cbf49e0d9e27398e76e5f25dd7706feb6aa/lib/travis/build/script/node_js.rb#L62-L69.
 script:
 
-# CI stages
-stages:
-  - build
-  - publish
-
+# Build all binaries and if all succeed then publish based on the commit message
 jobs:
   include:
     - stage: build
     - os: linux
       env: BUILDTYPE=release
       node_js: 16
+    - os: osx
+      osx_image: xcode11
+      env: BUILDTYPE=release
+      node_js: 16
     - stage: publish
-      scripte: echo "publishing"
+      script: echo "publishing"
