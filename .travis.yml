@@ -46,8 +46,8 @@ stages:
 jobs:
   include:
     - stage: build
-      - os: linux
-        env: BUILDTYPE=release
-        node_js: 16
+    - os: linux
+      env: BUILDTYPE=release
+      node_js: 16
     - stage: publish
       scripte: echo "publishing"
