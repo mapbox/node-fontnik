@@ -41,7 +41,6 @@ script:
 # Build all binaries and if all succeed then publish based on the commit message
 jobs:
   include:
-    - stage: build
     - os: linux
       env: BUILDTYPE=release
       node_js: 16
