@@ -155,7 +155,13 @@ jobs:
       script: ./scripts/publish.sh --debug=false
       env: BUILDTYPE=release
       node_js: 16
+      os:
+        - osx
+        - linux
     - name: "Publish Debug"
       script: ./scripts/publish.sh --debug=true
       env: BUILDTYPE=debug
       node_js: 16
+      os:
+        - osx
+        - linux
