@@ -87,7 +87,7 @@ jobs:
         - npm test
         - unset LD_PRELOAD
         # after successful tests, publish binaries if specified in commit message
-        # - ./scripts/publish.sh --toolset=${TOOLSET:-} --debug=$([ "${BUILDTYPE}" == 'debug' ] && echo "true" || echo "false")
+        - ./scripts/publish.sh --toolset=${TOOLSET:-} --debug=$([ "${BUILDTYPE}" == 'debug' ] && echo "true" || echo "false")
       script:
         - true
     # g++ build (default builds all use clang++)
@@ -151,17 +151,18 @@ jobs:
     #   # Overrides `script`, no need to run tests
     #   before_script:
     - stage: publish
-      name: "Publish Release"
+      name: "Publish Darwin Release"
       script: ./scripts/publish.sh --debug=false
       env: BUILDTYPE=release
       node_js: 16
-      os:
-        - osx
-        - linux
+      os: osx
+    - name: "Publish Linux Release"
+      script: ./scripts/publish.sh --debug=false
+      env: BUILDTYPE=release
+      node_js: 16
+      os: linux
     - name: "Publish Debug"
       script: ./scripts/publish.sh --debug=true
       env: BUILDTYPE=debug
       node_js: 16
-      os:
-        - osx
-        - linux
+      os: linux
