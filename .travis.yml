@@ -65,71 +65,6 @@ jobs:
     - os: osx
       env: BUILDTYPE=debug
   include:
-    # # linux publishable node v8
-    # - os: linux
-    #   env: BUILDTYPE=release
-    #   node_js: 8
-    # # linux publishable node v8/debug
-    # - os: linux
-    #   env: BUILDTYPE=debug
-    #   node_js: 8
-    # # linux publishable node v10
-    # - os: linux
-    #   env: BUILDTYPE=release
-    #   node_js: 10
-    # # linux publishable node v10/debug
-    # - os: linux
-    #   env: BUILDTYPE=debug
-    #   node_js: 10
-    # # linux publishable node v12
-    # - os: linux
-    #   env: BUILDTYPE=release
-    #   node_js: 12
-    # # linux publishable node v14/debug
-    # - os: linux
-    #   env: BUILDTYPE=debug
-    #   node_js: 14
-    # # linux publishable node v14
-    # - os: linux
-    #   env: BUILDTYPE=release
-    #   node_js: 14
-    # # linux publishable node v12/debug
-    # - os: linux
-    #   env: BUILDTYPE=debug
-    #   node_js: 12
-    # # linux publishable node v16
-    # - os: linux
-    #   env: BUILDTYPE=release
-    #   node_js: 16
-    # # linux publishable node v16/debug
-    # - os: linux
-    #   env: BUILDTYPE=debug
-    #   node_js: 16
-    # # osx publishable node v8
-    # - os: osx
-    #   osx_image: xcode11
-    #   env: BUILDTYPE=release
-    #   node_js: 8
-    # # osx publishable node v10
-    # - os: osx
-    #   osx_image: xcode11
-    #   env: BUILDTYPE=release
-    #   node_js: 10
-    # # osx publishable node v12
-    # - os: osx
-    #   osx_image: xcode11
-    #   env: BUILDTYPE=release
-    #   node_js: 12
-    # # osx publishable node v14
-    # - os: osx
-    #   osx_image: xcode11
-    #   env: BUILDTYPE=release
-    #   node_js: 14
-    # # osx publishable node v16
-    # - os: osx
-    #   osx_image: xcode11
-    #   env: BUILDTYPE=release
-    #   node_js: 16
     # Sanitizer build node v10/Debug
     - os: linux
       env: BUILDTYPE=debug TOOLSET=asan
@@ -216,6 +151,11 @@ jobs:
     #   # Overrides `script`, no need to run tests
     #   before_script:
     - stage: publish
-      script: echo "publishing"
+      name: "Publish Release"
+      script: echo "publishing release"
       env: BUILDTYPE=release
+      node_js: 16
+    - name: "Publish Debug"
+      script: echo "publishing debug"
+      env: BUILDTYPE=debug
       node_js: 16
