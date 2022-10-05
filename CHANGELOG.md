@@ -1,3 +1,8 @@
+# 0.8.0
+
+- Adds node v16 support
+- Updates vulnerable dependencies
+
 # 0.6.0
 
 - Adds node v12 and v14 support
