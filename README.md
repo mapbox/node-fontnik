@@ -17,7 +17,7 @@ See also [TinySDF](https://github.com/mapbox/tiny-sdf), which is a faster but le
 By default, installs binaries. On these platforms no external dependencies are needed.
 
 - 64 bit OS X or 64 bit Linux
-- Node.js v8-v14
+- Node.js v8-v16
 
 Just run:
 
