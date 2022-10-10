@@ -9,7 +9,7 @@ addons:
     sources:
       - sourceline: "ppa:ubuntu-toolchain-r/test"
     packages:
-      - "libstdc++-10-dev"
+      - "libstdc++-9-dev"
 
 install:
   # set up the environment by installing mason and clang++
@@ -99,7 +99,7 @@ jobs:
           sources:
             - sourceline: "ppa:ubuntu-toolchain-r/test"
           packages:
-            - libstdc++-10-dev
+            - libstdc++-9-dev
             - g++-9
       # Overrides `install` to avoid initializing clang toolchain
       install:
