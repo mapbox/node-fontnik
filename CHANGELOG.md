@@ -1,4 +1,4 @@
-# 0.8.0
+# 0.7.0
 
 - Adds node v16 support
 - Updates vulnerable dependencies
