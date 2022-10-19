@@ -2,7 +2,7 @@
 
 var path = require('path');
 var fs = require('fs');
-var queue = require('queue-async');
+var { queue } = require('d3-queue');
 var glob = require('glob');
 var argv = require('minimist')(process.argv.slice(2), {
     boolean: ['verbose', 'help']
@@ -28,9 +28,9 @@ if (argv.face) {
 } else {
     var register = path.resolve(argv.register);
     var pattern = '+(*ttf|*otf)';
-    faces = glob.sync(pattern,{nodir:true, cwd:register, matchBase:true});
-    faces = faces.map(function(f) {
-        return path.join(register,f);
+    faces = glob.sync(pattern, { nodir: true, cwd: register, matchBase: true });
+    faces = faces.map(function (f) {
+        return path.join(register, f);
     })
 }
 
@@ -42,9 +42,9 @@ if (argv.verbose) {
 var q = queue();
 
 function getCoverage(face, cb) {
-    fs.readFile(face, function(err, res) {
+    fs.readFile(face, function (err, res) {
         if (err) return cb(err);
-        fontnik.load(res, function(err, faces) {
+        fontnik.load(res, function (err, faces) {
             if (err) return cb(err);
             return cb(null, {
                 face: [faces[0].family_name, faces[0].style_name].join(' '),
@@ -54,9 +54,9 @@ function getCoverage(face, cb) {
     });
 }
 
-faces.forEach(function(f) { q.defer(getCoverage, f) });
+faces.forEach(function (f) { q.defer(getCoverage, f) });
 
-q.awaitAll(function(err, res) {
+q.awaitAll(function (err, res) {
     if (err) throw err;
     process.stdout.write(JSON.stringify(res, null, 2));
 });

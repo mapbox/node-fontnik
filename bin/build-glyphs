@@ -3,7 +3,7 @@
 var fontnik = require('../index.js');
 var path = require('path');
 var fs = require('fs');
-var queue = require('queue-async');
+var { queue } = require('d3-queue');
 
 if (process.argv.length !== 4) {
     console.log('Usage:');
@@ -33,7 +33,7 @@ for (var i = 0; i < 65536; (i = i + 256)) {
 }
 
 function writeGlyphs(opts, done) {
-    fontnik.range(opts, function(err, zdata) {
+    fontnik.range(opts, function (err, zdata) {
         if (err) {
             console.warn(err.toString());
             process.exit(1);

@@ -1,3 +1,4 @@
+dist: focal
 language: node_js
 
 sudo: false
@@ -5,8 +6,10 @@ sudo: false
 # enable c++11/14 builds
 addons:
   apt:
-    sources: [ 'ubuntu-toolchain-r-test' ]
-    packages: [ 'libstdc++-4.9-dev' ]
+    sources:
+      - sourceline: "ppa:ubuntu-toolchain-r/test"
+    packages:
+      - "libstdc++-9-dev"
 
 install:
   # set up the environment by installing mason and clang++
@@ -27,70 +30,39 @@ install:
 # For this reason, we disable the 'script' section below, since we prefer using 'before_script'.
 before_script:
   - npm test
-  # after successful tests, publish binaries if specified in commit message
-  - ./scripts/publish.sh --toolset=${TOOLSET:-} --debug=$([ "${BUILDTYPE}" == 'debug' ] && echo "true" || echo "false")
 
 # We set 'script' here to an empty array to prevent this section from automatically running 'npm test'
 # The reason we do this is mentioned above in the comment about the 'before_script' stage.
 # For reference, the default travis behavior which we override comes from https://github.com/travis-ci/travis-build/blob/e5a45cbf49e0d9e27398e76e5f25dd7706feb6aa/lib/travis/build/script/node_js.rb#L62-L69.
 script:
 
-# the matrix allows you to specify different operating systems and environments to
-# run your tests and build binaries
-matrix:
+# Node versions for the job matrix
+node_js:
+  - 8
+  - 10
+  - 12
+  - 14
+  - 16
+
+# Env variables for the job matrix
+env:
+  - BUILDTYPE=debug
+  - BUILDTYPE=release
+
+# OS for build
+os:
+  - linux
+  - osx
+
+osx_image:
+  - xcode11
+
+# Build all binaries and if all succeed then publish based on the commit message
+jobs:
+  exclude:
+    - os: osx
+      env: BUILDTYPE=debug
   include:
-    # linux publishable node v8
-    - os: linux
-      env: BUILDTYPE=release
-      node_js: 8
-    # linux publishable node v8/debug
-    - os: linux
-      env: BUILDTYPE=debug
-      node_js: 8
-    # linux publishable node v10
-    - os: linux
-      env: BUILDTYPE=release
-      node_js: 10
-    # linux publishable node v10/debug
-    - os: linux
-      env: BUILDTYPE=debug
-      node_js: 10
-    # linux publishable node v12
-    - os: linux
-      env: BUILDTYPE=release
-      node_js: 12
-    # linux publishable node v10/debug
-    - os: linux
-      env: BUILDTYPE=debug
-      node_js: 14
-    # linux publishable node v14
-    - os: linux
-      env: BUILDTYPE=release
-      node_js: 14
-    # linux publishable node v10/debug
-    - os: linux
-      env: BUILDTYPE=debug
-      node_js: 12
-    # osx publishable node v8
-    - os: osx
-      osx_image: xcode11
-      env: BUILDTYPE=release
-      node_js: 8
-    # osx publishable node v10
-    - os: osx
-      osx_image: xcode11
-      env: BUILDTYPE=release
-      node_js: 10
-    # osx publishable node v12
-    - os: osx
-      osx_image: xcode11
-      env: BUILDTYPE=release
-      node_js: 12
-    # osx publishable node v12
-    - os: osx
-      osx_image: xcode11
-      env: BUILDTYPE=release
-      node_js: 14
     # Sanitizer build node v10/Debug
     - os: linux
       env: BUILDTYPE=debug TOOLSET=asan
@@ -120,15 +92,15 @@ matrix:
     - os: linux
       # Note: -fext-numeric-literals is needed to workaround gcc bug:
       # boost/math/constants/constants.hpp:269:3: error: unable to find numeric literal operator 'operatorQ'
-      env: BUILDTYPE=debug CXX="g++-6" CC="gcc-6" CXXFLAGS="-fext-numeric-literals"
+      env: BUILDTYPE=debug CXX="g++-9" CC="gcc-9" CXXFLAGS="-fext-numeric-literals"
       node_js: 10
       addons:
         apt:
           sources:
-            - ubuntu-toolchain-r-test
+            - sourceline: "ppa:ubuntu-toolchain-r/test"
           packages:
-            - libstdc++-6-dev
-            - g++-6
+            - libstdc++-9-dev
+            - g++-9
       # Overrides `install` to avoid initializing clang toolchain
       install:
         - make ${BUILDTYPE}
@@ -176,3 +148,19 @@ matrix:
     #     - make tidy
     #   # Overrides `script`, no need to run tests
     #   before_script:
+    - stage: publish
+      name: "Publish Darwin Release"
+      script: ./scripts/publish.sh --debug=false
+      env: BUILDTYPE=release
+      node_js: 16
+      os: osx
+    - name: "Publish Linux Release"
+      script: ./scripts/publish.sh --debug=false
+      env: BUILDTYPE=release
+      node_js: 16
+      os: linux
+    - name: "Publish Debug"
+      script: ./scripts/publish.sh --debug=true
+      env: BUILDTYPE=debug
+      node_js: 16
+      os: linux
