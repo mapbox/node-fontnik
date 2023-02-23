@@ -1,3 +1,7 @@
+# 0.7.1
+
+- Fixes issue with `point-in-polygon` algorithm being used in `sdf-glyph-foundary`
+
 # 0.7.0
 
 - Adds node v16 support
