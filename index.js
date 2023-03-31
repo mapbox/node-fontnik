@@ -1,1 +1,3 @@
-module.exports = require('./lib/binding/fontnik.node');
+var binding = require('node-gyp-build')(__dirname)
+
+module.exports = binding
