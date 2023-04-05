@@ -144,7 +144,8 @@ jobs:
     #     - make tidy
     #   # Overrides `script`, no need to run tests
     #   before_script:
-    - name: "Publish Release"
+    - stage: publish
+      name: "Publish Release"
       script: ./scripts/publish.sh --debug=false
       env: BUILDTYPE=release
       node_js: 16
