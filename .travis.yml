@@ -144,19 +144,8 @@ jobs:
     #     - make tidy
     #   # Overrides `script`, no need to run tests
     #   before_script:
-    - stage: publish
-      name: "Publish Darwin Release"
+    - name: "Publish Release"
       script: ./scripts/publish.sh --debug=false
       env: BUILDTYPE=release
-      node_js: 16
-      os: osx
-    - name: "Publish Linux Release"
-      script: ./scripts/publish.sh --debug=false
-      env: BUILDTYPE=release
-      node_js: 16
-      os: linux
-    - name: "Publish Debug"
-      script: ./scripts/publish.sh --debug=true
-      env: BUILDTYPE=debug
       node_js: 16
       os: linux
