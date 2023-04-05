@@ -42,10 +42,9 @@ function publish() {
 
       if [[ ${COMMIT_MESSAGE} =~ "[publish binary]" ]]; then
           echo "Publishing"
-          ./node_modules/.bin/node-pre-gyp package publish $@
-      elif [[ ${COMMIT_MESSAGE} =~ "[republish binary]" ]]; then
-          echo "Re-Publishing"
-          ./node_modules/.bin/node-pre-gyp package unpublish publish $@
+          # This only works with public npm registry
+          npm run prebuild $@
+          npm publish $@
       else
           echo "Skipping publishing since we did not detect either [publish binary] or [republish binary] in commit message"
       fi
@@ -56,8 +55,6 @@ function usage() {
   >&2 echo "Usage"
   >&2 echo ""
   >&2 echo "$ ./scripts/publish.sh <args>"
-  >&2 echo ""
-  >&2 echo "All args are forwarded to node-pre-gyp like --debug"
   >&2 echo ""
   exit 1
 }

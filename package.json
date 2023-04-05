@@ -47,7 +47,7 @@
   "scripts": {
     "install": "node-gyp-build",
     "test": "./node_modules/.bin/tape test/**/*.test.js",
-    "prebuildify": "prebuildify --napi --arch linux-x64+darwin-x64 --tag-uv --tag-libc"
+    "prebuild": "prebuildify --napi --arch linux-x64+darwin-x64+win --tag-uv --tag-libc"
   },
   "binary": {
     "module_name": "fontnik",
