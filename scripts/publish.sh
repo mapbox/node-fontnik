@@ -39,9 +39,9 @@ function publish() {
 
       if [[ ${COMMIT_MESSAGE} =~ "[publish binary]" ]]; then
           echo "Publishing"
-          # This only works with public npm registry
-          npm run prebuild $@
-          npm publish
+          # TODO try to publish package from CI
+          # npm run prebuild $@
+          # npm publish
       else
           echo "Skipping publishing since we did not detect either [publish binary] or [republish binary] in commit message"
       fi
