@@ -38,8 +38,6 @@ script:
 
 # Node versions for the job matrix
 node_js:
-  - 8
-  - 10
   - 12
   - 14
   - 16
@@ -66,7 +64,7 @@ jobs:
     # Sanitizer build node v10/Debug
     - os: linux
       env: BUILDTYPE=debug TOOLSET=asan
-      node_js: 10
+      node_js: 12
       sudo: required
       # Overrides `install` to set up custom asan flags
       install:
@@ -93,7 +91,7 @@ jobs:
       # Note: -fext-numeric-literals is needed to workaround gcc bug:
       # boost/math/constants/constants.hpp:269:3: error: unable to find numeric literal operator 'operatorQ'
       env: BUILDTYPE=debug CXX="g++-9" CC="gcc-9" CXXFLAGS="-fext-numeric-literals"
-      node_js: 10
+      node_js: 12
       addons:
         apt:
           sources:
@@ -110,7 +108,7 @@ jobs:
     # Coverage build
     - os: linux
       env: BUILDTYPE=debug CXXFLAGS="--coverage" LDFLAGS="--coverage"
-      node_js: 10
+      node_js: 12
       # Overrides `script` to publish coverage data to codecov
       before_script:
         - npm test
