@@ -30,9 +30,6 @@ function is_pr_merge() {
 # - the commit message includes [republish binary]
 # - the commit is not a pr_merge (checked with `is_pr_merge` function)
 function publish() {
-  echo "dumping binary meta..."
-  ./node_modules/.bin/node-pre-gyp reveal --loglevel=error $@
-
   echo "determining publishing status..."
 
   if [[ $(is_pr_merge) ]]; then
@@ -44,7 +41,7 @@ function publish() {
           echo "Publishing"
           # This only works with public npm registry
           npm run prebuild $@
-          npm publish $@
+          npm publish
       else
           echo "Skipping publishing since we did not detect either [publish binary] or [republish binary] in commit message"
       fi
