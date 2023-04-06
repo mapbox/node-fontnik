@@ -175,20 +175,11 @@ jobs:
         use:
           - linux-binaries
           - darwin-binaries
-      before_install:
-        - echo "Files in directory"
-        - ls -l
-        - ls -a
-      before_script:
-        - echo "Do nothing"
-      install:
-        - echo "Testing publish - Don't build anything"
       after_install:
         - echo "After Install"
         - ls -l
         - ls -a
         - ls * prebuilds
-
       # script: ./scripts/publish.sh --debug=false
       env: BUILDTYPE=release
       node_js: 16
