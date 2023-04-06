@@ -150,8 +150,8 @@ jobs:
       workspaces:
         create:
           name: linux-binaries
-          path:
-            - prebuilds/linux-x64/node.napi.uv1.glibc.node
+          paths:
+            - prebuilds
       # script: ./scripts/publish.sh --debug=false
       env: BUILDTYPE=release
       node_js: 16
@@ -162,8 +162,8 @@ jobs:
       workspaces:
         create:
           name: darwin-binaries
-          path:
-            - prebuilds/darwin-x64/node.napi.uv1.glibc.node
+          paths:
+            - prebuilds
       # script: ./scripts/publish.sh --debug=false
       env: BUILDTYPE=release
       node_js: 16
