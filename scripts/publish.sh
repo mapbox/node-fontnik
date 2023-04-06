@@ -40,7 +40,7 @@ function publish() {
       if [[ ${COMMIT_MESSAGE} =~ "[publish binary]" ]]; then
           echo "Publishing"
           # TODO try to publish package from CI
-          # npm run prebuild $@
+          # npm run prebuildify $@
           # npm publish
       else
           echo "Skipping publishing since we did not detect either [publish binary] or [republish binary] in commit message"

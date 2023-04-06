@@ -1,11 +1,5 @@
 dist: focal
 language: node_js
-cache:
-  directories:
-  - prebuilds
-before_cache:
-  - ls -l
-
 
 sudo: false
 
@@ -150,9 +144,40 @@ jobs:
     #     - make tidy
     #   # Overrides `script`, no need to run tests
     #   before_script:
-    - stage: publish
-      name: "Publish Release"
-      script: ./scripts/publish.sh --debug=false
+    - stage: Create Builds
+      name: "Build Linux Binary"
+      workspaces:
+        create:
+          name: linux-binaries
+      # script: ./scripts/publish.sh --debug=false
+      after_script:
+        - npm run prebuildify -- --platform=linux --arch=x64
+      env: BUILDTYPE=release
+      node_js: 16
+      os: linux
+    
+    - name: "Build Darwin Binary"
+      workspaces:
+        create:
+          name: darwin-binaries
+      # script: ./scripts/publish.sh --debug=false
+      after_script:
+        - npm run prebuildify -- --platform=darwin --arch=x64
+      env: BUILDTYPE=release
+      node_js: 16
+      os: osx
+
+    - stage: Publish Package
+      name: "Publish NPM Package"
+      workspaces:
+        use:
+          - linux-binaries
+          - darwin-binaries
+      before_install:
+        - ls -l
+      install: 
+        - echo "Testing publish"
+      # script: ./scripts/publish.sh --debug=false
       env: BUILDTYPE=release
       node_js: 16
       os: linux
