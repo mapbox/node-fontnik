@@ -1,7 +1,7 @@
 dist: focal
 language: node_js
 
-sudo: true
+sudo: required
 
 # enable c++11/14 builds
 addons:
