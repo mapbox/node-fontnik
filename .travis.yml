@@ -148,8 +148,8 @@ jobs:
       name: "Build Linux Binary"
       workspaces:
         create:
-          name: linux-binaries
-          path:
+          - name: linux-binaries
+          - path:
             - prebuilds
       # script: ./scripts/publish.sh --debug=false
       after_script:
@@ -161,8 +161,8 @@ jobs:
     - name: "Build Darwin Binary"
       workspaces:
         create:
-          name: darwin-binaries
-          path:
+          - name: darwin-binaries
+          - path:
             - prebuilds
       # script: ./scripts/publish.sh --debug=false
       after_script:
