@@ -149,6 +149,8 @@ jobs:
       workspaces:
         create:
           name: linux-binaries
+          path:
+            - prebuilds
       # script: ./scripts/publish.sh --debug=false
       after_script:
         - npm run prebuildify -- --platform=linux --arch=x64
@@ -160,6 +162,8 @@ jobs:
       workspaces:
         create:
           name: darwin-binaries
+          path:
+            - prebuilds
       # script: ./scripts/publish.sh --debug=false
       after_script:
         - npm run prebuildify -- --platform=darwin --arch=x64
@@ -174,9 +178,10 @@ jobs:
           - linux-binaries
           - darwin-binaries
       before_install:
+        - echo "Files in directory"
         - ls -l
-      install: 
-        - echo "Testing publish"
+      # install: 
+      #   - echo "Testing publish"
       # script: ./scripts/publish.sh --debug=false
       env: BUILDTYPE=release
       node_js: 16
