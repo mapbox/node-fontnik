@@ -1,5 +1,11 @@
 dist: focal
 language: node_js
+cache:
+  directories:
+  - prebuilds
+before_cache:
+  - ls -l
+
 
 sudo: false
 
