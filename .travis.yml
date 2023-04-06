@@ -148,22 +148,22 @@ jobs:
       name: "Build Linux Binary"
       workspaces:
         create:
-          - name: linux-binaries
-          - path:
-            - prebuilds
+          name: linux-binaries
+          path:
+            - prebuilds/linux-x64/node.napi.uv1.glibc.node
       # script: ./scripts/publish.sh --debug=false
       after_script:
         - npm run prebuildify -- --platform=linux --arch=x64
       env: BUILDTYPE=release
       node_js: 16
       os: linux
-    
+
     - name: "Build Darwin Binary"
       workspaces:
         create:
-          - name: darwin-binaries
-          - path:
-            - prebuilds
+          name: darwin-binaries
+          path:
+            - prebuilds/darwin-x64/node.napi.uv1.glibc.node
       # script: ./scripts/publish.sh --debug=false
       after_script:
         - npm run prebuildify -- --platform=darwin --arch=x64
@@ -180,7 +180,7 @@ jobs:
       before_install:
         - echo "Files in directory"
         - ls -l
-      # install: 
+      # install:
       #   - echo "Testing publish"
       # script: ./scripts/publish.sh --debug=false
       env: BUILDTYPE=release
