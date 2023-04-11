@@ -151,7 +151,7 @@ jobs:
         create:
           name: linux-binaries
           paths:
-            - prebuilds
+            - prebuilds/linux-x64
       # script: ./scripts/publish.sh --debug=false
       env: BUILDTYPE=release
       node_js: 16
@@ -163,7 +163,7 @@ jobs:
         create:
           name: darwin-binaries
           paths:
-            - prebuilds
+            - prebuilds/darwin-x64
       # script: ./scripts/publish.sh --debug=false
       env: BUILDTYPE=release
       node_js: 16
@@ -179,7 +179,7 @@ jobs:
           - prebuilds
       script:
         - echo "After Install"
-        - ls * prebuilds
+        - ls -l prebuilds
         - ls -l prebuilds/linux-x64
         - ls -l prebuilds/darwin-x64
       # script: ./scripts/publish.sh --debug=false
