@@ -164,7 +164,7 @@ jobs:
         - tar -czvf darwin-x64-prebuilds.tar.gz -C prebuilds/darwin-x64 .
       workspaces:
         create:
-          name: darwin-binaries
+          name: osx-binaries
           paths:
             - darwin-x64-prebuilds.tar.gz
       env: BUILDTYPE=release
@@ -176,16 +176,17 @@ jobs:
       workspaces:
         use:
           - linux-binaries
-          - darwin-binaries
-        paths:
-          - prebuilds
+          - osx-binaries
       script:
         - echo "Unpacking from workspaces"
         - ls -l
+        - rm -rf prebuilds
         - mkdir prebuilds prebuilds/linux-x64 prebuilds/darwin-x64
         # Extract the prebuilds into the directories
         - tar -xf linux-x64-prebuilds.tar.gz -C prebuilds/linux-x64
+        - ls prebuilds
         - tar -xf darwin-x64-prebuilds.tar.gz -C prebuilds/darwin-x64
+        - ls prebuilds
         - ls prebuilds/linux-x64
         - ls prebuilds/darwin-x64
       env: BUILDTYPE=release
