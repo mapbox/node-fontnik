@@ -175,7 +175,7 @@ jobs:
         use:
           - linux-binaries
           - darwin-binaries
-      after_install:
+      script:
         - echo "After Install"
         - ls -l
         - ls -a
