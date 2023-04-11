@@ -146,37 +146,53 @@ jobs:
     #   before_script:
     # - stage: Create Builds
     - name: "Build Linux Binary"
-      script: 
+      script:
         - npm run prebuildify -- --platform=linux --arch=x64
         - tar -czvf linux-x64-prebuilds.tar.gz -C prebuilds/linux-x64 .
-      workspaces:
-        create:
-          name: linux-binaries
-          paths:
-            - linux-x64-prebuilds.tar.gz
+      # workspaces:
+      #   create:
+      #     name: linux-binaries
+      #     paths:
+      #       - linux-x64-prebuilds.tar.gz
+      deploy:
+        - provider: s3
+          access_key_id: $AWS_ACCESS_KEY_ID
+          secret_access_key: $AWS_SECRET_ACCESS_KEY
+          bucket: mapbox-node-binary
+          upload-dir: fontnik/build-binaries/test-1
+          local-dir: prebuilds
+          skip_cleanup: true
       env: BUILDTYPE=release
       node_js: 16
       os: linux
 
     - name: "Build Darwin Binary"
-      script: 
+      script:
         - npm run prebuildify -- --platform=darwin --arch=x64
         - tar -czvf darwin-x64-prebuilds.tar.gz -C prebuilds/darwin-x64 .
-      workspaces:
-        create:
-          name: osx-binaries
-          paths:
-            - darwin-x64-prebuilds.tar.gz
+      # workspaces:
+      #   create:
+      #     name: osx-binaries
+      #     paths:
+      #       - darwin-x64-prebuilds.tar.gz
+      deploy:
+        - provider: s3
+          access_key_id: $AWS_ACCESS_KEY_ID
+          secret_access_key: $AWS_SECRET_ACCESS_KEY
+          bucket: mapbox-node-binary
+          upload-dir: fontnik/build-binaries/test-1
+          local-dir: prebuilds
+          skip_cleanup: true
       env: BUILDTYPE=release
       node_js: 16
       os: osx
 
     - stage: Publish Package
       name: "Publish NPM Package"
-      workspaces:
-        use:
-          - linux-binaries
-          - osx-binaries
+      # workspaces:
+      #   use:
+      #     - linux-binaries
+      #     - osx-binaries
       script:
         - echo "Unpacking from workspaces"
         - ls -l
