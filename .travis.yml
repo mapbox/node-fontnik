@@ -46,6 +46,7 @@ node_js:
 env:
   - BUILDTYPE=debug
   - BUILDTYPE=release
+  - PATH=$HOME/.local/bin:$PATH
 
 # OS for build
 os:
@@ -146,9 +147,16 @@ jobs:
     #   before_script:
     # - stage: Create Builds
     - name: "Build Linux Binary"
-      script: 
+      language: python
+      before_install:
+        - pip install -U pip
+        - pip install awscli
+        - mkdir -p ~/$TRAVIS_BUILD_NUMBER
+        - aws s3 sync s3://travis-build-stages-shared-storage-test/$TRAVIS_BUILD_NUMBER ~/$TRAVIS_BUILD_NUMBER --dryrun
+      script:
         - npm run prebuildify -- --platform=linux --arch=x64
         - tar -czvf linux-x64-prebuilds.tar.gz -C prebuilds/linux-x64 .
+        - cp ./linux-x64-prebuilds.tar.gz ~/$TRAVIS_BUILD_NUMBER/
       workspaces:
         create:
           name: linux-binaries
@@ -159,9 +167,18 @@ jobs:
       os: linux
 
     - name: "Build Darwin Binary"
-      script: 
+      language: python
+      before_install:
+        - pip install -U pip
+        - pip install awscli
+        - mkdir -p ~/$TRAVIS_BUILD_NUMBER
+        - aws s3 sync s3://travis-build-stages-shared-storage-test/$TRAVIS_BUILD_NUMBER ~/$TRAVIS_BUILD_NUMBER --dryrun
+      script:
         - npm run prebuildify -- --platform=darwin --arch=x64
+        - ls -l prebuilds
+        - ls * prebuilds
         - tar -czvf darwin-x64-prebuilds.tar.gz -C prebuilds/darwin-x64 .
+        - cp ./darwin-x64-prebuilds.tar.gz ~/$TRAVIS_BUILD_NUMBER/
       workspaces:
         create:
           name: osx-binaries
@@ -173,22 +190,31 @@ jobs:
 
     - stage: Publish Package
       name: "Publish NPM Package"
-      workspaces:
-        use:
-          - linux-binaries
-          - osx-binaries
+      language: python
+      before_install:
+        - pip install -U pip
+        - pip install awscli
+        - mkdir -p ~/$TRAVIS_BUILD_NUMBER
+        - aws s3 sync s3://travis-build-stages-shared-storage-test/$TRAVIS_BUILD_NUMBER ~/$TRAVIS_BUILD_NUMBER --dryrun
+      # workspaces:
+      #   use:
+      #     - linux-binaries
+      #     - osx-binaries
       script:
         - echo "Unpacking from workspaces"
-        - ls -l
-        - rm -rf prebuilds
+        # - ls -l
+        # - ls -l prebuilds
+        # - ls *
+        # - rm -rf prebuilds
         - mkdir prebuilds prebuilds/linux-x64 prebuilds/darwin-x64
+        - cp ~/$TRAVIS_BUILD_NUMBER/* .
         # Extract the prebuilds into the directories
         - tar -xf linux-x64-prebuilds.tar.gz -C prebuilds/linux-x64
         - ls prebuilds
         - tar -xf darwin-x64-prebuilds.tar.gz -C prebuilds/darwin-x64
         - ls prebuilds
-        - ls prebuilds/linux-x64
-        - ls prebuilds/darwin-x64
+        # - ls prebuilds/linux-x64
+        # - ls prebuilds/darwin-x64
       env: BUILDTYPE=release
       node_js: 16
       os: linux
