@@ -175,11 +175,13 @@ jobs:
         use:
           - linux-binaries
           - darwin-binaries
+        paths:
+          - prebuilds
       script:
         - echo "After Install"
-        - ls -l
-        - ls -a
         - ls * prebuilds
+        - ls -l prebuilds/linux-x64
+        - ls -l prebuilds/darwin-x64
       # script: ./scripts/publish.sh --debug=false
       env: BUILDTYPE=release
       node_js: 16
