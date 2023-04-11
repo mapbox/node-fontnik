@@ -155,13 +155,16 @@ jobs:
       #     paths:
       #       - linux-x64-prebuilds.tar.gz
       deploy:
-        - provider: s3
+          provider: s3
           access_key_id: $AWS_ACCESS_KEY_ID
           secret_access_key: $AWS_SECRET_ACCESS_KEY
           bucket: mapbox-node-binary
           upload-dir: fontnik/build-binaries/test-1
           local-dir: prebuilds
           skip_cleanup: true
+          on:
+            all_branches: true
+            condition: $TRAVIS_PULL_REQUEST = false
       env: BUILDTYPE=release
       node_js: 16
       os: linux
@@ -176,13 +179,17 @@ jobs:
       #     paths:
       #       - darwin-x64-prebuilds.tar.gz
       deploy:
-        - provider: s3
+          provider: s3
           access_key_id: $AWS_ACCESS_KEY_ID
           secret_access_key: $AWS_SECRET_ACCESS_KEY
           bucket: mapbox-node-binary
           upload-dir: fontnik/build-binaries/test-1
           local-dir: prebuilds
           skip_cleanup: true
+          on:
+            all_branches: true
+            condition: $TRAVIS_PULL_REQUEST = false
+          
       env: BUILDTYPE=release
       node_js: 16
       os: osx
