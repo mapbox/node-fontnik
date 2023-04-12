@@ -96,8 +96,8 @@ jobs:
           # If you are using yarn, change the line below from "npm" to "yarn"
           pkg-manager: npm
       - run:
-        name: LS all
-        command: ls *
+          name: LS all
+          command: ls *
       - attach_workspace:
           # Must be absolute path or relative path from working_directory
           at: ~/workspace
