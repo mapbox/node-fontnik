@@ -45,7 +45,7 @@ jobs:
           path: /tmp/prebuilds
           destination: linux-x64-binary
 
-    build-darwin:
+  build-darwin:
     # These next lines define a Docker executor: https://circleci.com/docs/2.0/executor-types/
     # You can specify an image from Dockerhub or use one of our Convenience Images from CircleCI's Developer Hub.
     # A list of available CircleCI Docker Convenience Images are available here: https://circleci.com/developer/images/image/cimg/node
