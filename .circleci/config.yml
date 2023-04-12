@@ -111,6 +111,8 @@ jobs:
         type: executor
       node-version:
         type: string
+      build-type:
+        type: string
     executor: << parameters.os >>
     steps:
       - checkout
