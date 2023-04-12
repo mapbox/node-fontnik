@@ -97,7 +97,7 @@ jobs:
           pkg-manager: npm
       - attach_workspace:
           # Must be absolute path or relative path from working_directory
-          at: ~/workspace
+          at: prebuilds
       - run:
           name: LS all
           command: ls *
