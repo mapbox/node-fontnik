@@ -118,6 +118,7 @@ jobs:
       - checkout
       - node/install:
           node-version: << parameters.node-version >>
+      - node/install-packages:
           pkg-manager: npm
       - run:
           name: Run Setup Scripts
