@@ -205,7 +205,7 @@ jobs:
             mason install llvm-cov ${MASON_LLVM_RELEASE}
             mason link llvm-cov ${MASON_LLVM_RELEASE}
             which llvm-cov
-            python3 -m pip install --user codecov
+            sudo pip install codecov
             codecov --gcov-exec "llvm-cov gcov"
 
   # Build binaries for Linux
