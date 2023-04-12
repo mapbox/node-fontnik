@@ -105,6 +105,7 @@ executors:
       xcode: 14.2.0
 
 jobs:
+  # Run tests with different configurations
   test:
     parameters:
       os:
@@ -131,6 +132,77 @@ jobs:
       - run:
           name: Run tests
           command: npm test
+      - store_test_results:
+          path: test-results
+  
+  # Build binaries for Linux
+  build-linux:
+    executor: linux
+    steps:
+      - checkout
+      - node/install:
+          node-version: "16"
+      - node/install-packages:
+          pkg-manager: npm
+      - run:
+          name: Run Setup Scripts
+          command: |
+            ./scripts/setup.sh --config local.env
+            source local.env
+      - run:
+          name: Make Build
+          command: make release
+      - run:
+          name: Package with Prebuildify
+          command: npm run prebuildify -- --platform=linux --arch=x64
+      - persist_to_workspace:
+          root: prebuilds
+          paths:
+            - linux-x64
+  
+  # Build binaries for Mac
+  build-darwin:
+    executor: macos
+    steps:
+      - node/install:
+          node-version: "16"
+      - node/install-packages:
+          pkg-manager: npm
+      - run:
+          name: Run Setup Scripts
+          command: |
+            ./scripts/setup.sh --config local.env
+            source local.env
+      - run:
+          name: Make Build
+          command: make release
+      - run:
+          name: Package with Prebuildify
+          command: npm run prebuildify -- --platform=darwin --arch=x64
+      - persist_to_workspace:
+          root: prebuilds
+          paths:
+            - darwin-x64
+  
+  # Publish packages to NPM
+  publish-package:
+    executor: linux
+    steps:
+      - checkout
+      - node/install-packages:
+          pkg-manager: npm
+      - attach_workspace:
+          at: prebuilds
+      - run:
+          name: LS all
+          command: ls *
+      - run:
+          name: LS prebuilds
+          command: ls prebuilds/linux-x64
+      - run:
+          name: LS prebuilds
+          command: ls prebuilds/darwin-x64
+      
 
 workflows:
   all-tests:
@@ -139,5 +211,16 @@ workflows:
           matrix:
             parameters:
               os: [linux, macos]
-              node-version: ["12", "14", "16"]
+              node-version: ["14", "16"]
               build-type: ["debug", "release"]
+      - build-linux:
+          requires:
+            - test
+      - build-darwin:
+          requires:
+            - test
+      - publish-package:
+          requires:
+            - test
+            - build-linux
+            - build-darwin
