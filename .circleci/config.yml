@@ -20,7 +20,7 @@ jobs:
       image: ubuntu-2004:202010-01
     # Then run your tests!
     # CircleCI will report the results back to your VCS provider.
-    working_directory: /prebuilt-binary
+    # working_directory: $HOME/prebuilt-binary
     steps:
       # Checkout the code as the first step.
       - checkout
@@ -42,7 +42,7 @@ jobs:
           name: Check directory content
           command: ls -l && ls prebuilds
       - store_artifacts:
-          path: /tmp/prebuilds
+          path: /prebuilds
           destination: linux-x64-binary
 
   build-darwin:
@@ -55,7 +55,7 @@ jobs:
       xcode: 14.2.0
     # Then run your tests!
     # CircleCI will report the results back to your VCS provider.
-    working_directory: /prebuilt-binary
+    # working_directory: $HOME/prebuilt-binary
     steps:
       # Checkout the code as the first step.
       - checkout
@@ -77,7 +77,7 @@ jobs:
           name: Check directory content
           command: ls -l && ls prebuilds
       - store_artifacts:
-          path: /tmp/prebuilds
+          path: /prebuilds
           destination: darwin-x64-binary
 
 workflows:
