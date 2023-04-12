@@ -59,7 +59,7 @@ orbs:
 #           # Must be relative path from root
 #           paths:
 #             - darwin-x64
-  
+
 #   publish-package:
 #     machine:
 #       image: ubuntu-2004:202010-01
@@ -78,7 +78,6 @@ orbs:
 #       - run:
 #           name: LS prebuilds
 #           command: ls prebuilds/darwin-x64
-
 
 # workflows:
 #   # Below is the definition of your workflow.
@@ -103,6 +102,22 @@ executors:
   macos: # macos executor running Xcode
     macos:
       xcode: 14.2.0
+
+commands:
+  install-mbx-ci:
+    parameters:
+      platform:
+        default: linux
+        type: string
+    steps:
+      - run:
+          command: |
+            curl -Ls https://mapbox-release-engineering.s3.amazonaws.com/mbx-ci/latest/mbx-ci-<< parameters.platform >>-amd64 > /usr/local/bin/mbx-ci
+            chmod 755 /usr/local/bin/mbx-ci
+            echo "export MBX_CI_DOMAIN=o619qyc20d.execute-api.us-east-1.amazonaws.com" >> $BASH_ENV
+            echo "export AWS_SDK_LOAD_CONFIG=1" >> $BASH_ENV
+            source $BASH_ENV
+          name: Install mbx-ci
 
 jobs:
   # Run tests with different configurations
@@ -132,9 +147,6 @@ jobs:
       - run:
           name: Run tests
           command: npm test
-      - store_test_results:
-          path: test-results
-
   asan-build:
     executor: linux
     environment:
@@ -158,8 +170,6 @@ jobs:
             export ASAN_OPTIONS=fast_unwind_on_malloc=0:${ASAN_OPTIONS}
             npm test
             unset LD_PRELOAD
-      - store_test_results:
-          path: test-results
   g-build:
     executor: linux
     environment:
@@ -180,8 +190,6 @@ jobs:
             source local.env
             make ${BUILDTYPE}
             npm test
-      - store_test_results:
-          path: test-results
   coverage-build:
     executor: linux
     environment:
@@ -202,11 +210,9 @@ jobs:
             mason install llvm-cov ${MASON_LLVM_RELEASE}
             mason link llvm-cov ${MASON_LLVM_RELEASE}
             which llvm-cov
-            pip install --user codecov
+            pip3 install --user codecov
             codecov --gcov-exec "llvm-cov gcov"
-      - store_test_results:
-          path: test-results
-  
+
   # Build binaries for Linux
   build-linux:
     executor: linux
@@ -231,7 +237,7 @@ jobs:
           root: prebuilds
           paths:
             - linux-x64
-  
+
   # Build binaries for Mac
   build-darwin:
     executor: macos
@@ -256,7 +262,7 @@ jobs:
           root: prebuilds
           paths:
             - darwin-x64
-  
+
   # Publish packages to NPM
   publish-package:
     executor: linux
@@ -275,7 +281,10 @@ jobs:
       - run:
           name: LS prebuilds
           command: ls prebuilds/darwin-x64
-      
+      - install-mbx-ci
+      - run:
+          name: Check MBX_CLI
+          command: mbx
 
 workflows:
   all-jobs:
