@@ -1,0 +1,38 @@
+build:
+    # Build on Linux, Windows and MacOS
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+	steps:
+      # Checks-out your repository under $GITHUB_WORKSPACE
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+        with:
+            node-version: '16'
+      - name: Build Linux
+        run: |
+          ./scripts/setup.sh --config local.env
+          source local.env
+          make release
+      
+      - name: Prebuildify Linux
+        if: matrix.os == 'ubuntu-latest'
+        run: npm run prebuildify -- --platform=linux --arch=x64
+      
+      - name: Prebuildify MacOs
+        if: matrix.os == 'macos-latest'
+        run: npm run prebuildify -- --platform=darwin --arch=x64
+          
+      # # Build end-user application binaries
+      # - name: Build UI
+      #   run: |
+      #     cd hello-gh-actions
+      #     arc build
+          
+      # Upload the end-user binary artifact
+      - uses: actions/upload-artifact@v3
+        with:
+          name: prebuilds-${{ matrix.os }}
+          path: prebuilds
+          retention-days: 1
