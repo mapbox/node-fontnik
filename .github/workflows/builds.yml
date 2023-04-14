@@ -1,35 +1,71 @@
-build:
-    # Build on Linux, Windows and MacOS
+name: CI
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+    branches: [master]
+
+jobs:
+  test:
+    runs-on: ${{ matrix.os.host }}
     strategy:
       matrix:
-        os: [ubuntu-latest, macos-latest]
-    runs-on: ${{ matrix.os }}
-	steps:
-      # Checks-out your repository under $GITHUB_WORKSPACE
+        os:
+          - name: darwin-x64
+            architecture: x86-64
+            host: macos-12
+
+          - name: linux-x64
+            architecture: x86-64
+            host: ubuntu-latest
+
+    steps:
       - uses: actions/checkout@v3
       - uses: actions/setup-node@v3
         with:
-            node-version: '16'
-      - name: Build Linux
+          node-version: "16"
+
+      # - name: Test on ${{ matrix.os.name }}
+      #   uses: cross-platform-actions/action@v0.10.0
+      #   # env:
+      #   #   MY_ENV1: MY_ENV1
+      #   #   MY_ENV2: MY_ENV2
+      #   with:
+      #     # environment_variables: MY_ENV1 MY_ENV2
+      #     operating_system: ${{ matrix.os.name }}
+      #     architecture: ${{ matrix.os.architecture }}
+      #     # version: ${{ matrix.os.version }}
+      #     shell: bash
+      #     # memory: 5G
+      #     # cpu_count: 4
+      #     # run: |
+      #     #   uname -a
+      #     #   echo $SHELL
+      #     #   pwd
+      #     #   ls -lah
+      #     #   whoami
+      #     #   env | sort
+      - name: Build
         run: |
           ./scripts/setup.sh --config local.env
           source local.env
           make release
-      
+
       - name: Prebuildify Linux
         if: matrix.os == 'ubuntu-latest'
         run: npm run prebuildify -- --platform=linux --arch=x64
-      
+
       - name: Prebuildify MacOs
         if: matrix.os == 'macos-latest'
         run: npm run prebuildify -- --platform=darwin --arch=x64
-          
+
       # # Build end-user application binaries
       # - name: Build UI
       #   run: |
       #     cd hello-gh-actions
       #     arc build
-          
+
       # Upload the end-user binary artifact
       - uses: actions/upload-artifact@v3
         with:
