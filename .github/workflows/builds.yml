@@ -12,6 +12,7 @@ jobs:
     strategy:
       matrix:
         node: [14, 16, 18]
+        build_type: ["debug", "release"]
         os:
           - name: darwin
             architecture: x86-64
@@ -21,7 +22,7 @@ jobs:
             architecture: x86-64
             host: ubuntu-20.04
 
-    name: ${{ matrix.os.name }}-${{ matrix.node.architecture }}-node${{ matrix.node }} test
+    name: ${{ matrix.os.name }}-${{ matrix.node.architecture }}-node${{ matrix.node }}-${{ matrix.build_type }} test
     steps:
       - uses: actions/checkout@v3
       - uses: actions/setup-node@v3
@@ -33,10 +34,84 @@ jobs:
           npm ci
           ./scripts/setup.sh --config local.env
           source local.env
-          make release
+          make ${{ matrix.build_type }}
           npm test
 
+  asan-build-test:
+    runs-on: ubuntu-20.04
+    name: ASAN toolset test
+    env:
+      BUILDTYPE: debug
+      CXX: g++-9
+      CC: gcc-9
+      CXXFLAGS: -fext-numeric-literals
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+        with:
+          node-version: "14"
+
+      - name: Test
+        run: |
+          npm ci
+          ./scripts/setup.sh --config local.env
+          source local.env
+          export CXXFLAGS="${MASON_SANITIZE_CXXFLAGS} -fno-sanitize-recover=all"
+          export LDFLAGS="${MASON_SANITIZE_LDFLAGS}"
+          make ${BUILDTYPE}
+          export LD_PRELOAD=${MASON_LLVM_RT_PRELOAD}
+          export ASAN_OPTIONS=fast_unwind_on_malloc=0:${ASAN_OPTIONS}
+          npm test
+          unset LD_PRELOAD
+
+  g-build-test:
+    runs-on: ubuntu-20.04
+    name: G++ build test
+    env:
+      BUILDTYPE: debug
+      TOOLSET: asan
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+        with:
+          node-version: "14"
+
+      - name: Test
+        run: |
+          npm ci
+          ./scripts/setup.sh --config local.env
+          source local.env
+          make ${BUILDTYPE}
+          npm test
+  
+  coverage-build-test:
+    runs-on: ubuntu-20.04
+    name: Coverage Build test
+    env:
+      BUILDTYPE: debug
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+        with:
+          node-version: "14"
+      - uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+      - name: Test
+        run: |
+          npm ci
+          ./scripts/setup.sh --config local.env
+          source local.env
+          make ${BUILDTYPE}
+          npm test
+          mason install llvm-cov ${MASON_LLVM_RELEASE}
+          mason link llvm-cov ${MASON_LLVM_RELEASE}
+          which llvm-cov
+          pip install --user codecov
+          codecov --gcov-exec "llvm-cov gcov"
+
   build:
+    needs: [test, asan-build-test, g-build-test, coverage-build-test]
     runs-on: ${{ matrix.os.host }}
     strategy:
       matrix:
@@ -72,7 +147,7 @@ jobs:
           retention-days: 1
 
   publish:
-    needs: [test, build]
+    needs: build
     runs-on: ubuntu-20.04
     steps:
       - uses: actions/checkout@v3
