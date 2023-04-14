@@ -53,11 +53,11 @@ jobs:
           make release
 
       - name: Prebuildify Linux
-        if: matrix.os == 'ubuntu-latest'
+        if: matrix.os == 'linux-x64'
         run: npm run prebuildify -- --platform=linux --arch=x64
 
       - name: Prebuildify MacOs
-        if: matrix.os == 'macos-latest'
+        if: matrix.os == 'darwin-x64'
         run: npm run prebuildify -- --platform=darwin --arch=x64
 
       # # Build end-user application binaries
