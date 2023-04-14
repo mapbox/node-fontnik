@@ -84,6 +84,6 @@ jobs:
       - uses: actions/download-artifact@v3
         with:
           name: prebuilds
+          path: prebuilds
 
-      - run: ls -R prebuilds
       - run: ls *
