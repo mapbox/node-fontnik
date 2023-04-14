@@ -22,7 +22,7 @@ jobs:
             architecture: x86-64
             host: ubuntu-20.04
 
-    name: ${{ matrix.os.name }}-${{ matrix.node.architecture }}-node${{ matrix.node }}-${{ matrix.build_type }} test
+    name: ${{ matrix.os.name }}-${{ matrix.os.architecture }}-node${{ matrix.node }}-${{ matrix.build_type }} test
     steps:
       - uses: actions/checkout@v3
       - uses: actions/setup-node@v3
