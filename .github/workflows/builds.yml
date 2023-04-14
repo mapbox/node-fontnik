@@ -29,13 +29,13 @@ jobs:
           node-version: ${{ matrix.node }}
 
       - name: Test
-        - run: npm ci
-        - run: |
-            ./scripts/setup.sh --config local.env
-            source local.env
-            make release
-        - run: npm test
-  
+        run: |
+          npm ci
+          ./scripts/setup.sh --config local.env
+          source local.env
+          make release
+          npm test
+
   build:
     runs-on: ${{ matrix.os.host }}
     strategy:
