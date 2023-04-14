@@ -11,6 +11,35 @@ jobs:
     runs-on: ${{ matrix.os.host }}
     strategy:
       matrix:
+        node: [14, 16, 18]
+        os:
+          - name: darwin
+            architecture: x86-64
+            host: macos-10.15
+
+          - name: linux
+            architecture: x86-64
+            host: ubuntu-latest
+
+    name: ${{ matrix.os.name }}-${{ matrix.node.architecture }}-node${{ matrix.node }} test
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+        with:
+          node-version: ${{ matrix.node }}
+
+      - name: Test
+        run: npm ci
+        run: |
+          ./scripts/setup.sh --config local.env
+          source local.env
+          make release
+        run: npm test
+  
+  build:
+    runs-on: ${{ matrix.os.host }}
+    strategy:
+      matrix:
         os:
           - name: darwin
             architecture: x86-64
@@ -26,26 +55,6 @@ jobs:
         with:
           node-version: "16"
 
-      # - name: Test on ${{ matrix.os.name }}
-      #   uses: cross-platform-actions/action@v0.10.0
-      #   # env:
-      #   #   MY_ENV1: MY_ENV1
-      #   #   MY_ENV2: MY_ENV2
-      #   with:
-      #     # environment_variables: MY_ENV1 MY_ENV2
-      #     operating_system: ${{ matrix.os.name }}
-      #     architecture: ${{ matrix.os.architecture }}
-      #     # version: ${{ matrix.os.version }}
-      #     shell: bash
-      #     # memory: 5G
-      #     # cpu_count: 4
-      #     # run: |
-      #     #   uname -a
-      #     #   echo $SHELL
-      #     #   pwd
-      #     #   ls -lah
-      #     #   whoami
-      #     #   env | sort
       - name: Build
         run: |
           ./scripts/setup.sh --config local.env
@@ -55,23 +64,9 @@ jobs:
       - name: Prebuildify ${{ matrix.os.name }}-${{ matrix.os.architecture }}
         run: npm run prebuildify -- --platform=${{ matrix.os.name }} --arch=x64
 
-      # - name: Prebuildify Linux
-      #   if: matrix.os.name == 'linux-x64'
-      #   run: npm run prebuildify -- --platform=linux --arch=x64
-
-      # - name: Prebuildify MacOs
-      #   if: matrix.os.name == 'darwin-x64'
-      #   run: npm run prebuildify -- --platform=darwin --arch=x64
-
-      # # Build end-user application binaries
-      # - name: Build UI
-      #   run: |
-      #     cd hello-gh-actions
-      #     arc build
-
       # Upload the end-user binary artifact
       - uses: actions/upload-artifact@v3
         with:
-          name: prebuilds-${{ matrix.os }}
+          name: prebuilt-binaries
           path: prebuilds
           retention-days: 1
