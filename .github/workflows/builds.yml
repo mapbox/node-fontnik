@@ -12,11 +12,11 @@ jobs:
     strategy:
       matrix:
         os:
-          - name: darwin-x64
+          - name: darwin
             architecture: x86-64
             host: macos-10.15
 
-          - name: linux-x64
+          - name: linux
             architecture: x86-64
             host: ubuntu-latest
 
@@ -52,13 +52,16 @@ jobs:
           source local.env
           make release
 
-      - name: Prebuildify Linux
-        if: matrix.os == 'linux-x64'
-        run: npm run prebuildify -- --platform=linux --arch=x64
+      - name: Prebuildify ${{ matrix.os.name }}-${{ matrix.os.architecture }}
+        run: npm run prebuildify -- --platform=${{ matrix.os.name }} --arch=x64
 
-      - name: Prebuildify MacOs
-        if: matrix.os == 'darwin-x64'
-        run: npm run prebuildify -- --platform=darwin --arch=x64
+      # - name: Prebuildify Linux
+      #   if: matrix.os.name == 'linux-x64'
+      #   run: npm run prebuildify -- --platform=linux --arch=x64
+
+      # - name: Prebuildify MacOs
+      #   if: matrix.os.name == 'darwin-x64'
+      #   run: npm run prebuildify -- --platform=darwin --arch=x64
 
       # # Build end-user application binaries
       # - name: Build UI
