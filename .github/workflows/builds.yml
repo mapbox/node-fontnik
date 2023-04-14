@@ -84,5 +84,6 @@ jobs:
       - uses: actions/download-artifact@v3
         run: ls -R
         working-directory: prebuilds
-      
-      - run: ls -R prebuilds
+        
+      - name: Check directories
+        run: ls -R prebuilds
