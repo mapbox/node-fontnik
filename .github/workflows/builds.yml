@@ -82,8 +82,7 @@ jobs:
 
       # Upload the end-user binary artifact
       - uses: actions/download-artifact@v3
-        run: ls -R
-        working-directory: prebuilds
-        
-      - name: Check directories
-        run: ls -R prebuilds
+        with:
+          path: prebuilds
+
+      - run: ls -R prebuilds
