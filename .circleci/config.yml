@@ -232,6 +232,9 @@ jobs:
           root: prebuilds
           paths:
             - linux-x64
+      - store_artifacts:
+          path: prebuilds
+          destination: prebuilt-binaries
 
   # Build binaries for Mac
   build-darwin:
@@ -257,6 +260,9 @@ jobs:
           root: prebuilds
           paths:
             - darwin-x64
+      - store_artifacts:
+          path: prebuilds
+          destination: prebuilt-binaries
 
   # Publish packages to NPM
   publish-package:
