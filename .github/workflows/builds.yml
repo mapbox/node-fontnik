@@ -42,9 +42,7 @@ jobs:
     name: ASAN toolset test
     env:
       BUILDTYPE: debug
-      CXX: g++-9
-      CC: gcc-9
-      CXXFLAGS: -fext-numeric-literals
+      TOOLSET: asan
     steps:
       - uses: actions/checkout@v3
       - uses: actions/setup-node@v3
@@ -69,7 +67,9 @@ jobs:
     name: G++ build test
     env:
       BUILDTYPE: debug
-      TOOLSET: asan
+      CXX: g++-9
+      CC: gcc-9
+      CXXFLAGS: -fext-numeric-literals
     steps:
       - uses: actions/checkout@v3
       - uses: actions/setup-node@v3
@@ -83,35 +83,9 @@ jobs:
           source local.env
           make ${BUILDTYPE}
           npm test
-  
-  coverage-build-test:
-    runs-on: ubuntu-20.04
-    name: Coverage Build test
-    env:
-      BUILDTYPE: debug
-    steps:
-      - uses: actions/checkout@v3
-      - uses: actions/setup-node@v3
-        with:
-          node-version: "14"
-      - uses: actions/setup-python@v4
-        with:
-          python-version: '3.10'
-      - name: Test
-        run: |
-          npm ci
-          ./scripts/setup.sh --config local.env
-          source local.env
-          make ${BUILDTYPE}
-          npm test
-          mason install llvm-cov ${MASON_LLVM_RELEASE}
-          mason link llvm-cov ${MASON_LLVM_RELEASE}
-          which llvm-cov
-          pip install --user codecov
-          codecov --gcov-exec "llvm-cov gcov"
 
   build:
-    needs: [test, asan-build-test, g-build-test, coverage-build-test]
+    needs: [test, asan-build-test, g-build-test]
     runs-on: ${{ matrix.os.host }}
     strategy:
       matrix:
