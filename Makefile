@@ -45,6 +45,7 @@ distclean: clean
 	rm -rf .mason
 	rm -rf .toolchain
 	rm -f local.env
+	rm -rf prebuilds
 
 xcode: ./node_modules/.bin/node-gyp
 	./node_modules/.bin/node-gyp configure -- -f xcode

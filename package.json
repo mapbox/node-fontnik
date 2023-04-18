@@ -45,6 +45,7 @@
     "font-inspect": "./bin/font-inspect"
   },
   "scripts": {
+    "download-binaries": "gh run download \"$(gh run list -b \"$(git branch --show-current)\" -L 1 --json databaseId --jq \".[].databaseId\")\"",
     "install": "node-gyp-build",
     "test": "./node_modules/.bin/tape test/**/*.test.js",
     "prebuildify": "prebuildify --napi --tag-uv --tag-libc --strip"

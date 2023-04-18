@@ -118,21 +118,4 @@ jobs:
         with:
           name: prebuilds
           path: prebuilds
-          retention-days: 1
-
-  publish:
-    needs: build
-    runs-on: ubuntu-20.04
-    steps:
-      - uses: actions/checkout@v3
-      - uses: actions/setup-node@v3
-        with:
-          node-version: "16"
-
-      # Upload the end-user binary artifact
-      - uses: actions/download-artifact@v3
-        with:
-          name: prebuilds
-          path: prebuilds
-
-      - run: ls *
+          retention-days: 14
