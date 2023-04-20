@@ -7,10 +7,15 @@ on:
     branches: [rafaykhan/testing-prebuildify]
   pull_request_target:
     types: [opened]
+  issue_comment:
+    types: [created, edited]
 
 jobs:
   test:
     runs-on: ubuntu-latest
+
+    name: PR Comment
+    if: ${{ github.event.issue.pull_request }}
     steps:
       - name: Print
-        run: echo ${{ github.event.inputs.my_input }}
+        run: echo ${{ github.event.issue.bodyText }}
