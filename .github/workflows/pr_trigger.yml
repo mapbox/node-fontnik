@@ -1,4 +1,4 @@
-name: CI
+name: PR Trigger
 
 on:
   pull_request:
@@ -10,3 +10,4 @@ jobs:
     steps:
       - name: Print
         run: echo ${{ github.event.pull_request }}
+
