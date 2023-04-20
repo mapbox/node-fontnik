@@ -91,16 +91,12 @@ jobs:
       matrix:
         os:
           - name: darwin
-            architecture: x64
+            architecture: x86-64
             host: macos-10.15
 
           - name: linux
-            architecture: x64
+            architecture: x86-64
             host: ubuntu-20.04
-            
-          - name: darwin
-            architecture: arm64
-            host: self-hosted
 
     steps:
       - uses: actions/checkout@v3
@@ -115,7 +111,7 @@ jobs:
           make release
 
       - name: Prebuildify ${{ matrix.os.name }}-${{ matrix.os.architecture }}
-        run: npm run prebuildify -- --platform=${{ matrix.os.name }} --arch=${{ matrix.os.architecture }}
+        run: npm run prebuildify -- --platform=${{ matrix.os.name }} --arch=x64
 
       # Upload the end-user binary artifact
       - uses: actions/upload-artifact@v3
