@@ -3,11 +3,14 @@ name: PR Trigger
 on:
   pull_request:
     branches: [rafaykhan/testing-prebuildify]
+  push:
+    branches: [rafaykhan/testing-prebuildify]
+  pull_request_target:
+    types: [opened]
 
 jobs:
   test:
     runs-on: ubuntu-latest
     steps:
       - name: Print
-        run: echo ${{ github.event.pull_request }}
-
+        run: echo ${{ github.event.inputs.my_input }}
