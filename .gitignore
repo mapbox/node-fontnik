@@ -9,3 +9,5 @@ lib/binding
 .toolchain
 .mason
 local.env
+prebuilds
+*.tgz

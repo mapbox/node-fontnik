@@ -5,17 +5,17 @@ export WERROR ?= false
 
 default: release
 
-./node_modules/.bin/node-pre-gyp:
+./node_modules/.bin/node-gyp:
 	# install deps but for now ignore our own install script
 	# so that we can run it directly in either debug or release
 	npm install --ignore-scripts
 
-release: ./node_modules/.bin/node-pre-gyp
-	V=1 ./node_modules/.bin/node-pre-gyp configure build --error_on_warnings=$(WERROR) --loglevel=error
+release: ./node_modules/.bin/node-gyp
+	V=1 ./node_modules/.bin/node-gyp configure build --error_on_warnings=$(WERROR) --loglevel=error
 	@echo "run 'make clean' for full rebuild"
 
-debug: ./node_modules/.bin/node-pre-gyp
-	V=1 ./node_modules/.bin/node-pre-gyp configure build --error_on_warnings=$(WERROR) --loglevel=error --debug
+debug: ./node_modules/.bin/node-gyp
+	V=1 ./node_modules/.bin/node-gyp configure build --error_on_warnings=$(WERROR) --loglevel=error --debug
 	@echo "run 'make clean' for full rebuild"
 
 coverage:
@@ -45,9 +45,10 @@ distclean: clean
 	rm -rf .mason
 	rm -rf .toolchain
 	rm -f local.env
+	rm -rf prebuilds
 
-xcode: ./node_modules/.bin/node-pre-gyp
-	./node_modules/.bin/node-pre-gyp configure -- -f xcode
+xcode: ./node_modules/.bin/node-gyp
+	./node_modules/.bin/node-gyp configure -- -f xcode
 
 	@# If you need more targets, e.g. to run other npm scripts, duplicate the last line and change NPM_ARGUMENT
 	SCHEME_NAME="$(MODULE_NAME)" SCHEME_TYPE=library BLUEPRINT_NAME=$(MODULE_NAME) BUILDABLE_NAME=$(MODULE_NAME).node scripts/create_scheme.sh

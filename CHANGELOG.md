@@ -1,3 +1,7 @@
+# 0.7.2
+
+- Removes `node-pre-gyp` in favor of `prebuildify` to package binaries. [#184](https://github.com/mapbox/node-fontnik/pull/184)
+
 # 0.7.1
 
 - Fixes issue with `point-in-polygon` algorithm being used in `sdf-glyph-foundary`
