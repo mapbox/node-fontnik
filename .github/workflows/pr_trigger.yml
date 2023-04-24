@@ -1,0 +1,13 @@
+name: PR Trigger
+
+on: issue_comment
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    name: PR Comment
+    if: ${{ github.event.issue.pull_request }}
+    steps:
+      - name: Print
+        run: echo ${{ github.event.issue.body }}
