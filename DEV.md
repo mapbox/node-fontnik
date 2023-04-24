@@ -2,7 +2,7 @@
 
 On each commit that passes through GitHub actions workflow, the binaries are generated for `linux-x64` and `darwin-x64`. These binaries can be downloaded when publishing the npm package.
 
-Running `npm publish` would upload the binaries present in the `prebuilds` directory. When your module is installed with `npm install`, it checks if the prebuilt binaries are present in the `prebuilds` directory for the provided OS and architecture, if so the existing binaries would be used. Otherwise the package would be built from source when installing.
+Running `npm publish` uses the binaries present in the `prebuilds` directory. When the module is installed with `npm install`, a pre-built binary in the `prebuilds` directory is used if there's one that's suitable for the OS and architecture of the machine. Otherwise, the binary is built from the source when installing.
 
 Typical workflow:
 
