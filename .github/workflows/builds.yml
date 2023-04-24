@@ -22,6 +22,10 @@ jobs:
             architecture: x86-64
             host: ubuntu-20.04
 
+          - name: windows
+            architecture: x86-64
+            host: windows-latest
+
     name: ${{ matrix.os.name }}-${{ matrix.os.architecture }}-node${{ matrix.node }}-${{ matrix.build_type }} test
     steps:
       - uses: actions/checkout@v3
