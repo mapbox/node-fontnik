@@ -31,8 +31,6 @@
     "prebuildify": "^5.0.1"
   },
   "devDependencies": {
-    "@mapbox/cloudfriend": "^5.1.1",
-    "aws-sdk": "^2.1227.0",
     "benchmark": "^1.0.0",
     "mkdirp": "^0.5.1",
     "node-gyp": "^9.3.1",
