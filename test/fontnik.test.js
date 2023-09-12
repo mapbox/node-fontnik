@@ -24,27 +24,50 @@ function jsonEqual(t, key, json) {
 var expected = JSON.parse(fs.readFileSync(__dirname + '/expected/load.json').toString());
 var firasans = fs.readFileSync(path.resolve(__dirname + '/../fonts/firasans-medium/FiraSans-Medium.ttf'));
 var opensans = fs.readFileSync(path.resolve(__dirname + '/../fonts/open-sans/OpenSans-Regular.ttf'));
+var opensans_lightitalic = fs.readFileSync(path.resolve(__dirname + '/../fonts/open-sans/OpenSans-LightItalic.ttf'));
 var invalid_no_family = fs.readFileSync(path.resolve(__dirname + '/fixtures/fonts-invalid/1c2c3fc37b2d4c3cb2ef726c6cdaaabd4b7f3eb9.ttf'));
 var guardianbold = fs.readFileSync(path.resolve(__dirname + '/../fonts/GuardianTextSansWeb/GuardianTextSansWeb-Bold.ttf'));
 var osaka = fs.readFileSync(path.resolve(__dirname + '/../fonts/osaka/Osaka.ttf'));
 
 test('load', function(t) {
-    t.test('loads: Fira Sans', function(t) {
+    t.test('loads: Fira Sans Medium', function(t) {
         fontnik.load(firasans, function(err, faces) {
             t.error(err);
             t.equal(faces[0].points.length, 789);
             t.equal(faces[0].family_name, 'Fira Sans');
             t.equal(faces[0].style_name, 'Medium');
+            t.equal(faces[0].weight, 500);
+            t.equal(faces[0].width, 100);
+            t.equal(faces[0].italic, false);
+            t.equal(faces[0].oblique, 0);
             t.end();
         });
     });
 
-    t.test('loads: Open Sans', function(t) {
+    t.test('loads: Open Sans Regular', function(t) {
         fontnik.load(opensans, function(err, faces) {
             t.error(err);
             t.equal(faces[0].points.length, 882);
             t.equal(faces[0].family_name, 'Open Sans');
             t.equal(faces[0].style_name, 'Regular');
+            t.equal(faces[0].weight, 400);
+            t.equal(faces[0].width, 100);
+            t.equal(faces[0].italic, false);
+            t.equal(faces[0].oblique, 0);
+            t.end();
+        });
+    });
+
+    t.test('loads: Open Sans Light Italic', function(t) {
+        fontnik.load(opensans_lightitalic, function(err, faces) {
+            t.error(err);
+            t.equal(faces[0].points.length, 1009);
+            t.equal(faces[0].family_name, 'Open Sans');
+            t.equal(faces[0].style_name, 'Light Italic');
+            t.equal(faces[0].weight, 300);
+            t.equal(faces[0].width, 100);
+            t.equal(faces[0].italic, true);
+            t.equal(faces[0].oblique, -12);
             t.end();
         });
     });
@@ -57,6 +80,10 @@ test('load', function(t) {
             t.equal(faces[0].family_name, '?');
             t.equal(faces[0].hasOwnProperty('style_name'), false);
             t.equal(faces[0].style_name, undefined);
+            t.equal(faces[0].weight, 700);
+            t.equal(faces[0].width, 100);
+            t.equal(faces[0].italic, false);
+            t.equal(faces[0].oblique, 0);
             t.end();
         });
     });
@@ -66,6 +93,10 @@ test('load', function(t) {
             t.error(err);
             t.equal(faces[0].family_name, 'Osaka');
             t.equal(faces[0].style_name, 'Regular');
+            t.equal(faces[0].weight, 400);
+            t.equal(faces[0].width, 100);
+            t.equal(faces[0].italic, false);
+            t.equal(faces[0].oblique, 0);
             t.end();
         });
     });
