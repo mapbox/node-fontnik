@@ -14,6 +14,12 @@
 #include <mapbox/glyph_foundry_impl.hpp>
 #include <utility>
 
+// freetype2
+extern "C" {
+#include <ft2build.h>
+#include FT_TRUETYPE_TABLES_H
+}
+
 namespace node_fontnik {
 
 struct FaceMetadata {
@@ -26,17 +32,12 @@ struct FaceMetadata {
 
     std::string family_name{};
     std::string style_name{};
+    uint16_t weight{};
+    float width{};
+    bool italic{};
+    float oblique{};
+
     std::vector<int> points{};
-    FaceMetadata(std::string _family_name,
-                 std::string _style_name,
-                 std::vector<int>&& _points)
-        : family_name(std::move(_family_name)),
-          style_name(std::move(_style_name)),
-          points(std::move(_points)) {}
-    FaceMetadata(std::string _family_name,
-                 std::vector<int>&& _points)
-        : family_name(std::move(_family_name)),
-          points(std::move(_points)) {}
 };
 
 struct GlyphPBF {
@@ -88,6 +89,31 @@ struct ft_face_guard {
     FT_Face* face_;
 };
 
+
+float getWidth(FT_UInt16 usWidthClass) {
+    switch (usWidthClass) {
+        case /* FWIDTH_ULTRA_CONDENSED */ 1:
+            return 50.f;
+        case /* FWIDTH_EXTRA_CONDENSED */ 2:
+            return 62.5f;
+        case /* FWIDTH_CONDENSED */ 3:
+            return 75.f;
+        case /* FWIDTH_SEMI_CONDENSED */ 4:
+            return 87.5f;
+        default:
+        case /* FWIDTH_NORMAL */ 5:
+            return 100.f;
+        case /* FWIDTH_SEMI_EXPANDED */ 6:
+            return 112.5f;
+        case /* FWIDTH_EXPANDED */ 7:
+            return 125.f;
+        case /* FWIDTH_EXTRA_EXPANDED */ 8:
+            return 150.f;
+        case /* FWIDTH_ULTRA_EXPANDED */ 9:
+            return 200.f;
+    }
+}
+
 struct AsyncLoad : Napi::AsyncWorker {
     using Base = Napi::AsyncWorker;
     AsyncLoad(Napi::Buffer<char> const& buffer, Napi::Function const& callback)
@@ -123,6 +149,11 @@ struct AsyncLoad : Napi::AsyncWorker {
                     faces_.reserve(static_cast<std::size_t>(num_faces));
                 }
                 if (ft_face->family_name != nullptr) {
+                    FaceMetadata metadata{ft_face->family_name};
+                    if (ft_face->style_name) {
+                        metadata.style_name = ft_face->style_name;
+                    }
+
                     std::set<int> points;
                     FT_ULong charcode;
                     FT_UInt gindex;
@@ -131,12 +162,43 @@ struct AsyncLoad : Napi::AsyncWorker {
                         charcode = FT_Get_Next_Char(ft_face, charcode, &gindex);
                         if (charcode != 0) points.emplace(charcode);
                     }
-                    std::vector<int> points_vec(points.begin(), points.end());
-                    if (ft_face->style_name != nullptr) {
-                        faces_.emplace_back(ft_face->family_name, ft_face->style_name, std::move(points_vec));
-                    } else {
-                        faces_.emplace_back(ft_face->family_name, std::move(points_vec));
+                    metadata.points = std::vector<int>(points.begin(), points.end());
+
+                    TT_Header* head = reinterpret_cast<TT_Header*>(FT_Get_Sfnt_Table(ft_face, FT_SFNT_HEAD));
+                    TT_OS2* os2 = reinterpret_cast<TT_OS2*>(FT_Get_Sfnt_Table(ft_face, FT_SFNT_OS2));
+                    TT_Postscript* post = reinterpret_cast<TT_Postscript*>(FT_Get_Sfnt_Table(ft_face, FT_SFNT_POST));
+
+                    // Weight
+                    if (os2) {
+                        metadata.weight = os2->usWeightClass;
+                    } else if (head) {
+                        metadata.weight = (head->Mac_Style & (/* condensed */ 1u << 0)) ? 700 : 400;
                     }
+
+                    // Width
+                    if (os2) {
+                        metadata.width = getWidth(os2->usWidthClass);
+                    } else if (head) {
+                        if (head->Mac_Style & (/* condensed */ 1u << 5)) {
+                            metadata.width = 75.f;
+                        } else if (head->Mac_Style & (/* expanded */ 1u << 6)) {
+                            metadata.width = 125.f;
+                        }
+                    }
+
+                    // Italic
+                    if (os2) {
+                        metadata.italic = os2->fsSelection & (/* italic */ 1u << 0);
+                    } else if (head) {
+                        metadata.italic = head->Mac_Style & (/* italic */ 1u << 1);
+                    }
+
+                    // Slant
+                    if (post) {
+                        metadata.oblique = static_cast<float>(post->italicAngle) / float(1 << 16);
+                    }
+
+                    faces_.emplace_back(std::move(metadata));
                 } else {
                     SetError("font does not have family_name or style_name");
                     return;
@@ -156,6 +218,10 @@ struct AsyncLoad : Napi::AsyncWorker {
             if (!face.style_name.empty()) {
                 js_face.Set("style_name", face.style_name);
             }
+            js_face.Set("weight", face.weight);
+            js_face.Set("width", face.width);
+            js_face.Set("italic", face.italic);
+            js_face.Set("oblique", face.oblique);
             Napi::Array js_points = Napi::Array::New(env, face.points.size());
             std::uint32_t p_idx = 0;
             for (auto const& pt : face.points) {
