@@ -11,7 +11,7 @@ jobs:
     runs-on: ${{ matrix.os.host }}
     strategy:
       matrix:
-        node: [14, 16, 18]
+        node: [16]
         build_type: ["debug", "release"]
         os:
           - name: darwin
