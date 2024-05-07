@@ -16,7 +16,7 @@ jobs:
         os:
           - name: darwin
             architecture: x86-64
-            host: macos-13
+            host: macos-14-large
 
           - name: linux
             architecture: x86-64
@@ -96,7 +96,7 @@ jobs:
         os:
           - name: darwin
             architecture: x86-64
-            host: macos-13
+            host: macos-14-large
 
           - name: linux
             architecture: x86-64
