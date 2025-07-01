@@ -25,6 +25,11 @@ jobs:
     name: ${{ matrix.os.name }}-${{ matrix.os.architecture }}-node${{ matrix.node }}-${{ matrix.build_type }} test
     steps:
       - uses: actions/checkout@v3
+      - uses: actions/setup-python@v4
+        if: matrix.os.name == 'darwin'
+        with:
+          python-version: '3.11'
+
       - uses: actions/setup-node@v3
         with:
           node-version: ${{ matrix.node }}
@@ -100,6 +105,11 @@ jobs:
 
     steps:
       - uses: actions/checkout@v3
+      - uses: actions/setup-python@v4
+        if: matrix.os.name == 'darwin'
+        with:
+          python-version: '3.11'
+
       - uses: actions/setup-node@v3
         with:
           node-version: "16"
