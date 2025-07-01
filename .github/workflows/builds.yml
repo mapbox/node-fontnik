@@ -137,7 +137,7 @@ jobs:
         run: npm run prebuildify -- --platform=${{ matrix.os.name }} --arch=x64
 
       # Upload the end-user binary artifact
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         with:
           name: prebuilds
           path: prebuilds
