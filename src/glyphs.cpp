@@ -1,4 +1,6 @@
 // fontnik
+#include <cstddef>
+#include <cstdint>
 #include "glyphs.hpp"
 #include <protozero/pbf_reader.hpp>
 #include <protozero/pbf_writer.hpp>
