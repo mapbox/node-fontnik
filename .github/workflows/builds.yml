@@ -20,7 +20,7 @@ jobs:
 
           - name: linux
             architecture: x86-64
-            host: ubuntu-20.04
+            host: ubuntu-22.04
 
     name: ${{ matrix.os.name }}-${{ matrix.os.architecture }}-node${{ matrix.node }}-${{ matrix.build_type }} test
     steps:
@@ -38,7 +38,7 @@ jobs:
           npm test
 
   asan-build-test:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     name: ASAN toolset test
     env:
       BUILDTYPE: debug
@@ -63,7 +63,7 @@ jobs:
           unset LD_PRELOAD
 
   g-build-test:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     name: G++ build test
     env:
       BUILDTYPE: debug
@@ -96,7 +96,7 @@ jobs:
 
           - name: linux
             architecture: x86-64
-            host: ubuntu-20.04
+            host: ubuntu-22.04
 
     steps:
       - uses: actions/checkout@v3
