@@ -42,6 +42,9 @@ jobs:
           source local.env
           make ${{ matrix.build_type }}
           npm test
+        env:
+          CC: "clang"
+          CXX: "clang++"
 
   asan-build-test:
     runs-on: ubuntu-22.04
@@ -89,6 +92,10 @@ jobs:
           source local.env
           make ${BUILDTYPE}
           npm test
+          npm test
+        env:
+          CC: "clang"
+          CXX: "clang++"
 
   build:
     needs: [test, asan-build-test, g-build-test]
