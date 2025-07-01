@@ -37,6 +37,7 @@ jobs:
       - name: Test
         run: |
           npm ci
+          npm install node-gyp@latest
           ./scripts/setup.sh --config local.env
           source local.env
           make ${{ matrix.build_type }}
@@ -116,6 +117,7 @@ jobs:
 
       - name: Build
         run: |
+          npm install node-gyp@latest
           ./scripts/setup.sh --config local.env
           source local.env
           make release
