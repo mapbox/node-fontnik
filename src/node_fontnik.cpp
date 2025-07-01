@@ -1,6 +1,7 @@
 // fontnik
 #include "glyphs.hpp"
 #include <napi.h>
+#include <cstddef>
 //#include <uv.h>
 
 namespace node_fontnik {
