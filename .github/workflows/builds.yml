@@ -129,6 +129,7 @@ jobs:
 
       - name: Build
         run: |
+          npm ci
           ./scripts/setup.sh --config local.env
           source local.env
           make release
