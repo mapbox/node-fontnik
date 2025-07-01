@@ -11,7 +11,7 @@ jobs:
     runs-on: ${{ matrix.os.host }}
     strategy:
       matrix:
-        node: [14, 16, 18]
+        node: [16, 18]
         build_type: ["debug", "release"]
         os:
           - name: darwin
@@ -52,7 +52,7 @@ jobs:
       - uses: actions/checkout@v3
       - uses: actions/setup-node@v3
         with:
-          node-version: "14"
+          node-version: "16"
 
       - name: Test
         run: |
