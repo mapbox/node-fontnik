@@ -49,6 +49,7 @@ jobs:
         env:
           CC: "clang"
           CXX: "clang++"
+          MASON_LLVM_RELEASE: "system"
 
   asan-build-test:
     runs-on: ubuntu-22.04
@@ -100,6 +101,7 @@ jobs:
         env:
           CC: "clang"
           CXX: "clang++"
+          MASON_LLVM_RELEASE: "system"
 
   build:
     needs: [test, asan-build-test, g-build-test]
