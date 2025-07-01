@@ -34,6 +34,10 @@ jobs:
         with:
           node-version: ${{ matrix.node }}
 
+      - name: Gyp
+        if: matrix.os.name == 'darwin'
+        run: npm install node-gyp@latest
+
       - name: Test
         run: |
           npm ci
@@ -122,9 +126,12 @@ jobs:
         with:
           node-version: "16"
 
+      - name: Gyp
+        if: matrix.os.name == 'darwin'
+        run: npm install node-gyp@latest
+
       - name: Build
         run: |
-          npm install node-gyp@latest
           ./scripts/setup.sh --config local.env
           source local.env
           make release
