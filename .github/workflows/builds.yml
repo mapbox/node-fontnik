@@ -97,11 +97,6 @@ jobs:
           source local.env
           make ${BUILDTYPE}
           npm test
-          npm test
-        env:
-          CC: "clang"
-          CXX: "clang++"
-          MASON_LLVM_RELEASE: "system"
 
   build:
     needs: [test, asan-build-test, g-build-test]
