@@ -6,6 +6,13 @@ on:
   pull_request:
     branches: [master]
 
+env:
+  CC: clang
+  CXX: clang++
+  MASON_LLVM_RELEASE: system
+  PYTHON_VERSION: 3.11
+  NODE_VERSION: 16
+
 jobs:
   test:
     runs-on: ${{ matrix.os.host }}
@@ -25,15 +32,14 @@ jobs:
     name: ${{ matrix.os.name }}-${{ matrix.os.architecture }}-node${{ matrix.node }}-${{ matrix.build_type }} test
     steps:
       - uses: actions/checkout@v3
-      - uses: actions/setup-python@v4
-        if: matrix.os.name == 'darwin'
-        with:
-          python-version: '3.11'
-
       - uses: actions/setup-node@v3
         with:
           node-version: ${{ matrix.node }}
 
+      - uses: actions/setup-python@v4
+        if: matrix.os.name == 'darwin'
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
       - name: Gyp
         if: matrix.os.name == 'darwin'
         run: npm install node-gyp@latest
@@ -46,10 +52,6 @@ jobs:
           source local.env
           make ${{ matrix.build_type }}
           npm test
-        env:
-          CC: "clang"
-          CXX: "clang++"
-          MASON_LLVM_RELEASE: "system"
 
   asan-build-test:
     runs-on: ubuntu-22.04
@@ -61,7 +63,7 @@ jobs:
       - uses: actions/checkout@v3
       - uses: actions/setup-node@v3
         with:
-          node-version: "16"
+          node-version: ${{ env.NODE_VERSION }}
 
       - name: Test
         run: |
@@ -88,7 +90,7 @@ jobs:
       - uses: actions/checkout@v3
       - uses: actions/setup-node@v3
         with:
-          node-version: "16"
+          node-version: ${{ env.NODE_VERSION }}
 
       - name: Test
         run: |
@@ -114,15 +116,14 @@ jobs:
 
     steps:
       - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
       - uses: actions/setup-python@v4
         if: matrix.os.name == 'darwin'
         with:
-          python-version: '3.11'
-
-      - uses: actions/setup-node@v3
-        with:
-          node-version: "16"
-
+          python-version: ${{ env.PYTHON_VERSION }}
       - name: Gyp
         if: matrix.os.name == 'darwin'
         run: npm install node-gyp@latest
