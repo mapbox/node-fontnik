@@ -44,6 +44,9 @@ function run() {
     elif [[ -d ${GLOBAL_CLANG} ]]; then
       echo "Detected '${GLOBAL_CLANG}/bin/clang++', using it"
       local llvm_toolchain_dir=${GLOBAL_CLANG}
+    elif [[ "${MASON_LLVM_RELEASE}" == "system" ]]; then
+      echo "Using system clang++ instead of downloading custom toolchain"
+      llvm_toolchain_dir="/usr"
     elif [[ ! -d ${llvm_toolchain_dir} ]]; then
       BINARY="${MASON_URL}/clang++/${MASON_LLVM_RELEASE}.tar.gz"
       echo "Downloading ${BINARY}"

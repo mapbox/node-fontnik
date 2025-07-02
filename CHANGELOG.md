@@ -1,17 +1,23 @@
-# 0.7.2
+# CHANGELOG
+
+## 0.7.3
+
+- Moves `prebuildify` to dev dependencies. [#193](https://github.com/mapbox/node-fontnik/pull/193)
+
+## 0.7.2
 
 - Removes `node-pre-gyp` in favor of `prebuildify` to package binaries. [#184](https://github.com/mapbox/node-fontnik/pull/184)
 
-# 0.7.1
+## 0.7.1
 
 - Fixes issue with `point-in-polygon` algorithm being used in `sdf-glyph-foundary`
 
-# 0.7.0
+## 0.7.0
 
 - Adds node v16 support
 - Updates vulnerable dependencies
 
-# 0.6.0
+## 0.6.0
 
 - Adds node v12 and v14 support
 - Dropped node v4 and v6 support
@@ -20,17 +26,17 @@
 - Requires c++14 compatible compiler
 - Binaries are published using clang++ 10.0.0
 
-# 0.5.2
+## 0.5.2
 
 - Adds .npmignore to keep downstream node_modules small.
 
-# 0.5.1
+## 0.5.1
 
 - Stopped bundling node-pre-gyp
 - Added support for node v8 and v10
 - Various performance optimizations and safety checks
 
-# 0.5.0
+## 0.5.0
 
 - Fixed crash on font with null family name
 - Optimized the code to reduce memory allocations
@@ -43,50 +49,50 @@
 - Upgraded from protobuf 2.6.1 -> 3.2.0
 - Moved coverage reporting to codecov.io
 
-# 0.4.8
+## 0.4.8
 
 - Bundles `mkdirp` to avoid an npm@2 bug when using `bundledDependencies` with `devDependencies`.
 
-# 0.4.7
+## 0.4.7
 
 - Upgrades to a modern version of Mason.
 
-# 0.4.6
+## 0.4.6
 
 - Adds prepublish `npm ls` script to prevent publishing without `bundledDependencies`.
 
-# 0.4.5
+## 0.4.5
 
 - Fixes Osaka range segfault.
 
-# 0.4.4
+## 0.4.4
 
 - Fix initialization of `queue-async` in `bin/build-glyphs`.
 
-# 0.4.3
+## 0.4.3
 
 - Handle `ft_face->style_name` null value in `RangeAsync`.
 
-# 0.4.2
+## 0.4.2
 
 - Handle `ft_face->style_name` null value in `LoadAsync`.
 
-# 0.4.1
+## 0.4.1
 
 - Publish Node.js v5.x binaries.
 - Autopublish binaries on git tags.
 
-# 0.4.0
+## 0.4.0
 
 - Fixes bounds for short ranges.
 - Fixes Travis binary publishing.
 - Adds Node.js v4.x support.
 
-# 0.2.6
+## 0.2.6
 
 - Truncate at Unicode point 65535 (0xFFFF) instead of 65533.
 
-# 0.2.3
+## 0.2.3
 
 - Calling .codepoints() on an invalid font will throw a JavaScript
   error rather than running into an abort trap.
