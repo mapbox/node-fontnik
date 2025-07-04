@@ -25,7 +25,7 @@ git push --tags
 # test published binary (should install from remote)
 npm install && npm test
 
-# Make sure that the GHA workflow is successfull. Download the artifacts
+# Make sure that the GHA workflow is successful. Download the artifacts
 npm run download-binaries
 
 # publish to npm

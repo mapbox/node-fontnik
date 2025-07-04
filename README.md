@@ -50,6 +50,9 @@ make
 
 See the `Makefile` for additional tasks you can run, such as `make coverage`.
 
+## Release
+See the [Dev doc](./DEV.md)
+
 ## Background reading
 - [Drawing Text with Signed Distance Fields in Mapbox GL](https://www.mapbox.com/blog/text-signed-distance-fields/)
 - [State of Text Rendering](http://behdad.org/text/)

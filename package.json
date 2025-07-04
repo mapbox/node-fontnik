@@ -1,6 +1,6 @@
 {
   "name": "fontnik",
-  "version": "0.7.2",
+  "version": "0.7.4",
   "description": "A library that delivers a range of glyphs rendered as SDFs (signed distance fields) in a protobuf.",
   "keywords": [
     "font",
@@ -27,8 +27,7 @@
     "glob": "^7.1.6",
     "minimist": "^1.2.5",
     "node-addon-api": "^2.0.1",
-    "node-gyp-build": "^4.6.0",
-    "prebuildify": "^5.0.1"
+    "node-gyp-build": "^4.6.0"
   },
   "devDependencies": {
     "@mapbox/cloudfriend": "^5.1.1",
@@ -38,17 +37,21 @@
     "node-gyp": "^9.3.1",
     "pbf": "^1.3.5",
     "protocol-buffers": "^4.1.0",
-    "tape": "^4.2.2"
+    "tape": "^4.2.2",
+    "prebuildify": "^5.0.1"
   },
   "bin": {
     "build-glyphs": "./bin/build-glyphs",
     "font-inspect": "./bin/font-inspect"
   },
   "scripts": {
-    "download-binaries": "gh run download \"$(gh run list -b \"$(git branch --show-current)\" -L 1 --json databaseId --jq \".[].databaseId\")\"",
     "install": "node-gyp-build",
     "test": "./node_modules/.bin/tape test/**/*.test.js",
-    "prebuildify": "prebuildify --napi --tag-uv --tag-libc --strip"
+    "prebuildify": "prebuildify --napi --tag-uv --tag-libc --strip",
+    "download-binaries": "rm -rf prebuilds* && gh run download \"$(gh run list -b \"$(git branch --show-current)\" -L 1 --json databaseId --jq \".[].databaseId\")\" && npm run check-binaries && npm run merge-prebuilds",
+    "check-binaries": "ls prebuilds-darwin-* >/dev/null 2>&1 && ls prebuilds-linux-* >/dev/null 2>&1 || (echo 'Error: Missing required prebuilds. Check that both darwin and linux prebuilds exist.' && exit 1)",
+    "merge-prebuilds": "mkdir -p prebuilds && mv prebuilds-*/* prebuilds/ && rm -r prebuilds-*/",
+    "prepublishOnly": "npm run download-binaries"
   },
   "binary": {
     "module_name": "fontnik",
