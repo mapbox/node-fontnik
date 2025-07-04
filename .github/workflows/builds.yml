@@ -143,5 +143,4 @@ jobs:
         with:
           name: prebuilds-${{ matrix.os.name }}-${{ matrix.os.architecture }}
           path: prebuilds
-          overwrite: true
           retention-days: 14
