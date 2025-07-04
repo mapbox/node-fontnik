@@ -46,7 +46,7 @@
   },
   "scripts": {
     "download-binaries": "gh run download \"$(gh run list -b \"$(git branch --show-current)\" -L 1 --json databaseId --jq \".[].databaseId\")\" && npm run merge-prebuilds",
-    "merge-prebuilds": "mkdir -p prebuilds && mv prebuilds-*/* prebuilds/ && rm -r prebuilds-*/",
+    "merge-prebuilds": "rm -rf prebuilds && mkdir -p prebuilds && mv prebuilds-*/* prebuilds/ && rm -r prebuilds-*/",
     "install": "node-gyp-build",
     "test": "./node_modules/.bin/tape test/**/*.test.js",
     "prebuildify": "prebuildify --napi --tag-uv --tag-libc --strip",
