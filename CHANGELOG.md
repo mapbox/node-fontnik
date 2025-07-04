@@ -1,5 +1,8 @@
 # CHANGELOG
 
+## 0.7.4
+- Fix publish with new CI
+
 ## 0.7.3
 
 - Moves `prebuildify` to dev dependencies. [#193](https://github.com/mapbox/node-fontnik/pull/193)
