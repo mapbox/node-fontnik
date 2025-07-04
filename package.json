@@ -45,11 +45,12 @@
     "font-inspect": "./bin/font-inspect"
   },
   "scripts": {
-    "download-binaries": "gh run download \"$(gh run list -b \"$(git branch --show-current)\" -L 1 --json databaseId --jq \".[].databaseId\")\" && npm run merge-prebuilds",
-    "merge-prebuilds": "rsync -av prebuilds-*/ prebuilds/ && rm -rf prebuilds-*/",
     "install": "node-gyp-build",
     "test": "./node_modules/.bin/tape test/**/*.test.js",
     "prebuildify": "prebuildify --napi --tag-uv --tag-libc --strip",
+    "download-binaries": "rm -rf prebuilds* && gh run download \"$(gh run list -b \"$(git branch --show-current)\" -L 1 --json databaseId --jq \".[].databaseId\")\" && npm run check-binaries && npm run merge-prebuilds",
+    "check-binaries": "ls prebuilds-darwin-* >/dev/null 2>&1 && ls prebuilds-linux-* >/dev/null 2>&1 || (echo 'Error: Missing required prebuilds. Check that both darwin and linux prebuilds exist.' && exit 1)",
+    "merge-prebuilds": "mkdir -p prebuilds && mv prebuilds-*/* prebuilds/ && rm -r prebuilds-*/",
     "prepublishOnly": "npm run download-binaries"
   },
   "binary": {
