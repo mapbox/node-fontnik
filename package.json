@@ -1,6 +1,6 @@
 {
   "name": "fontnik",
-  "version": "0.7.4-dev.2",
+  "version": "0.7.4-dev.3",
   "description": "A library that delivers a range of glyphs rendered as SDFs (signed distance fields) in a protobuf.",
   "keywords": [
     "font",
@@ -49,7 +49,8 @@
     "merge-prebuilds": "mkdir -p prebuilds && mv prebuilds-*/* prebuilds/ && rm -r prebuilds-*/",
     "install": "node-gyp-build",
     "test": "./node_modules/.bin/tape test/**/*.test.js",
-    "prebuildify": "prebuildify --napi --tag-uv --tag-libc --strip"
+    "prebuildify": "prebuildify --napi --tag-uv --tag-libc --strip",
+    "prepublishOnly": "npm run download-binaries"
   },
   "binary": {
     "module_name": "fontnik",
