@@ -1,6 +1,6 @@
 {
   "name": "fontnik",
-  "version": "0.7.4",
+  "version": "0.7.5",
   "description": "A library that delivers a range of glyphs rendered as SDFs (signed distance fields) in a protobuf.",
   "keywords": [
     "font",
@@ -56,5 +56,8 @@
   "binary": {
     "module_name": "fontnik",
     "module_path": "./lib/binding/"
+  },
+  "publishConfig": {
+    "access": "public"
   }
 }
