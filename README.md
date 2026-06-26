@@ -29,13 +29,13 @@ Install system dependencies:
 **macOS**
 
 ```
-brew install cmake ninja freetype boost zlib
+brew install cmake ninja boost zlib
 ```
 
 **Linux (Debian/Ubuntu)**
 
 ```
-sudo apt-get install cmake ninja-build libfreetype6-dev zlib1g-dev libboost-dev
+sudo apt-get install cmake ninja-build zlib1g-dev libboost-dev
 ```
 
 Then build:
@@ -44,7 +44,7 @@ Then build:
 npm run rebuild
 ```
 
-N-API headers (`node-addon-api`, `node-api-headers`) and `protozero` are fetched automatically by CMake at configure time.
+N-API headers (`node-addon-api`, `node-api-headers`), `protozero`, and FreeType are fetched automatically by CMake at configure time.
 
 ## Local testing
 

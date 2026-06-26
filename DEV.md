@@ -30,7 +30,7 @@ The repo must have a GitHub Environment named `npm-release` configured before th
 ### Local development
 
 ```
-brew install cmake ninja freetype boost zlib   # macOS
+brew install cmake ninja boost zlib   # macOS
 npm ci --ignore-scripts
 npm run rebuild
 npm test

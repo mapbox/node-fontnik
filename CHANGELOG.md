@@ -4,7 +4,7 @@
 
 - Replaces node-gyp and Mason with a CMake + Ninja build
 - Fetches `node-addon-api`, `node-api-headers`, and `protozero` via CMake FetchContent with checksum pins
-- Vendors gzip-hpp and sdf-glyph-foundry headers in-tree; uses system FreeType, Zlib, and Boost
+- Vendors gzip-hpp and sdf-glyph-foundry headers in-tree; statically links FreeType (harfbuzz, bzip2, and png disabled); uses system Zlib and Boost
 - Publishes prebuilt binaries for `darwin-arm64`, `linux-x64`, and `linux-arm64` in the npm package
 - Requires Node.js 20 or later
 - Drops `prebuildify`, `node-gyp-build`, and git submodules

@@ -60,7 +60,9 @@ jobs:
       - name: Install dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y cmake ninja-build libfreetype6-dev zlib1g-dev libboost-dev clang
+          sudo apt-get install -y cmake ninja-build zlib1g-dev libboost-dev clang python3-pip
+          pip3 install --user 'cmake>=3.24'
+          echo "$HOME/.local/bin" >> $GITHUB_PATH
       - name: Test with ASan and UBSan
         run: |
           npm ci --ignore-scripts
@@ -77,7 +79,9 @@ jobs:
       - name: Install dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y cmake ninja-build libfreetype6-dev zlib1g-dev libboost-dev clang llvm
+          sudo apt-get install -y cmake ninja-build zlib1g-dev libboost-dev clang llvm python3-pip
+          pip3 install --user 'cmake>=3.24'
+          echo "$HOME/.local/bin" >> $GITHUB_PATH
       - name: Coverage report
         run: |
           npm ci --ignore-scripts

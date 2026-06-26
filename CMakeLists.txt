@@ -43,8 +43,24 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(node_addon_api node_api_headers protozero)
 
-find_package(Freetype REQUIRED)
 find_package(ZLIB REQUIRED)
+
+# Static FreeType
+set(FT_DISABLE_ZLIB OFF CACHE BOOL "" FORCE)
+set(FT_DISABLE_BZIP2 ON CACHE BOOL "" FORCE)
+set(FT_DISABLE_PNG ON CACHE BOOL "" FORCE)
+set(FT_DISABLE_HARFBUZZ ON CACHE BOOL "" FORCE)
+set(FT_DISABLE_BROTLI ON CACHE BOOL "" FORCE)
+set(BUILD_SHARED_LIBS OFF CACHE BOOL "" FORCE)
+# Required on Linux: static libs linked into fontnik.node must be PIC.
+set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+FetchContent_Declare(
+    freetype
+    URL https://download.savannah.gnu.org/releases/freetype/freetype-2.14.3.tar.xz
+    URL_HASH SHA256=36bc4f1cc413335368ee656c42afca65c5a3987e8768cc28cf11ba775e785a5f
+    DOWNLOAD_EXTRACT_TIMESTAMP TRUE
+)
+FetchContent_MakeAvailable(freetype)
 
 if(POLICY CMP0167)
     cmake_policy(SET CMP0167 NEW)
@@ -74,7 +90,7 @@ target_include_directories(
 target_link_libraries(
     fontnik
     PRIVATE
-        Freetype::Freetype
+        freetype
         ZLIB::ZLIB
         Boost::headers
 )
