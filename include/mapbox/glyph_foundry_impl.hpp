@@ -12,6 +12,7 @@
 
 // std
 #include <cmath> // std::sqrt
+#include <cstddef> // std::size_t
 
 namespace bg = boost::geometry;
 namespace bgm = bg::model;
@@ -304,6 +305,17 @@ namespace sdf_glyph_foundry
         }
 
         if (bbox_xmax - bbox_xmin == 0 || bbox_ymax - bbox_ymin == 0) return;
+
+        // Cap glyph dimensions to a sane maximum. The render size is fixed (24px),
+        // so a legitimate glyph stays well under this bound. A crafted font can
+        // otherwise produce dimensions large enough that the 32-bit bitmap size
+        // below overflows, yielding an undersized allocation and a heap
+        // out-of-bounds write. Drop oversized glyphs instead.
+        constexpr double max_dimension = 256.0;
+        if (bbox_xmax - bbox_xmin > max_dimension || bbox_ymax - bbox_ymin > max_dimension) {
+            return;
+        }
+
         glyph.left = bbox_xmin;
         glyph.top = bbox_ymax;
         glyph.width = bbox_xmax - bbox_xmin;
@@ -337,14 +349,14 @@ namespace sdf_glyph_foundry
             }
         }
         // Loop over every pixel and determine the positive/negative distance to the outline.
-        unsigned int buffered_width = glyph.width + 2 * buffer;
-        unsigned int buffered_height = glyph.height + 2 * buffer;
-        unsigned int bitmap_size = buffered_width * buffered_height;
+        std::size_t buffered_width = glyph.width + 2 * buffer;
+        std::size_t buffered_height = glyph.height + 2 * buffer;
+        std::size_t bitmap_size = buffered_width * buffered_height;
         glyph.bitmap.resize(bitmap_size);
-        for (unsigned int y = 0; y < buffered_height; y++) {
-            for (unsigned int x = 0; x < buffered_width; x++) {
-                unsigned int ypos = buffered_height - y - 1;
-                unsigned int i = ypos * buffered_width + x;
+        for (std::size_t y = 0; y < buffered_height; y++) {
+            for (std::size_t x = 0; x < buffered_width; x++) {
+                std::size_t ypos = buffered_height - y - 1;
+                std::size_t i = ypos * buffered_width + x;
                 Point pt{x + offset, y + offset };
                 double d = MinDistanceToLineSegment(tree, pt, radius) * radius_by_256;
 
