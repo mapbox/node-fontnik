@@ -1,13 +1,11 @@
 build
+/build-*
 lib
 glyphs
 spec
 node_modules
-mason_packages
 .DS_Store
-lib/binding
-.toolchain
-.mason
 local.env
 prebuilds
 *.tgz
+_deps

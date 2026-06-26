@@ -1,0 +1,182 @@
+name: NPM release
+
+on:
+  workflow_dispatch:
+    inputs:
+      dry-run:
+        description: 'Perform a dry-run publish (no npm publish or GitHub release)'
+        type: boolean
+        default: false
+
+env:
+  NODE_VERSION: 20
+  CC: clang
+  CXX: clang++
+
+jobs:
+  build:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: macos-15
+            platform: darwin
+            arch: arm64
+          - os: ubuntu-22.04
+            platform: linux
+            arch: x64
+          - os: ubuntu-22.04-arm
+            platform: linux
+            arch: arm64
+
+    name: ${{ matrix.platform }}-${{ matrix.arch }}
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v6
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - uses: ./.github/actions/build-native
+        with:
+          build_type: Release
+          upload_artifact: 'true'
+          artifact_retention_days: '30'
+          platform: ${{ matrix.platform }}
+          arch: ${{ matrix.arch }}
+
+  verify-pack:
+    needs: build
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: macos-15
+            platform: darwin
+            arch: arm64
+          - os: ubuntu-22.04
+            platform: linux
+            arch: x64
+          - os: ubuntu-22.04-arm
+            platform: linux
+            arch: arm64
+
+    name: verify-${{ matrix.platform }}-${{ matrix.arch }}
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v6
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Download prebuild artifacts
+        uses: actions/download-artifact@v8
+        with:
+          pattern: prebuilds-*
+          merge-multiple: true
+          path: prebuilds
+
+      - name: Install tarball and run tests
+        env:
+          CI: 'true'
+        run: |
+          PKG="$(npm pack | tail -1)"
+          TMP="$(mktemp -d)"
+          cd "$TMP"
+          npm init -y
+          npm install "$GITHUB_WORKSPACE/$PKG"
+
+          ROOT="$TMP/node_modules/fontnik"
+          cp -R "$GITHUB_WORKSPACE/test" "$ROOT/"
+          cp -R "$GITHUB_WORKSPACE/fonts" "$ROOT/"
+          cp -R "$GITHUB_WORKSPACE/proto" "$ROOT/"
+          cd "$ROOT"
+          npm install --no-save tape pbf protocol-buffers mkdirp
+          npm test
+
+  publish:
+    needs: [build, verify-pack]
+    runs-on: ubuntu-22.04
+    environment: npm-release
+    permissions:
+      id-token: write
+      contents: read
+    outputs:
+      package-version: ${{ steps.package-info.outputs.version }}
+    steps:
+      - name: Enforce default branch
+        run: |
+          if [[ "${{ github.ref }}" != "refs/heads/${{ github.event.repository.default_branch }}" ]]; then
+            echo "Publishing is only allowed from the default branch (${{ github.event.repository.default_branch }})."
+            echo "Current ref: ${{ github.ref }}"
+            exit 1
+          fi
+
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v6
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Upgrade npm to latest
+        run: npm install -g npm@^11.5.1
+
+      - name: Download prebuild artifacts
+        uses: actions/download-artifact@v8
+        with:
+          pattern: prebuilds-*
+          merge-multiple: true
+          path: prebuilds
+
+      - name: Verify prebuilds
+        run: npm run check-binaries
+
+      - name: Pack
+        run: npm pack
+
+      - name: Get package info
+        id: package-info
+        run: |
+          echo "version=$(jq -r .version package.json)" >> "$GITHUB_OUTPUT"
+
+      - name: Publish to npm (OIDC)
+        env:
+          DRY_RUN: ${{ inputs.dry-run }}
+        run: |
+          DRY_RUN_FLAG=""
+          if [[ "$DRY_RUN" == "true" ]]; then
+            DRY_RUN_FLAG="--dry-run"
+            echo "Running in dry-run mode"
+          fi
+
+          npm publish --access=public $DRY_RUN_FLAG
+
+          if [[ "$DRY_RUN" != "true" ]]; then
+            echo "Successfully published fontnik@$(jq -r .version package.json)"
+          fi
+
+  release:
+    needs: publish
+    if: inputs.dry-run != true
+    runs-on: ubuntu-22.04
+    permissions:
+      contents: write
+    steps:
+      - name: Create GitHub release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: v${{ needs.publish.outputs.package-version }}
+        run: |
+          if git ls-remote --tags origin | grep -qF "refs/tags/${TAG}"; then
+            echo "Tag ${TAG} already exists. Bump the version before releasing."
+            exit 1
+          fi
+
+          gh release create "$TAG" \
+            --repo "${{ github.repository }}" \
+            --title "$TAG" \
+            --generate-notes
+
+          echo "GitHub release ${TAG} created."

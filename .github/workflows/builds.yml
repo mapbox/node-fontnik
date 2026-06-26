@@ -2,145 +2,83 @@ name: CI
 
 on:
   push:
-    branches: [master]
+    branches: [main]
   pull_request:
-    branches: [master]
+    branches: [main]
 
 env:
+  NODE_VERSION: 20
   CC: clang
   CXX: clang++
-  MASON_LLVM_RELEASE: system
-  PYTHON_VERSION: 3.11
-  NODE_VERSION: 16
 
 jobs:
-  test:
-    runs-on: ${{ matrix.os.host }}
-    strategy:
-      matrix:
-        node: [16, 18]
-        build_type: ["debug", "release"]
-        os:
-          - name: darwin
-            architecture: x86-64
-            host: macos-13
-
-          - name: linux
-            architecture: x86-64
-            host: ubuntu-22.04
-
-    name: ${{ matrix.os.name }}-${{ matrix.os.architecture }}-node${{ matrix.node }}-${{ matrix.build_type }} test
-    steps:
-      - uses: actions/checkout@v3
-      - uses: actions/setup-node@v3
-        with:
-          node-version: ${{ matrix.node }}
-
-      - uses: actions/setup-python@v4
-        if: matrix.os.name == 'darwin'
-        with:
-          python-version: ${{ env.PYTHON_VERSION }}
-      - name: Gyp
-        if: matrix.os.name == 'darwin'
-        run: npm install node-gyp@latest
-
-      - name: Test
-        run: |
-          npm ci
-          npm install node-gyp@latest
-          ./scripts/setup.sh --config local.env
-          source local.env
-          make ${{ matrix.build_type }}
-          npm test
-
-  asan-build-test:
-    runs-on: ubuntu-22.04
-    name: ASAN toolset test
-    env:
-      BUILDTYPE: debug
-      TOOLSET: asan
-    steps:
-      - uses: actions/checkout@v3
-      - uses: actions/setup-node@v3
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-
-      - name: Test
-        run: |
-          npm ci
-          ./scripts/setup.sh --config local.env
-          source local.env
-          export CXXFLAGS="${MASON_SANITIZE_CXXFLAGS} -fno-sanitize-recover=all"
-          export LDFLAGS="${MASON_SANITIZE_LDFLAGS}"
-          make ${BUILDTYPE}
-          export LD_PRELOAD=${MASON_LLVM_RT_PRELOAD}
-          export ASAN_OPTIONS=fast_unwind_on_malloc=0:${ASAN_OPTIONS}
-          npm test
-          unset LD_PRELOAD
-
-  g-build-test:
-    runs-on: ubuntu-22.04
-    name: G++ build test
-    env:
-      BUILDTYPE: debug
-      CXX: g++-9
-      CC: gcc-9
-      CXXFLAGS: -fext-numeric-literals
-    steps:
-      - uses: actions/checkout@v3
-      - uses: actions/setup-node@v3
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-
-      - name: Test
-        run: |
-          npm ci
-          ./scripts/setup.sh --config local.env
-          source local.env
-          make ${BUILDTYPE}
-          npm test
-
   build:
-    needs: [test, asan-build-test, g-build-test]
-    runs-on: ${{ matrix.os.host }}
+    runs-on: ${{ matrix.os }}
     strategy:
+      fail-fast: false
       matrix:
+        build_type: [Release, Debug]
         os:
-          - name: darwin
-            architecture: x86-64
-            host: macos-13
+          - macos-15
+          - ubuntu-22.04
+          - ubuntu-22.04-arm
+        include:
+          - os: macos-15
+            platform: darwin
+            arch: arm64
+          - os: ubuntu-22.04
+            platform: linux
+            arch: x64
+          - os: ubuntu-22.04-arm
+            platform: linux
+            arch: arm64
 
-          - name: linux
-            architecture: x86-64
-            host: ubuntu-22.04
-
+    name: ${{ matrix.platform }}-${{ matrix.arch }}-${{ matrix.build_type }}
     steps:
-      - uses: actions/checkout@v3
-      - uses: actions/setup-node@v3
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v6
         with:
           node-version: ${{ env.NODE_VERSION }}
 
-      - uses: actions/setup-python@v4
-        if: matrix.os.name == 'darwin'
+      - uses: ./.github/actions/build-native
         with:
-          python-version: ${{ env.PYTHON_VERSION }}
-      - name: Gyp
-        if: matrix.os.name == 'darwin'
-        run: npm install node-gyp@latest
+          build_type: ${{ matrix.build_type }}
+          upload_artifact: ${{ matrix.build_type == 'Release' && 'true' || 'false' }}
+          artifact_retention_days: '14'
+          platform: ${{ matrix.platform }}
+          arch: ${{ matrix.arch }}
 
-      - name: Build
+  sanitize:
+    runs-on: ubuntu-22.04
+    name: ASAN+UBSan test
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v6
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+      - name: Install dependencies
         run: |
-          npm ci
-          ./scripts/setup.sh --config local.env
-          source local.env
-          make release
+          sudo apt-get update
+          sudo apt-get install -y cmake ninja-build libfreetype6-dev zlib1g-dev libboost-dev clang
+      - name: Test with ASan and UBSan
+        run: |
+          npm ci --ignore-scripts
+          make sanitize
 
-      - name: Prebuildify ${{ matrix.os.name }}-${{ matrix.os.architecture }}
-        run: npm run prebuildify -- --platform=${{ matrix.os.name }} --arch=x64
-
-      # Upload the end-user binary artifact
-      - uses: actions/upload-artifact@v4
+  coverage:
+    runs-on: ubuntu-22.04
+    name: Coverage
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v6
         with:
-          name: prebuilds-${{ matrix.os.name }}-${{ matrix.os.architecture }}
-          path: prebuilds
-          retention-days: 14
+          node-version: ${{ env.NODE_VERSION }}
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y cmake ninja-build libfreetype6-dev zlib1g-dev libboost-dev clang llvm
+      - name: Coverage report
+        run: |
+          npm ci --ignore-scripts
+          make coverage

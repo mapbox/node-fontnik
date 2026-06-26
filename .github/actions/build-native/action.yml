@@ -1,0 +1,64 @@
+name: Build and test fontnik
+description: Install system deps, build the native module, and run tests
+inputs:
+  build_type:
+    description: CMake build type (Release or Debug)
+    required: false
+    default: Release
+  upload_artifact:
+    description: Upload prebuilds directory as a workflow artifact
+    required: false
+    default: 'false'
+  artifact_retention_days:
+    description: Artifact retention in days
+    required: false
+    default: '14'
+  platform:
+    description: Platform label for artifact naming (darwin, linux)
+    required: false
+    default: ''
+  arch:
+    description: Arch label for artifact naming (arm64, x64)
+    required: false
+    default: ''
+runs:
+  using: composite
+  steps:
+    - name: Install system dependencies (macOS)
+      if: runner.os == 'macOS'
+      shell: bash
+      run: brew install cmake ninja freetype boost zlib
+
+    - name: Install system dependencies (Linux)
+      if: runner.os == 'Linux'
+      shell: bash
+      run: sudo apt-get update && sudo apt-get install -y cmake ninja-build libfreetype6-dev zlib1g-dev libboost-dev clang
+
+    - name: Cache FetchContent downloads
+      uses: actions/cache@v6
+      with:
+        path: build/_deps
+        key: fetchcontent-${{ runner.os }}-${{ hashFiles('CMakeLists.txt') }}
+        restore-keys: |
+          fetchcontent-${{ runner.os }}-
+
+    - name: Install npm dependencies
+      shell: bash
+      run: npm ci --ignore-scripts
+
+    - name: Build and test
+      shell: bash
+      env:
+        CC: clang
+        CXX: clang++
+      run: |
+        BUILD_TYPE=${{ inputs.build_type }} npm run rebuild
+        npm test
+
+    - name: Upload prebuilds
+      if: inputs.upload_artifact == 'true'
+      uses: actions/upload-artifact@v7
+      with:
+        name: prebuilds-${{ inputs.platform }}-${{ inputs.arch }}
+        path: prebuilds
+        retention-days: ${{ inputs.artifact_retention_days }}

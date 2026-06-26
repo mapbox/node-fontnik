@@ -1,78 +1,91 @@
-MODULE_NAME := $(shell node -e "console.log(require('./package.json').binary.module_name)")
-
-# Whether to turn compiler warnings into errors
-export WERROR ?= false
+BUILD_TYPE ?= Release
 
 default: release
 
-./node_modules/.bin/node-gyp:
-	# install deps but for now ignore our own install script
-	# so that we can run it directly in either debug or release
-	npm install --ignore-scripts
+release:
+	$(MAKE) build BUILD_TYPE=Release
 
-release: ./node_modules/.bin/node-gyp
-	V=1 ./node_modules/.bin/node-gyp configure build --error_on_warnings=$(WERROR) --loglevel=error
-	@echo "run 'make clean' for full rebuild"
+debug:
+	$(MAKE) build BUILD_TYPE=Debug
 
-debug: ./node_modules/.bin/node-gyp
-	V=1 ./node_modules/.bin/node-gyp configure build --error_on_warnings=$(WERROR) --loglevel=error --debug
-	@echo "run 'make clean' for full rebuild"
+build:
+	cmake -G Ninja -S . -B build -DCMAKE_BUILD_TYPE=$(BUILD_TYPE)
+	cmake --build build
 
-coverage:
-	./scripts/coverage.sh
+coverage: clean
+	export CC=clang CXX=clang++; \
+	export CXXFLAGS="-fprofile-instr-generate -fcoverage-mapping $${CXXFLAGS:-}"; \
+	export LDFLAGS="-fprofile-instr-generate $${LDFLAGS:-}"; \
+	cmake -G Ninja -S . -B build -DCMAKE_BUILD_TYPE=Debug && \
+	cmake --build build && \
+	rm -f *profraw *gcov *profdata; \
+	LLVM_PROFILE_FILE="code-%p.profraw" npm test; \
+	llvm-profdata merge -output=code.profdata code-*.profraw; \
+	llvm-cov report ./build/fontnik.node -instr-profile=code.profdata -use-color; \
+	llvm-cov show ./build/fontnik.node -instr-profile=code.profdata src/*.cpp -filename-equivalence -use-color; \
+	llvm-cov show ./build/fontnik.node -instr-profile=code.profdata src/*.cpp -filename-equivalence -use-color --format html > /tmp/coverage.html; \
+	echo "open /tmp/coverage.html for HTML version of this report"
+
+sanitize: clean
+	export CC=clang CXX=clang++; \
+	export CXXFLAGS="-fsanitize=address,undefined -fno-omit-frame-pointer -fno-sanitize-recover=all $${CXXFLAGS:-}"; \
+	export LDFLAGS="-fsanitize=address,undefined $${LDFLAGS:-}"; \
+	cmake -G Ninja -S . -B build -DCMAKE_BUILD_TYPE=Debug && \
+	cmake --build build && \
+	export ASAN_OPTIONS=detect_leaks=0:fast_unwind_on_malloc=0:$${ASAN_OPTIONS:-}; \
+	if [ "$$(uname -s)" = Darwin ]; then \
+		DYLD_INSERT_LIBRARIES=$$(clang -fsanitize=address -print-file-name=libclang_rt.asan_osx_dynamic.dylib) \
+			node ./node_modules/.bin/tape test/**/*.test.js; \
+	else \
+		LD_PRELOAD=$$(clang -fsanitize=address -print-file-name=libclang_rt.asan-$$(uname -m).so) \
+			node ./node_modules/.bin/tape test/**/*.test.js; \
+	fi
 
 tidy:
-	./scripts/clang-tidy.sh
+	@command -v clang-tidy >/dev/null 2>&1 || { echo "clang-tidy not found; install LLVM (e.g. brew install llvm)" >&2; exit 1; }
+	rm -rf build
+	cmake -G Ninja -S . -B build -DCMAKE_BUILD_TYPE=Debug -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
+	cmake --build build
+	cd build && (run-clang-tidy -p . -fix "../src/*.cpp" 2>/dev/null || \
+		clang-tidy -p . -fix "../src/glyphs.cpp" "../src/node_fontnik.cpp")
+	@dirty=$$(git ls-files --modified src/); \
+	if [ -n "$$dirty" ]; then echo "$$dirty"; git diff; exit 1; fi
 
 format:
-	./scripts/clang-format.sh
-
-sanitize:
-	./scripts/sanitize.sh
+	@command -v clang-format >/dev/null 2>&1 || { echo "clang-format not found; install LLVM (e.g. brew install llvm)" >&2; exit 1; }
+	find src -type f \( -name '*.cpp' -o -name '*.hpp' -o -name '*.h' \) | xargs clang-format -i -style=file
+	@dirty=$$(git ls-files --modified src/ include/); \
+	if [ -n "$$dirty" ]; then echo "$$dirty"; git diff; exit 1; fi
 
 clean:
-	rm -rf lib/binding
 	rm -rf build
-	# remove remains from running 'make coverage'
-	rm -f *.profraw
-	rm -f *.profdata
-	@echo "run 'make distclean' to also clear node_modules, mason_packages, and .mason directories"
+	rm -f *.profraw *.profdata
 
 distclean: clean
 	rm -rf node_modules
-	rm -rf mason_packages
-	# remove remains from running './scripts/setup.sh'
-	rm -rf .mason
-	rm -rf .toolchain
-	rm -f local.env
 	rm -rf prebuilds
-
-xcode: ./node_modules/.bin/node-gyp
-	./node_modules/.bin/node-gyp configure -- -f xcode
-
-	@# If you need more targets, e.g. to run other npm scripts, duplicate the last line and change NPM_ARGUMENT
-	SCHEME_NAME="$(MODULE_NAME)" SCHEME_TYPE=library BLUEPRINT_NAME=$(MODULE_NAME) BUILDABLE_NAME=$(MODULE_NAME).node scripts/create_scheme.sh
-	SCHEME_NAME="npm test" SCHEME_TYPE=node BLUEPRINT_NAME=$(MODULE_NAME) BUILDABLE_NAME=$(MODULE_NAME).node NODE_ARGUMENT="`npm bin tape`/tape test/*.test.js" scripts/create_scheme.sh
-
-	open build/binding.xcodeproj
-
-docs:
-	npm run docs
 
 test:
 	npm test
 
-.PHONY: test docs
+test-linux:
+	./scripts/docker-linux-test.sh
+
+test-linux-x64:
+	./scripts/docker-linux-test.sh x64
+
+test-linux-arm64:
+	./scripts/docker-linux-test.sh arm64
 
 testpack:
 	rm -f ./*tgz
 	npm pack
 
 testpacked: testpack
-	rm -rf /tmp/package
-	tar -xf *tgz --directory=/tmp/
-	du -h -d 0 /tmp/package
-	cp -r test /tmp/package/
-	cp -r fonts /tmp/package/
-	ln -s `pwd`/mason_packages /tmp/package/mason_packages
-	(cd /tmp/package && make && make test)
+	rm -rf /tmp/fontnik-package
+	mkdir -p /tmp/fontnik-package
+	tar -xf fontnik-*.tgz -C /tmp/fontnik-package --strip-components=1
+	cp -r test fonts node_modules /tmp/fontnik-package/
+	(cd /tmp/fontnik-package && npm run rebuild && npm test)
+
+.PHONY: release debug build test testpack testpacked coverage tidy format sanitize clean distclean test-linux test-linux-x64 test-linux-arm64

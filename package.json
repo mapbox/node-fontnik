@@ -1,6 +1,6 @@
 {
   "name": "fontnik",
-  "version": "0.7.4",
+  "version": "0.7.5",
   "description": "A library that delivers a range of glyphs rendered as SDFs (signed distance fields) in a protobuf.",
   "keywords": [
     "font",
@@ -12,6 +12,18 @@
   "url": "https://github.com/mapbox/node-fontnik",
   "bugs": "https://github.com/mapbox/node-fontnik/issues",
   "main": "index.js",
+  "engines": {
+    "node": ">=20"
+  },
+  "files": [
+    "index.js",
+    "bin",
+    "prebuilds",
+    "src",
+    "include",
+    "CMakeLists.txt",
+    "scripts/install-native.js"
+  ],
   "repository": {
     "type": "git",
     "url": "git://github.com/mapbox/node-fontnik.git"
@@ -19,42 +31,34 @@
   "licenses": [
     {
       "type": "BSD",
-      "url": "https://github.com/mapbox/node-fontnik/blob/master/LICENSE.txt"
+      "url": "https://github.com/mapbox/node-fontnik/blob/main/LICENSE.txt"
     }
   ],
   "dependencies": {
     "d3-queue": "^3.0.7",
     "glob": "^7.1.6",
-    "minimist": "^1.2.5",
-    "node-addon-api": "^2.0.1",
-    "node-gyp-build": "^4.6.0"
+    "minimist": "^1.2.5"
   },
   "devDependencies": {
-    "@mapbox/cloudfriend": "^5.1.1",
-    "aws-sdk": "^2.1227.0",
     "benchmark": "^1.0.0",
     "mkdirp": "^0.5.1",
-    "node-gyp": "^9.3.1",
     "pbf": "^1.3.5",
     "protocol-buffers": "^4.1.0",
-    "tape": "^4.2.2",
-    "prebuildify": "^5.0.1"
+    "tape": "^4.2.2"
   },
   "bin": {
     "build-glyphs": "./bin/build-glyphs",
     "font-inspect": "./bin/font-inspect"
   },
   "scripts": {
-    "install": "node-gyp-build",
+    "install": "node scripts/install-native.js",
+    "build": "cmake -G Ninja -S . -B build -DCMAKE_BUILD_TYPE=${BUILD_TYPE:-Release} && cmake --build build",
+    "rebuild": "cmake -G Ninja -S . -B build -DCMAKE_BUILD_TYPE=${BUILD_TYPE:-Release} && cmake --build build",
     "test": "./node_modules/.bin/tape test/**/*.test.js",
-    "prebuildify": "prebuildify --napi --tag-uv --tag-libc --strip",
-    "download-binaries": "rm -rf prebuilds* && gh run download \"$(gh run list -b \"$(git branch --show-current)\" -L 1 --json databaseId --jq \".[].databaseId\")\" && npm run check-binaries && npm run merge-prebuilds",
-    "check-binaries": "ls prebuilds-darwin-* >/dev/null 2>&1 && ls prebuilds-linux-* >/dev/null 2>&1 || (echo 'Error: Missing required prebuilds. Check that both darwin and linux prebuilds exist.' && exit 1)",
-    "merge-prebuilds": "mkdir -p prebuilds && mv prebuilds-*/* prebuilds/ && rm -r prebuilds-*/",
-    "prepublishOnly": "npm run download-binaries"
+    "check-binaries": "test -f prebuilds/darwin-arm64/fontnik.node && test -f prebuilds/linux-x64/fontnik.node && test -f prebuilds/linux-arm64/fontnik.node || (echo 'Error: Missing required prebuilds for darwin-arm64, linux-x64, and linux-arm64.' && exit 1)",
+    "prepublishOnly": "npm run check-binaries"
   },
-  "binary": {
-    "module_name": "fontnik",
-    "module_path": "./lib/binding/"
+  "publishConfig": {
+    "access": "public"
   }
 }

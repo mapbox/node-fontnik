@@ -102,7 +102,7 @@ struct AsyncLoad : Napi::AsyncWorker {
             ft_library_guard library_guard(&library);
             FT_Error error = FT_Init_FreeType(&library);
             if (error != 0) {
-                //LCOV_EXCL_START
+                // LCOV_EXCL_START
                 SetError("could not open FreeType library");
                 return;
                 // LCOV_EXCL_END

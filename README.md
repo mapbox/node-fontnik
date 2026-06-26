@@ -1,9 +1,5 @@
 # node-fontnik
 
-[![NPM](https://nodei.co/npm/fontnik.png?compact=true)](https://nodei.co/npm/fontnik/)
-[![Build Status](https://travis-ci.com/mapbox/node-fontnik.svg?branch=master)](https://travis-ci.com/mapbox/node-fontnik)
-[![codecov](https://codecov.io/gh/mapbox/node-fontnik/branch/master/graph/badge.svg)](https://codecov.io/gh/mapbox/node-fontnik)
-
 A library that delivers a range of glyphs rendered as SDFs (signed distance fields) in a protocol buffer. We use these encoded glyphs as the basic blocks of font rendering in [Mapbox GL](https://github.com/mapbox/mapbox-gl-js). SDF encoding is superior to traditional fonts for our usecase in terms of scaling, rotation, and quickly deriving halos - WebGL doesn't have built-in font rendering, so the decision is between vectorization, which tends to be slow, and SDF generation.
 
 The approach this library takes is to parse and rasterize the font with Freetype (hence the C++ requirement), and then generate a distance field from that rasterized image.
@@ -14,44 +10,72 @@ See also [TinySDF](https://github.com/mapbox/tiny-sdf), which is a faster but le
 
 ## Installing
 
-By default, installs binaries. On these platforms no external dependencies are needed.
+Prebuilt binaries are included in the npm package for:
 
-- 64 bit OS X or 64 bit Linux
-- Node.js v8-v16
-
-Just run:
+- macOS arm64 (`darwin-arm64`)
+- Linux x64 (`linux-x64`)
+- Linux arm64 (`linux-arm64`)
 
 ```
 npm install
 ```
 
-However, other platforms will fall back to a source compile: see [building from source](#building-from-source) for details.
+On other platforms, or when no matching prebuild exists, `npm install` compiles from source via CMake (see below). Node.js 20 or later is required.
 
 ## Building from source
 
+Install system dependencies:
+
+**macOS**
+
 ```
-npm install --build-from-source
+brew install cmake ninja freetype boost zlib
 ```
-Building from source should automatically install `boost`, `freetype` and `protozero` locally using [mason](https://github.com/mapbox/mason). These dependencies can be installed manually by running `./scripts/install_deps.sh`.
+
+**Linux (Debian/Ubuntu)**
+
+```
+sudo apt-get install cmake ninja-build libfreetype6-dev zlib1g-dev libboost-dev
+```
+
+Then build:
+
+```
+npm run rebuild
+```
+
+N-API headers (`node-addon-api`, `node-api-headers`) and `protozero` are fetched automatically by CMake at configure time.
 
 ## Local testing
-
-Run tests with
 
 ```
 npm test
 ```
 
-If you make any changes to the C++ files in the `src/` directory, you'll need to recompile the node bindings (`fontnik.node`) before testing locally:
+After changing C++ sources in `src/`, rebuild the native module:
 
 ```
 make
 ```
 
-See the `Makefile` for additional tasks you can run, such as `make coverage`.
+See the `Makefile` for `coverage`, `sanitize`, `tidy`, `format`, and Linux Docker testing (`make test-linux`).
+
+### Linux builds via Docker
+
+To mirror CI on a Mac (or any host with Docker), build and test inside Ubuntu 22.04 containers matching GHA:
+
+```
+./scripts/docker-linux-test.sh              # linux-x64 + linux-arm64, Release
+./scripts/docker-linux-test.sh x64 Debug    # single arch / build type
+```
+
+Release builds write `prebuilds/linux-<arch>/fontnik.node` directly (same as local `npm run rebuild`).
+
+Or `make test-linux` / `make test-linux-x64`. Use `--rebuild-image` after changing `scripts/docker/Dockerfile`.
 
 ## Release
-See the [Dev doc](./DEV.md)
+
+See [DEV.md](./DEV.md).
 
 ## Background reading
 - [Drawing Text with Signed Distance Fields in Mapbox GL](https://www.mapbox.com/blog/text-signed-distance-fields/)

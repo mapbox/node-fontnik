@@ -1,7 +1,6 @@
 #pragma once
 
 #include <napi.h>
-#include <uv.h>
 
 namespace node_fontnik {
 

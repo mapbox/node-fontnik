@@ -16,7 +16,7 @@ function bench(opts, cb) {
     var q = queue(opts.concurrency);
     var start = now();
     for (var i = 1; i <= opts.iterations; i++) {
-        q.defer.apply({}, opts.args);
+        q.defer.apply(q, opts.args);
     }
     q.awaitAll(function (error, results) {
         var seconds = now() - start;
