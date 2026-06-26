@@ -11,8 +11,11 @@
 #include <boost/geometry/index/rtree.hpp>
 
 // std
+#include <algorithm> // std::min, std::max
 #include <cmath> // std::sqrt
 #include <cstddef> // std::size_t
+#include <cstdint> // std::int32_t
+#include <limits> // std::numeric_limits
 
 namespace bg = boost::geometry;
 namespace bgm = bg::model;
@@ -227,7 +230,7 @@ namespace sdf_glyph_foundry
     }
 
     void RenderSDF(glyph_info &glyph,
-                         int size,
+                         int /*size*/,
                          int buffer,
                          float cutoff,
                          FT_Face ft_face)
@@ -237,14 +240,14 @@ namespace sdf_glyph_foundry
             return;
         }
 
-        int advance = ft_face->glyph->metrics.horiAdvance / 64;
-        int ascender = ft_face->size->metrics.ascender / 64;
-        int descender = ft_face->size->metrics.descender / 64;
-
-        glyph.line_height = ft_face->size->metrics.height;
-        glyph.advance = advance;
-        glyph.ascender = ascender;
-        glyph.descender = descender;
+        // Keep the full FreeType metrics (FT_Pos) when widening to the double
+        // fields. Narrowing through int first would silently truncate
+        // font-controlled values before they reach the range checks in
+        // src/glyphs.cpp.
+        glyph.line_height = static_cast<double>(ft_face->size->metrics.height);
+        glyph.advance = static_cast<double>(ft_face->glyph->metrics.horiAdvance / 64);
+        glyph.ascender = static_cast<double>(ft_face->size->metrics.ascender / 64);
+        glyph.descender = static_cast<double>(ft_face->size->metrics.descender / 64);
 
         FT_Outline_Funcs func_interface = {
             .move_to = &MoveTo,
@@ -316,10 +319,16 @@ namespace sdf_glyph_foundry
             return;
         }
 
-        glyph.left = bbox_xmin;
-        glyph.top = bbox_ymax;
-        glyph.width = bbox_xmax - bbox_xmin;
-        glyph.height = bbox_ymax - bbox_ymin;
+        // The dimension cap above bounds the glyph extent; at the fixed 24px
+        // render size the glyph position stays in the same small pixel range and
+        // never remotely approaches the limits of the signed 32-bit fields it is
+        // stored in. Clamp it to the same bound so a degenerate outline can't
+        // produce a nonsensical position or an out-of-range double->int32_t
+        // conversion. Position can be negative, so clamp symmetrically.
+        glyph.left = static_cast<std::int32_t>(std::min(std::max(bbox_xmin, -max_dimension), max_dimension));
+        glyph.top = static_cast<std::int32_t>(std::min(std::max(bbox_ymax, -max_dimension), max_dimension));
+        glyph.width = static_cast<std::uint32_t>(bbox_xmax - bbox_xmin);
+        glyph.height = static_cast<std::uint32_t>(bbox_ymax - bbox_ymin);
 
         Tree tree;
         float offset = 0.5;
@@ -331,10 +340,10 @@ namespace sdf_glyph_foundry
             auto p2 = p1 + 1;
 
             for (; p2 != ring.end(); p1++, p2++) {
-                const int segment_x1 = std::min(p1->get<0>(), p2->get<0>());
-                const int segment_x2 = std::max(p1->get<0>(), p2->get<0>());
-                const int segment_y1 = std::min(p1->get<1>(), p2->get<1>());
-                const int segment_y2 = std::max(p1->get<1>(), p2->get<1>());
+                const int segment_x1 = static_cast<int>(std::min(p1->get<0>(), p2->get<0>()));
+                const int segment_x2 = static_cast<int>(std::max(p1->get<0>(), p2->get<0>()));
+                const int segment_y1 = static_cast<int>(std::min(p1->get<1>(), p2->get<1>()));
+                const int segment_y2 = static_cast<int>(std::max(p1->get<1>(), p2->get<1>()));
 
                 tree.insert(SegmentValue {
                     Box {
@@ -349,8 +358,8 @@ namespace sdf_glyph_foundry
             }
         }
         // Loop over every pixel and determine the positive/negative distance to the outline.
-        std::size_t buffered_width = glyph.width + 2 * buffer;
-        std::size_t buffered_height = glyph.height + 2 * buffer;
+        std::size_t buffered_width = static_cast<std::size_t>(glyph.width) + static_cast<std::size_t>(2 * buffer);
+        std::size_t buffered_height = static_cast<std::size_t>(glyph.height) + static_cast<std::size_t>(2 * buffer);
         std::size_t bitmap_size = buffered_width * buffered_height;
         glyph.bitmap.resize(bitmap_size);
         for (std::size_t y = 0; y < buffered_height; y++) {
@@ -371,8 +380,7 @@ namespace sdf_glyph_foundry
                 d += cutoff * 256;
 
                 // Clamp to 0-255 to prevent overflows or underflows.
-                int n = d > 255 ? 255 : d;
-                n = n < 0 ? 0 : n;
+                int n = static_cast<int>(std::min(std::max(d, 0.0), 255.0));
 
                 glyph.bitmap[i] = static_cast<char>(255 - n);
             }
