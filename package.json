@@ -1,6 +1,6 @@
 {
   "name": "fontnik",
-  "version": "0.7.5",
+  "version": "0.7.6",
   "description": "A library that delivers a range of glyphs rendered as SDFs (signed distance fields) in a protobuf.",
   "keywords": [
     "font",
@@ -55,7 +55,7 @@
     "build": "cmake -G Ninja -S . -B build -DCMAKE_BUILD_TYPE=${BUILD_TYPE:-Release} && cmake --build build",
     "rebuild": "cmake -G Ninja -S . -B build -DCMAKE_BUILD_TYPE=${BUILD_TYPE:-Release} && cmake --build build",
     "test": "tape test/**/*.test.js",
-    "check-binaries": "test -f prebuilds/darwin-arm64/fontnik.node && test -f prebuilds/linux-x64/fontnik.node && test -f prebuilds/linux-arm64/fontnik.node || (echo 'Error: Missing required prebuilds for darwin-arm64, linux-x64, and linux-arm64.' && exit 1)",
+    "check-binaries": "test -f prebuilds/darwin-arm64/fontnik.node && test -f prebuilds/darwin-x64/fontnik.node && test -f prebuilds/linux-x64/fontnik.node && test -f prebuilds/linux-arm64/fontnik.node || (echo 'Error: Missing required prebuilds for darwin-arm64, darwin-x64, linux-x64, and linux-arm64.' && exit 1)",
     "prepublishOnly": "npm run check-binaries"
   },
   "publishConfig": {

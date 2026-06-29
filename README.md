@@ -13,6 +13,7 @@ See also [TinySDF](https://github.com/mapbox/tiny-sdf), which is a faster but le
 Prebuilt binaries are included in the npm package for:
 
 - macOS arm64 (`darwin-arm64`)
+- macOS x64 (`darwin-x64`)
 - Linux x64 (`linux-x64`)
 - Linux arm64 (`linux-arm64`)
 

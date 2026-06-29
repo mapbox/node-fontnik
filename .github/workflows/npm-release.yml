@@ -23,6 +23,9 @@ jobs:
           - os: macos-15
             platform: darwin
             arch: arm64
+          - os: macos-15-intel
+            platform: darwin
+            arch: x64
           - os: ubuntu-22.04
             platform: linux
             arch: x64
@@ -56,6 +59,9 @@ jobs:
           - os: macos-15
             platform: darwin
             arch: arm64
+          - os: macos-15-intel
+            platform: darwin
+            arch: x64
           - os: ubuntu-22.04
             platform: linux
             arch: x64

@@ -20,12 +20,16 @@ jobs:
         build_type: [Release, Debug]
         os:
           - macos-15
+          - macos-15-intel
           - ubuntu-22.04
           - ubuntu-22.04-arm
         include:
           - os: macos-15
             platform: darwin
             arch: arm64
+          - os: macos-15-intel
+            platform: darwin
+            arch: x64
           - os: ubuntu-22.04
             platform: linux
             arch: x64
