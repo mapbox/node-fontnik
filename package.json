@@ -22,6 +22,7 @@
     "src",
     "include",
     "CMakeLists.txt",
+    "proto/glyphs.proto",
     "scripts/install-native.js"
   ],
   "repository": {
